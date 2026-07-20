@@ -1,11 +1,21 @@
-# Render Blueprint — Static Site for CorpErgo Wellness UI
+# CorpErgo Wellness UI — Render Static Site (SPA)
+# Dashboard Publish Directory MUST be: build
 services:
   - type: web
     name: corpergo-wellness-ui
     runtime: static
+    plan: free
+    branch: main
     buildCommand: npm ci && npm run build
-    staticPublishPath: dist/client
+    staticPublishPath: ./build
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
