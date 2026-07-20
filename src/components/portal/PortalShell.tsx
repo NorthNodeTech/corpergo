@@ -12,12 +12,17 @@ export type PortalNavItem = {
   icon: LucideIcon;
   /** Shorter label for footer tabs */
   shortLabel?: string;
+  /** In-page section hash (e.g. admin dashboard anchors) */
+  hash?: string;
 };
 
 export type PortalCenterAction = {
   to: string;
   label: string;
   icon: LucideIcon;
+  hash?: string;
+  /** Prefer button action over navigation (e.g. open admin alerts) */
+  onClick?: () => void;
 };
 
 function initialsFromName(name?: string) {
@@ -148,27 +153,57 @@ function GlassFooterNav({
   layoutKey: string;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const hash = useRouterState({ select: (s) => s.location.hash });
 
-  const activeTo = useMemo(() => {
-    const matches = items.filter((item) => pathMatches(pathname, item.to));
-    if (matches.length === 0) return null;
+  const activeKey = useMemo(() => {
+    const withHash = items.filter((item) => item.hash);
+    if (hash) {
+      const match = withHash.find((item) => `#${item.hash}` === hash || item.hash === hash.replace(/^#/, ""));
+      if (match) return `${match.to}#${match.hash}`;
+    }
+    // Overview / no-hash tabs: active when path matches and no section hash
+    const matches = items.filter((item) => !item.hash && pathMatches(pathname, item.to));
+    if (matches.length === 0) {
+      // Fallback: path-only match including hashed items' base path
+      const pathMatchesItems = items.filter((item) => pathMatches(pathname, item.to));
+      if (pathMatchesItems.length && !hash) {
+        const bare = pathMatchesItems.find((i) => !i.hash);
+        if (bare) return bare.to;
+      }
+      return null;
+    }
     return matches.sort((a, b) => b.to.length - a.to.length)[0]?.to ?? null;
-  }, [items, pathname]);
+  }, [items, pathname, hash]);
 
-  const centerActive = centerAction ? pathMatches(pathname, centerAction.to) : false;
+  const centerActive = Boolean(
+    centerAction &&
+      (centerAction.hash
+        ? hash === `#${centerAction.hash}` || hash === centerAction.hash
+        : pathMatches(pathname, centerAction.to) && !hash),
+  );
   const CenterIcon = centerAction?.icon;
   const mid = Math.ceil(items.length / 2);
   const left = centerAction ? items.slice(0, mid) : items;
   const right = centerAction ? items.slice(mid) : [];
 
   const Tab = ({ item }: { item: PortalNavItem }) => {
-    const active = activeTo === item.to && !centerActive;
+    const key = item.hash ? `${item.to}#${item.hash}` : item.to;
+    const active = activeKey === key && !centerActive;
     const Icon = item.icon;
     return (
       <Link
         to={item.to}
+        hash={item.hash}
         aria-current={active ? "page" : undefined}
         className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1"
+        onClick={() => {
+          if (!item.hash) return;
+          // Smooth scroll after navigation settles
+          requestAnimationFrame(() => {
+            const el = document.getElementById(item.hash!);
+            el?.scrollIntoView({ behavior: "smooth", block: "start" });
+          });
+        }}
       >
         <motion.span
           whileTap={{ scale: 0.86 }}
@@ -208,32 +243,60 @@ function GlassFooterNav({
       <div className="pointer-events-auto mx-auto max-w-lg">
         <div className="portal-glass-dock relative flex items-end gap-0.5 rounded-[28px] px-1.5 pb-2 pt-2 shadow-[0_12px_40px_rgba(38,50,56,0.14)]">
           {left.map((item) => (
-            <Tab key={item.to} item={item} />
+            <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
           ))}
 
           {centerAction ? (
             <div className="relative flex w-[4.75rem] shrink-0 flex-col items-center justify-end">
-              <Link
-                to={centerAction.to}
-                aria-label={centerAction.label}
-                aria-current={centerActive ? "page" : undefined}
-                className="group relative -mt-8 mb-0.5"
-              >
-                <motion.span
-                  whileTap={{ scale: 0.9 }}
-                  whileHover={{ scale: 1.04 }}
-                  transition={{ type: "spring", stiffness: 420, damping: 22 }}
-                  className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_10px_28px_rgba(71,86,63,0.45)] ring-[5px] ring-white/55 ${
-                    centerActive
-                      ? "bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)]"
-                      : "bg-gradient-to-br from-[var(--sage)] via-[var(--sage-deep)] to-[#3d4a38]"
-                  }`}
+              {centerAction.onClick ? (
+                <button
+                  type="button"
+                  aria-label={centerAction.label}
+                  onClick={centerAction.onClick}
+                  className="group relative -mt-8 mb-0.5"
                 >
-                  <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
-                  <span className="portal-scan-pulse absolute inset-0 rounded-full" />
-                  {CenterIcon ? <CenterIcon className="relative z-[1] h-7 w-7" strokeWidth={2.25} /> : null}
-                </motion.span>
-              </Link>
+                  <motion.span
+                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.04 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_10px_28px_rgba(71,86,63,0.45)] ring-[5px] ring-white/55 ${
+                      centerActive
+                        ? "bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)]"
+                        : "bg-gradient-to-br from-[var(--sage)] via-[var(--sage-deep)] to-[#3d4a38]"
+                    }`}
+                  >
+                    <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
+                    {CenterIcon ? (
+                      <CenterIcon className="relative z-[1] h-7 w-7" strokeWidth={2.25} />
+                    ) : null}
+                  </motion.span>
+                </button>
+              ) : (
+                <Link
+                  to={centerAction.to}
+                  hash={centerAction.hash}
+                  aria-label={centerAction.label}
+                  aria-current={centerActive ? "page" : undefined}
+                  className="group relative -mt-8 mb-0.5"
+                >
+                  <motion.span
+                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.04 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_10px_28px_rgba(71,86,63,0.45)] ring-[5px] ring-white/55 ${
+                      centerActive
+                        ? "bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)]"
+                        : "bg-gradient-to-br from-[var(--sage)] via-[var(--sage-deep)] to-[#3d4a38]"
+                    }`}
+                  >
+                    <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <span className="portal-scan-pulse absolute inset-0 rounded-full" />
+                    {CenterIcon ? (
+                      <CenterIcon className="relative z-[1] h-7 w-7" strokeWidth={2.25} />
+                    ) : null}
+                  </motion.span>
+                </Link>
+              )}
               <span
                 className={`text-[10px] font-semibold tracking-wide ${
                   centerActive ? "text-[var(--sage-deep)]" : "text-[var(--ink-soft)]"
@@ -245,7 +308,7 @@ function GlassFooterNav({
           ) : null}
 
           {right.map((item) => (
-            <Tab key={item.to} item={item} />
+            <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
           ))}
         </div>
       </div>
@@ -283,22 +346,32 @@ export function PortalShell({
 
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
     <nav className="flex flex-col gap-1.5 px-3">
-      {nav.map(({ to, label, icon: Icon }) => (
-        <Link
-          key={to}
-          to={to}
-          onClick={onNavigate}
-          className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold text-[var(--ink-soft)] transition-colors hover:bg-[var(--sage)]/10 hover:text-[var(--sage-deep)]"
-          activeProps={{
-            className:
-              "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold bg-[var(--sage)] text-white hover:bg-[var(--sage)] hover:text-white",
-          }}
-          activeOptions={{ exact: to.endsWith("/dashboard") }}
-        >
-          <Icon className="h-5 w-5 shrink-0" />
-          {label}
-        </Link>
-      ))}
+      {nav.map((item) => {
+        const { to, label, icon: Icon, hash } = item;
+        return (
+          <Link
+            key={hash ? `${to}#${hash}` : `${to}-${label}`}
+            to={to}
+            hash={hash}
+            onClick={() => {
+              onNavigate?.();
+              if (!hash) return;
+              requestAnimationFrame(() => {
+                document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+              });
+            }}
+            className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold text-[var(--ink-soft)] transition-colors hover:bg-[var(--sage)]/10 hover:text-[var(--sage-deep)]"
+            activeProps={{
+              className:
+                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold bg-[var(--sage)] text-white hover:bg-[var(--sage)] hover:text-white",
+            }}
+            activeOptions={{ exact: to.endsWith("/dashboard") && !hash }}
+          >
+            <Icon className="h-5 w-5 shrink-0" />
+            {label}
+          </Link>
+        );
+      })}
     </nav>
   );
 
@@ -307,7 +380,7 @@ export function PortalShell({
       <div className="portal-shell__glow" aria-hidden />
 
       <div
-        className={`relative min-h-screen ${hasFooter ? "lg:grid lg:grid-cols-[240px_1fr]" : "lg:grid lg:grid-cols-[260px_1fr]"}`}
+        className={`relative min-h-screen min-w-0 w-full max-w-full ${hasFooter ? "lg:grid lg:grid-cols-[240px_1fr]" : "lg:grid lg:grid-cols-[260px_1fr]"}`}
       >
         {/* Desktop sidebar */}
         <aside className="portal-glass-sidebar relative z-10 hidden lg:flex lg:flex-col lg:border-r lg:border-white/40">
@@ -325,7 +398,7 @@ export function PortalShell({
           </div>
         </aside>
 
-        <div className="relative z-[1] flex min-h-screen flex-col lg:col-start-2">
+        <div className="relative z-[1] flex min-h-screen min-w-0 w-full max-w-full flex-col lg:col-start-2">
           <header className="portal-glass-header sticky top-0 z-40 flex h-[4.25rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <img src={logoImg} alt="CorpErgo" className="h-12 w-auto object-contain lg:hidden" />
@@ -342,7 +415,7 @@ export function PortalShell({
           </header>
 
           <main
-            className={`flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-8 ${
+            className={`min-w-0 w-full max-w-full flex-1 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8 lg:py-8 ${
               hasFooter ? "pb-[7.25rem] lg:pb-8" : "pb-8"
             }`}
           >
@@ -353,6 +426,7 @@ export function PortalShell({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="min-w-0 w-full max-w-full"
               >
                 {children}
               </motion.div>

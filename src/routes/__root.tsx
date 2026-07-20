@@ -116,11 +116,13 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         {/* Helps production HTTPS hosts (e.g. Render) allow getUserMedia for QR scan */}
         <meta httpEquiv="Permissions-Policy" content="camera=(self)" />
         <HeadContent />
       </head>
-      <body>
+      <body className="min-w-0 overflow-x-hidden">
         {children}
         <Scripts />
       </body>

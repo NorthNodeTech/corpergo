@@ -98,8 +98,14 @@ function LoginPage() {
       return;
     }
 
-    const { path } = await resolvePostLoginPath(portal);
+    const { path, error: portalError } = await resolvePostLoginPath(portal);
     setLoading(false);
+
+    if (portalError || !path) {
+      setError(portalError || "You don’t have access to this portal.");
+      return;
+    }
+
     void navigate({ to: path });
   }
 

@@ -207,19 +207,55 @@ export function portalPathForRole(role: AppRole | string | null | undefined): st
   }
 }
 
+function isPatientRole(role: AppRole | string) {
+  return role === "patient";
+}
+
+function isStaffRole(role: AppRole | string) {
+  return (
+    role === "physiotherapist" ||
+    role === "receptionist" ||
+    role === "clinic_manager" ||
+    role === "admin" ||
+    role === "super_admin"
+  );
+}
+
+/**
+ * Resolve post-login destination.
+ * Enforces the UI portal choice: patient tab only for patients, staff tab only for staff/admin.
+ */
 export async function resolvePostLoginPath(
   preferredPortal?: "patient" | "staff",
-): Promise<{ path: string; error: string | null }> {
+): Promise<{ path: string | null; error: string | null }> {
   const { data: profile, error } = await fetchMyProfile();
 
   if (error || !profile) {
+    clearSession();
     return {
-      path: preferredPortal === "staff" ? "/physio/dashboard" : "/patient/dashboard",
-      error,
+      path: null,
+      error: error || "Could not load your profile. Try signing in again.",
     };
   }
 
-  // Always redirect by database role — never by UI tab alone
+  if (preferredPortal === "patient" && !isPatientRole(profile.role)) {
+    clearSession();
+    return {
+      path: null,
+      error:
+        "This account is for staff. You don’t have access to sign in as a patient. Switch to Physiotherapist and try again.",
+    };
+  }
+
+  if (preferredPortal === "staff" && !isStaffRole(profile.role)) {
+    clearSession();
+    return {
+      path: null,
+      error:
+        "This account is for patients. You don’t have access to sign in as staff. Switch to Patient and try again.",
+    };
+  }
+
   return { path: portalPathForRole(profile.role), error: null };
 }
 

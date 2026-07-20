@@ -111,6 +111,8 @@
   }
   html {
     scroll-behavior: smooth;
+    max-width: 100%;
+    overflow-x: hidden;
   }
   body {
     background-color: var(--color-background);
@@ -118,6 +120,8 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     font-feature-settings: "ss01", "cv11";
+    max-width: 100%;
+    overflow-x: hidden;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
@@ -759,6 +763,9 @@
     radial-gradient(ellipse 70% 45% at 100% 0%, color-mix(in oklab, var(--teal) 14%, transparent), transparent 50%),
     radial-gradient(ellipse 60% 40% at 50% 100%, color-mix(in oklab, var(--bronze) 10%, transparent), transparent 55%),
     var(--ivory);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .portal-shell__glow {

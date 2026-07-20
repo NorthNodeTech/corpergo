@@ -135,6 +135,21 @@ export function AdminCommandCenter() {
     return () => window.clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    const open = () => setNotifyOpen(true);
+    window.addEventListener("corpergo:admin-alerts", open);
+    return () => window.removeEventListener("corpergo:admin-alerts", open);
+  }, []);
+
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash || loading) return;
+    const t = window.setTimeout(() => {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+    return () => window.clearTimeout(t);
+  }, [loading, data]);
+
   const peakHours = useMemo(() => {
     const map = new Map<number, number>();
     for (const cell of data?.heatmap || []) {
@@ -175,22 +190,23 @@ export function AdminCommandCenter() {
   const upcoming = Math.max((kpis?.todays_bookings || 0) - (kpis?.completed || 0) - waiting, 0);
 
   return (
-    <div className="relative pb-10">
+    <div className="relative w-full min-w-0 max-w-full overflow-x-hidden pb-4 sm:pb-10">
       {/* Executive header */}
       <motion.section
+        id="admin-overview"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="overflow-hidden rounded-[28px] border border-white/60 bg-white/65 p-5 shadow-[var(--shadow-soft)] backdrop-blur-xl sm:p-7"
+        className="scroll-mt-24 overflow-hidden rounded-[28px] border border-white/60 bg-white/65 p-4 shadow-[var(--shadow-soft)] backdrop-blur-xl sm:p-7"
       >
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
+        <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
+          <div className="min-w-0 flex-1">
             <div className="text-sm font-semibold text-[var(--ink-soft)]">
               {greetingForHour(now.getHours())},
             </div>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-[var(--ink)] sm:text-4xl">
+            <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--ink)] sm:text-4xl">
               CorpErgo Admin
             </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--ink-soft)]">
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--ink-soft)] sm:text-sm">
               <span>
                 {now.toLocaleDateString(undefined, {
                   weekday: "long",
@@ -204,7 +220,7 @@ export function AdminCommandCenter() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={() => setNotifyOpen((v) => !v)}
@@ -216,8 +232,8 @@ export function AdminCommandCenter() {
                 <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />
               ) : null}
             </button>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 ring-1 ring-emerald-100">
-              <Radio className="h-3.5 w-3.5" /> System online
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-2 text-[10px] font-bold text-emerald-800 ring-1 ring-emerald-100 sm:px-3 sm:text-xs">
+              <Radio className="h-3.5 w-3.5" /> Online
             </span>
           </div>
         </div>
@@ -290,8 +306,8 @@ export function AdminCommandCenter() {
       ) : null}
 
       {/* Network + activity */}
-      <section id="admin-network" className="mt-8 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-        <div>
+      <section id="admin-network" className="mt-6 grid w-full min-w-0 scroll-mt-24 gap-4 sm:mt-8 lg:grid-cols-[1.6fr_1fr]">
+        <div className="min-w-0">
           <div className="mb-3">
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
               Network overview
@@ -436,8 +452,8 @@ export function AdminCommandCenter() {
       </section>
 
       {/* KPI mix */}
-      <section className="mt-8 grid gap-4 lg:grid-cols-12">
-        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] lg:col-span-7">
+      <section className="mt-6 grid w-full min-w-0 gap-4 sm:mt-8 lg:grid-cols-12">
+        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5 lg:col-span-7">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
@@ -447,8 +463,8 @@ export function AdminCommandCenter() {
             </div>
             <Users className="h-4 w-4 text-[var(--ink-soft)]" />
           </div>
-          <div className="mt-4 h-56">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="mt-4 h-48 w-full min-w-0 overflow-hidden sm:h-56">
+            <ResponsiveContainer width="100%" height="100%" debounce={50}>
               <AreaChart data={data?.series7d || []}>
                 <defs>
                   <linearGradient id="apptFill" x1="0" y1="0" x2="0" y2="1">
@@ -456,8 +472,8 @@ export function AdminCommandCenter() {
                     <stop offset="100%" stopColor="#5D725E" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 12 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 12 }} />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{
                     borderRadius: 12,
@@ -471,13 +487,13 @@ export function AdminCommandCenter() {
           </div>
         </div>
 
-        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] lg:col-span-5">
+        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5 lg:col-span-5">
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
             Treatment mix
           </div>
           <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Top categories</h3>
-          <div className="mt-2 h-48">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="mt-2 h-44 w-full min-w-0 overflow-hidden sm:h-48">
+            <ResponsiveContainer width="100%" height="100%" debounce={50}>
               <PieChart>
                 <Pie data={conditionPie} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3}>
                   {conditionPie.map((entry) => (
@@ -491,17 +507,17 @@ export function AdminCommandCenter() {
           <ul className="space-y-1.5">
             {conditionPie.map((c) => (
               <li key={c.name} className="flex items-center justify-between text-xs">
-                <span className="inline-flex items-center gap-2 font-semibold text-[var(--ink)]">
-                  <span className="h-2 w-2 rounded-full" style={{ background: c.fill }} />
-                  {c.name}
+                <span className="inline-flex min-w-0 items-center gap-2 font-semibold text-[var(--ink)]">
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: c.fill }} />
+                  <span className="truncate">{c.name}</span>
                 </span>
-                <span className="font-bold text-[var(--ink-soft)]">{c.value}</span>
+                <span className="shrink-0 font-bold text-[var(--ink-soft)]">{c.value}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-4">
+        <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-4">
           {[
             { label: "Network clinics", value: data?.totals.clinics ?? 0, hint: "Active locations" },
             { label: "Physiotherapists", value: data?.totals.physios ?? 0, hint: "Across Bengaluru" },
@@ -523,15 +539,15 @@ export function AdminCommandCenter() {
       </section>
 
       {/* Analytics */}
-      <section id="admin-analytics" className="mt-8 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+      <section id="admin-analytics" className="mt-6 grid w-full min-w-0 scroll-mt-24 gap-4 sm:mt-8 lg:grid-cols-2">
+        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
           <h3 className="text-lg font-extrabold text-[var(--ink)]">Clinic comparison</h3>
           <p className="mt-1 text-sm text-[var(--ink-soft)]">Today&apos;s appointments by location</p>
-          <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="mt-4 h-52 w-full min-w-0 overflow-hidden sm:h-64">
+            <ResponsiveContainer width="100%" height="100%" debounce={50}>
               <BarChart data={clinicBars}>
-                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 12 }} />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 10 }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
                 <Tooltip
                   formatter={(value) => [value as number, "Count"]}
                   labelFormatter={(_, payload) =>
@@ -544,14 +560,14 @@ export function AdminCommandCenter() {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
           <h3 className="text-lg font-extrabold text-[var(--ink)]">Peak hours</h3>
           <p className="mt-1 text-sm text-[var(--ink-soft)]">Booking intensity across the day</p>
-          <div className="mt-4 h-64">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="mt-4 h-52 w-full min-w-0 overflow-hidden sm:h-64">
+            <ResponsiveContainer width="100%" height="100%" debounce={50}>
               <BarChart data={peakHours}>
-                <XAxis dataKey="hour" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 12 }} />
+                <XAxis dataKey="hour" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 10 }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
                 <Tooltip />
                 <Bar dataKey="count" fill="#6F9E9C" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -662,7 +678,7 @@ export function AdminCommandCenter() {
       </section>
 
       {/* Recent bookings */}
-      <section id="admin-bookings" className="mt-8">
+      <section id="admin-bookings" className="mt-6 scroll-mt-24 sm:mt-8">
         <div className="mb-3 flex items-end justify-between">
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
@@ -671,7 +687,54 @@ export function AdminCommandCenter() {
             <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Recent bookings</h2>
           </div>
         </div>
-        <div className="overflow-x-auto rounded-[28px] bg-white shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+
+        {/* Mobile cards */}
+        <div className="space-y-3 md:hidden">
+          {(data?.bookings || []).map((b) => {
+            const patient = b.patients?.profiles?.full_name || "Patient";
+            return (
+              <div
+                key={b.id}
+                className="rounded-3xl bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--sage)]/15 text-[10px] font-bold text-[var(--sage-deep)]">
+                      {initials(patient)}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="truncate font-extrabold text-[var(--ink)]">{patient}</div>
+                      <div className="truncate text-xs text-[var(--ink-soft)]">
+                        {b.clinics?.name || "—"}
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold capitalize",
+                      statusBadgeClass(b.status),
+                    )}
+                  >
+                    {b.status.replace(/_/g, " ")}
+                  </span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--ink-soft)]">
+                  <span>{formatApptWhen(b)}</span>
+                  <span>{b.physiotherapists?.profiles?.full_name || "Unassigned"}</span>
+                  <span>{b.physiotherapy_categories?.name || "—"}</span>
+                </div>
+              </div>
+            );
+          })}
+          {!loading && !(data?.bookings || []).length ? (
+            <div className="rounded-3xl bg-white px-5 py-10 text-center text-sm text-[var(--ink-soft)] ring-1 ring-black/[0.05]">
+              No bookings yet.
+            </div>
+          ) : null}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden overflow-x-auto rounded-[28px] bg-white shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] md:block">
           <table className="min-w-full text-left text-sm">
             <thead>
               <tr className="border-b border-black/[0.06] text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
