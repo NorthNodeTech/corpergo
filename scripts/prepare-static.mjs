@@ -1,10 +1,12 @@
 /**
- * Flatten TanStack Start SPA client output so Render can publish `dist`
- * with index.html at the root (Build: npm install && npm run build).
+ * Flatten TanStack Start SPA client output for Render Static Site.
  *
- * Also writes SPA shells under each known app path so hard navigations
- * (/login after sign-out, refresh on /physio/scan, etc.) do not 404 on
- * static hosts that lack a catch-all rewrite.
+ * Supports either Publish Directory:
+ *   - dist  (preferred: npm install && npm run build → dist)
+ *   - build (legacy dashboard setting)
+ *
+ * Also writes SPA shells under known routes so hard navigations
+ * (sign-out → /login, refresh on /physio/scan) do not 404.
  */
 import {
   cpSync,
@@ -19,6 +21,7 @@ import { dirname, join } from "node:path";
 const root = process.cwd();
 const clientDir = join(root, "dist", "client");
 const distDir = join(root, "dist");
+const buildDir = join(root, "build");
 const indexPath = join(clientDir, "index.html");
 
 /** Known app routes (no dynamic segments) — each gets a copied SPA shell. */
@@ -50,7 +53,7 @@ if (!existsSync(indexPath)) {
   process.exit(1);
 }
 
-// Copy every file/folder from dist/client into dist/ so publish dir = dist works
+// 1) Copy client build into dist/ root so Publish Directory = dist works
 for (const name of readdirSync(clientDir)) {
   const from = join(clientDir, name);
   const to = join(distDir, name);
@@ -66,20 +69,33 @@ if (!existsSync(shellSource)) {
   process.exit(1);
 }
 
-// SPA shells for deep links / hard navigations (sign-out → /login)
-let shells = 0;
-for (const routePath of SPA_SHELL_PATHS) {
-  const target = join(distDir, routePath.replace(/^\//, ""), "index.html");
-  mkdirSync(dirname(target), { recursive: true });
-  cpSync(shellSource, target);
-  shells += 1;
+function writeSpaShells(targetRoot) {
+  let shells = 0;
+  for (const routePath of SPA_SHELL_PATHS) {
+    const target = join(targetRoot, routePath.replace(/^\//, ""), "index.html");
+    mkdirSync(dirname(target), { recursive: true });
+    cpSync(shellSource, target);
+    shells += 1;
+  }
+  cpSync(shellSource, join(targetRoot, "404.html"));
+  writeFileSync(join(targetRoot, "_redirects"), "/*    /index.html   200\n");
+  return shells;
 }
 
-// Some CDNs use 404.html as a soft SPA fallback
-cpSync(shellSource, join(distDir, "404.html"));
+const shells = writeSpaShells(distDir);
 
-writeFileSync(join(distDir, "_redirects"), "/*    /index.html   200\n");
+// 2) Also create clean ./build for dashboards still set to Publish Directory = build
+rmSync(buildDir, { recursive: true, force: true });
+mkdirSync(buildDir, { recursive: true });
+
+// Copy only static publishables (not dist/server)
+for (const name of ["index.html", "assets", "favicon.ico", "favicon.png", "_redirects", "404.html"]) {
+  const from = join(distDir, name);
+  if (!existsSync(from)) continue;
+  cpSync(from, join(buildDir, name), { recursive: true });
+}
+writeSpaShells(buildDir);
 
 console.log(
-  `[prepare-static] Ready: publish directory dist/ (index.html + ${shells} route shells + 404.html)`,
+  `[prepare-static] Ready: dist/ and build/ (index.html + ${shells} route shells). Use Publish Directory "dist" or "build".`,
 );
