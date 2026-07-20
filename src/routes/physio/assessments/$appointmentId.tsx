@@ -40,14 +40,15 @@ function AssessmentEditorPage() {
   const [physioId, setPhysioId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [dirty, setDirty] = useState(false);
   const [followOpen, setFollowOpen] = useState(false);
   const [followDate, setFollowDate] = useState<Date | undefined>();
   const [followTime, setFollowTime] = useState<string | null>(null);
   const [followSlots, setFollowSlots] = useState<
     { start_time: string; available: boolean }[]
   >([]);
-  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const formRef = useRef(form);
+  const savingRef = useRef(false);
   formRef.current = form;
 
   useEffect(() => {
@@ -76,6 +77,7 @@ function AssessmentEditorPage() {
         base.chief_complaint = a.symptoms;
       }
       setForm(base);
+      setDirty(false);
       if (a?.patient_id) {
         const tl = await fetchPatientAssessments(a.patient_id);
         if (!cancelled) setTimeline(tl.data || []);
@@ -86,18 +88,6 @@ function AssessmentEditorPage() {
       cancelled = true;
     };
   }, [appointmentId]);
-
-  useEffect(() => {
-    if (!form?.id) return;
-    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-    autoSaveTimer.current = setTimeout(() => {
-      void persist(true);
-    }, 1800);
-    return () => {
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form]);
 
   const followIso = followDate
     ? `${followDate.getFullYear()}-${String(followDate.getMonth() + 1).padStart(2, "0")}-${String(followDate.getDate()).padStart(2, "0")}`
@@ -115,9 +105,11 @@ function AssessmentEditorPage() {
 
   async function persist(silent = false) {
     const current = formRef.current;
-    if (!current) return;
+    if (!current || savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     const { data, error } = await saveAssessment(current);
+    savingRef.current = false;
     setSaving(false);
     if (error) {
       if (!silent) toast.error(error);
@@ -125,7 +117,13 @@ function AssessmentEditorPage() {
     }
     const saved = data?.[0];
     if (saved) {
-      setForm((prev) => (prev ? { ...prev, id: saved.id } : prev));
+      // Only patch id if it changed — never replace the whole form (that caused an auto-save loop)
+      setForm((prev) => {
+        if (!prev) return prev;
+        if (prev.id === saved.id) return prev;
+        return { ...prev, id: saved.id };
+      });
+      setDirty(false);
       setLastSaved(
         new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
       );
@@ -167,6 +165,7 @@ function AssessmentEditorPage() {
 
   function patch<K extends keyof AssessmentForm>(key: K, value: AssessmentForm[K]) {
     setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
+    setDirty(true);
   }
 
   if (!appt || !form) {
@@ -183,27 +182,12 @@ function AssessmentEditorPage() {
         title={`Assess ${patientName}`}
         description={`${appt.clinics?.name} · ${appt.physiotherapy_categories?.name} · ${formatDateLabel(appt.scheduled_date || appt.preferred_date)}`}
         actions={
-          <div className="flex flex-wrap items-center gap-2">
-            {lastSaved ? (
-              <span className="text-xs font-semibold text-[var(--ink-soft)]">
-                Auto-saved {lastSaved}
-              </span>
-            ) : null}
-            <Link
-              to="/physio/assessments"
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--ivory)] px-4 py-2.5 text-sm font-bold text-[var(--ink)]"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back
-            </Link>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void onSaveAndFollow()}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--sage)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
-            >
-              <Save className="h-4 w-4" /> {saving ? "Saving…" : "Save assessment"}
-            </button>
-          </div>
+          <Link
+            to="/physio/assessments"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--ivory)] px-4 py-2.5 text-sm font-bold text-[var(--ink)]"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back
+          </Link>
         }
       />
 
@@ -383,6 +367,32 @@ function AssessmentEditorPage() {
               </label>
             </div>
           </section>
+
+          {/* Save at bottom — manual only (auto-save loop removed) */}
+          <div className="sticky bottom-[5.5rem] z-20 rounded-[1.75rem] bg-white/95 p-4 shadow-[0_-8px_30px_rgba(38,50,56,0.08)] ring-1 ring-black/[0.05] backdrop-blur-md lg:static lg:bottom-auto lg:bg-white lg:p-5 lg:shadow-none">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm text-[var(--ink-soft)]">
+                {saving ? (
+                  <span className="font-semibold text-[var(--sage-deep)]">Saving…</span>
+                ) : dirty ? (
+                  <span className="font-semibold text-amber-800">Unsaved changes</span>
+                ) : lastSaved ? (
+                  <span className="font-semibold">Saved {lastSaved}</span>
+                ) : (
+                  <span>Fill the form, then save when ready.</span>
+                )}
+              </div>
+              <button
+                type="button"
+                disabled={saving || !dirty}
+                onClick={() => void onSaveAndFollow()}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--sage)] px-6 py-3.5 text-sm font-bold text-white disabled:opacity-50"
+              >
+                <Save className="h-4 w-4" />
+                {saving ? "Saving…" : "Save assessment"}
+              </button>
+            </div>
+          </div>
         </div>
 
         <aside className="space-y-4">

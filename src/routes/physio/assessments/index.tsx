@@ -28,7 +28,7 @@ function AssessmentsListPage() {
       <PortalPageHeader
         eyebrow="Clinical"
         title="Assessments"
-        description="Digital clinical notes that replace paper files. Open a visit to assess, auto-save, and schedule follow-up."
+        description="Digital clinical notes that replace paper files. Open a visit to assess, save, and schedule follow-up."
       />
 
       {loading ? (
