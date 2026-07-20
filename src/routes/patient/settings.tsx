@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { LogOut, Shield } from "lucide-react";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
 import { clearSession } from "@/lib/auth";
@@ -8,9 +8,11 @@ export const Route = createFileRoute("/patient/settings")({
 });
 
 function PatientSettingsPage() {
+  const navigate = useNavigate();
+
   function signOut() {
     clearSession();
-    window.location.href = "/login";
+    void navigate({ to: "/login", replace: true });
   }
 
   return (

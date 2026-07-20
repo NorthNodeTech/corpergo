@@ -7,7 +7,7 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  // Skip Nitro/Cloudflare Worker so Render Static Site can publish plain HTML+assets.
+  // Skip Nitro/Cloudflare Worker so Render can host a plain SPA.
   // Lovable sandbox builds still force Cloudflare when run inside Lovable.
   nitro: false,
   tanstackStart: {
@@ -16,7 +16,7 @@ export default defineConfig({
     spa: {
       enabled: true,
       prerender: {
-        // Render expects a real index.html in the publish directory
+        // Hosts expect a real index.html in the publish directory
         outputPath: "/index.html",
       },
     },

@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { ChevronDown, LogOut, Settings } from "lucide-react";
@@ -40,13 +40,16 @@ function AccountMenu({
   userName?: string;
   settingsTo?: string;
 }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
 
   function signOut() {
     clearSession();
-    window.location.href = "/login";
+    setOpen(false);
+    // Client-side navigate — never window.location (that 404s on static hosts without /login file)
+    void navigate({ to: "/login", replace: true });
   }
 
   useEffect(() => {

@@ -10,7 +10,7 @@
     "dev": "vite dev",
     "build": "vite build && node scripts/prepare-static.mjs",
     "build:dev": "vite build --mode development",
-    "start": "serve -s build -l ${PORT:-3000}",
+    "start": "node scripts/serve-static.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."

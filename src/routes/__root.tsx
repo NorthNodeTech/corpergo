@@ -116,6 +116,8 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        {/* Helps production HTTPS hosts (e.g. Render) allow getUserMedia for QR scan */}
+        <meta httpEquiv="Permissions-Policy" content="camera=(self)" />
         <HeadContent />
       </head>
       <body>
