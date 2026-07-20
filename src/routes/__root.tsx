@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -77,14 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CorpErgo Physiotherapy — Move Better. Recover Stronger." },
+      { title: "CorpErgo Physiotherapy — Relieve pain. Restore movement." },
       {
         name: "description",
         content:
           "Premium physiotherapy in Bengaluru. Orthopaedic, neuro, sports & post-surgery rehabilitation across 5 CorpErgo clinics. Evidence-based, personalized care.",
       },
       { name: "author", content: "CorpErgo Physiotherapy" },
-      { property: "og:title", content: "CorpErgo Physiotherapy — Move Better. Recover Stronger." },
+      { property: "og:title", content: "CorpErgo Physiotherapy — Relieve pain. Restore movement." },
       {
         property: "og:description",
         content:
@@ -130,6 +131,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );
 }

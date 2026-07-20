@@ -26,10 +26,12 @@ import {
   Youtube,
   Menu,
   X,
+  Quote,
 } from "lucide-react";
-import logoAsset from "@/assets/corpergo-logo.png.asset.json";
+import logoImg from "@/assets/LOGO.png";
 import heroImg from "@/assets/hero-physio.jpg";
 import aboutImg from "@/assets/about-physio.jpg";
+import pinkyImg from "@/assets/Pinkyce.png";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -109,18 +111,19 @@ function Nav() {
               : "bg-transparent"
           }`}
         >
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--sage)]/10 ring-1 ring-[var(--sage)]/20">
-              <img src={logoAsset.url} alt="CorpErgo" className="h-8 w-8 object-contain" />
-            </div>
-            <div className="leading-tight">
-              <div className="text-[15px] font-extrabold tracking-tight text-[var(--ink)]">
-                CorpErgo
-              </div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--ink-soft)]">
-                Physiotherapy
-              </div>
-            </div>
+          <Link
+            to="/"
+            className="group flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/40 focus-visible:ring-offset-2 rounded-lg"
+            aria-label="CorpErgo Physiotherapy — Home"
+          >
+            <img
+              src={logoImg}
+              alt="CorpErgo"
+              className="h-11 w-auto sm:h-12 object-contain object-left transition-opacity duration-300 group-hover:opacity-90"
+              width={48}
+              height={48}
+              decoding="async"
+            />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
@@ -217,11 +220,11 @@ function Hero() {
               transition={{ delay: 0.3, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-[-0.03em] text-[var(--ink)] text-balance leading-[1.02]"
             >
-              Move Better.
+              Relieve pain.
               <br />
-              <span className="italic font-light text-[var(--sage-deep)]">Recover</span>{" "}
+              <span className="italic font-light text-[var(--sage-deep)]">Restore</span>{" "}
               <span className="relative inline-block">
-                Stronger.
+                movement.
                 <svg
                   className="absolute -bottom-2 left-0 w-full"
                   height="10"
@@ -307,65 +310,6 @@ function Hero() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[var(--sage-deep)]/40 via-transparent to-transparent" />
             </div>
-
-            {/* Floating glass cards */}
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -left-4 sm:-left-10 top-10 glass rounded-2xl p-4 shadow-[var(--shadow-soft)] w-56"
-            >
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--sage)] text-white">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-[var(--ink)]">Certified Care</div>
-                  <div className="text-xs text-[var(--ink-soft)]">Licensed physios</div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              className="absolute -right-2 sm:-right-6 top-1/2 glass rounded-2xl p-4 shadow-[var(--shadow-soft)] w-52"
-            >
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  {["#5D725E", "#6F9E9C", "#9A7059"].map((c) => (
-                    <div
-                      key={c}
-                      className="h-7 w-7 rounded-full ring-2 ring-white"
-                      style={{ background: c }}
-                    />
-                  ))}
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-[var(--ink)]">
-                    <Counter to={1000} suffix="+" /> patients
-                  </div>
-                  <div className="text-xs text-[var(--ink-soft)]">recovered stronger</div>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute -left-2 sm:-left-6 bottom-10 glass rounded-2xl p-4 shadow-[var(--shadow-soft)] w-60"
-            >
-              <div className="flex items-start gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--bronze)]/15 text-[var(--bronze)]">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-[var(--ink)]">Personalized Plans</div>
-                  <div className="text-xs text-[var(--ink-soft)]">
-                    Tailored to your recovery
-                  </div>
-                </div>
-              </div>
-            </motion.div>
           </motion.div>
         </div>
       </div>
@@ -650,39 +594,105 @@ function WhyChoose() {
 
 /* ------------------------------ VIDEO STORIES ------------------------------ */
 
+const INSTAGRAM_REELS = [
+  {
+    id: "DaaqA0HxJ8o",
+    title: "Clinic moments",
+    tag: "Reel",
+    color: "from-[#5D725E] to-[#47563F]",
+    url: "https://www.instagram.com/reel/DaaqA0HxJ8o/",
+  },
+  {
+    id: "DZnTwpaxLR4",
+    title: "Recovery in motion",
+    tag: "Reel",
+    color: "from-[#6F9E9C] to-[#4E7B7A]",
+    url: "https://www.instagram.com/reel/DZnTwpaxLR4/",
+  },
+  {
+    id: "DZEeWgSxZx7",
+    title: "Patient journey",
+    tag: "Reel",
+    color: "from-[#9A7059] to-[#7A5644]",
+    url: "https://www.instagram.com/reel/DZEeWgSxZx7/",
+  },
+  {
+    id: "DIdJ8eczP_i",
+    title: "Therapy insights",
+    tag: "Reel",
+    color: "from-[#5D725E] to-[#6F9E9C]",
+    url: "https://www.instagram.com/reel/DIdJ8eczP_i/",
+  },
+  {
+    id: "DGTB4tvSuLK",
+    title: "Hands-on care",
+    tag: "Reel",
+    color: "from-[#9A7059] to-[#5D725E]",
+    url: "https://www.instagram.com/reel/DGTB4tvSuLK/",
+  },
+  {
+    id: "DRRGSVQEsyy",
+    title: "Stronger every day",
+    tag: "Reel",
+    color: "from-[#47563F] to-[#6F9E9C]",
+    url: "https://www.instagram.com/reel/DRRGSVQEsyy/",
+  },
+] as const;
+
+const INSTAGRAM_PROFILE = "https://www.instagram.com/corpergophysiorehab.in/";
+
 function VideoStories() {
-  const cats = [
-    { t: "Patient Stories", tag: "5 min", color: "from-[#5D725E] to-[#47563F]" },
-    { t: "At-Home Exercises", tag: "3 min", color: "from-[#6F9E9C] to-[#4E7B7A]" },
-    { t: "Clinic Tour", tag: "2 min", color: "from-[#9A7059] to-[#7A5644]" },
-    { t: "Expert Tips", tag: "4 min", color: "from-[#5D725E] to-[#6F9E9C]" },
-    { t: "Success Stories", tag: "6 min", color: "from-[#9A7059] to-[#5D725E]" },
-  ];
+  const [activeReel, setActiveReel] = useState<(typeof INSTAGRAM_REELS)[number] | null>(null);
+
+  useEffect(() => {
+    if (!activeReel) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActiveReel(null);
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [activeReel]);
+
   return (
-    <section className="py-24 bg-[var(--ink)] text-white relative overflow-hidden">
+    <section id="videos" className="py-24 bg-[var(--ink)] text-white relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="flex items-end justify-between mb-10">
+        <div className="flex items-end justify-between mb-10 gap-4">
           <div>
-            <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">Watch & Learn</div>
+            <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
+              Watch & Learn
+            </div>
             <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-balance">
               Real recoveries. Real people.
             </h2>
           </div>
-          <a href="#" className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-white/80 hover:text-white">
-            View all <ArrowRight className="h-4 w-4" />
+          <a
+            href={INSTAGRAM_PROFILE}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-white/80 hover:text-white"
+          >
+            <Instagram className="h-4 w-4" /> Follow us
           </a>
         </div>
 
         <div className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 scrollbar-hide">
-          {cats.map((c, i) => (
-            <motion.div
-              key={c.t}
+          {INSTAGRAM_REELS.map((reel, i) => (
+            <motion.button
+              key={reel.id}
+              type="button"
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
               whileHover={{ y: -6 }}
-              className={`relative shrink-0 snap-start w-[280px] sm:w-[340px] aspect-[3/4] rounded-3xl overflow-hidden group cursor-pointer bg-gradient-to-br ${c.color}`}
+              onClick={() => setActiveReel(reel)}
+              aria-label={`Play ${reel.title}`}
+              className={`relative shrink-0 snap-start w-[280px] sm:w-[340px] aspect-[3/4] rounded-3xl overflow-hidden group text-left cursor-pointer bg-gradient-to-br ${reel.color}`}
             >
               <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
               <div className="absolute inset-0 grain opacity-50" />
@@ -692,13 +702,50 @@ function VideoStories() {
                 </div>
               </div>
               <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-                <div className="text-xs font-semibold text-white/70 uppercase tracking-widest">{c.tag}</div>
-                <div className="mt-1 text-xl font-bold">{c.t}</div>
+                <div className="text-xs font-semibold text-white/70 uppercase tracking-widest flex items-center gap-1.5">
+                  <Instagram className="h-3.5 w-3.5" /> {reel.tag}
+                </div>
+                <div className="mt-1 text-xl font-bold">{reel.title}</div>
               </div>
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       </div>
+
+      {activeReel ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-8"
+          role="dialog"
+          aria-modal="true"
+          aria-label={activeReel.title}
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            aria-label="Close video"
+            onClick={() => setActiveReel(null)}
+          />
+          <div className="relative z-10 w-full max-w-[420px] aspect-[9/16] max-h-[min(88vh,760px)] rounded-3xl overflow-hidden bg-black shadow-2xl ring-1 ring-white/10">
+            <button
+              type="button"
+              onClick={() => setActiveReel(null)}
+              className="absolute top-3 right-3 z-20 grid h-10 w-10 place-items-center rounded-full bg-black/55 text-white hover:bg-black/75 transition-colors"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <iframe
+              key={activeReel.id}
+              title={activeReel.title}
+              src={`https://www.instagram.com/reel/${activeReel.id}/embed`}
+              className="h-full w-full border-0"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -872,6 +919,91 @@ function Clinics() {
   );
 }
 
+/* ------------------------------ FOUNDER ------------------------------ */
+
+function Founder() {
+  return (
+    <section id="founder" className="py-24 sm:py-32 bg-white/60">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-10 lg:gap-16 items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55 }}
+            className="relative"
+          >
+            <div className="absolute -inset-3 sm:-inset-4 rounded-[32px] bg-gradient-to-br from-[var(--sage)]/15 via-transparent to-[var(--bronze)]/20 -z-10" />
+            <div className="overflow-hidden rounded-[28px] shadow-[var(--shadow-elev)] ring-1 ring-black/[0.04]">
+              <img
+                src={pinkyImg}
+                alt="Dr. Pinky Dutta PT, Head of Department at CorpErgo"
+                className="aspect-[4/5] w-full object-cover object-[center_18%] sm:object-[center_15%]"
+                width={640}
+                height={800}
+                decoding="async"
+              />
+            </div>
+            <div className="absolute -bottom-4 left-4 right-4 sm:left-6 sm:right-auto sm:bottom-6 sm:max-w-[280px] rounded-2xl bg-white/95 backdrop-blur-md px-4 py-3 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+              <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-[var(--bronze)]">
+                Founder of CorpErgo
+              </div>
+              <div className="mt-1 text-sm font-bold text-[var(--ink)] leading-snug">
+                Leading care across Bengaluru
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55, delay: 0.1 }}
+          >
+            <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
+              Leadership
+            </div>
+            <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance leading-[1.08]">
+              Care that starts with clinical conviction.
+            </h2>
+
+            <div className="relative mt-8 pl-1">
+              <Quote
+                className="absolute -left-1 -top-1 h-10 w-10 text-[var(--sage)]/20"
+                aria-hidden
+              />
+              <blockquote className="relative text-xl sm:text-2xl font-medium leading-relaxed text-[var(--ink)] text-balance pl-8">
+                “Pain is only the beginning of the story. At CorpErgo, we restore
+                movement, rebuild confidence, and walk with every patient until
+                they feel strong in their own body again.”
+              </blockquote>
+            </div>
+
+            <div className="mt-10 flex flex-col sm:flex-row sm:items-end gap-6 sm:gap-10">
+              <div>
+                <div className="text-xl font-extrabold tracking-tight text-[var(--ink)]">
+                  Dr. Pinky Dutta PT
+                </div>
+                <div className="mt-1.5 text-sm font-semibold text-[var(--sage-deep)]">
+                  Head of the Department
+                </div>
+                <div className="mt-1 text-sm text-[var(--ink-soft)]">
+                  Musculoskeletal &amp; Sports Physiotherapist
+                </div>
+              </div>
+              <div className="hidden sm:block h-14 w-px bg-[var(--ink)]/10" />
+              <p className="text-sm text-[var(--ink-soft)] max-w-xs leading-relaxed">
+                Owner of CorpErgo’s five Bengaluru clinics — Chansandra, Balagere,
+                Muthsandra, Kannamangala &amp; Manduru.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ------------------------------ CTA ------------------------------ */
 
 function CTA() {
@@ -914,25 +1046,46 @@ function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
-            <div className="flex items-center gap-2.5">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/10">
-                <img src={logoAsset.url} alt="CorpErgo" className="h-8 w-8 object-contain" />
-              </div>
-              <div>
-                <div className="text-white font-extrabold text-lg tracking-tight">CorpErgo</div>
-                <div className="text-[10px] uppercase tracking-[0.18em] text-white/60">Physiotherapy</div>
-              </div>
-            </div>
-            <p className="mt-5 text-sm leading-relaxed text-white/60 max-w-xs">
+            <img
+              src={logoImg}
+              alt="CorpErgo"
+              className="h-16 w-auto object-contain object-left brightness-110"
+              width={64}
+              height={64}
+              decoding="async"
+            />
+            <p className="mt-5 text-[10px] uppercase tracking-[0.2em] text-white/50 font-semibold">
+              Physiotherapy · Bengaluru
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-white/60 max-w-xs">
               Premium physiotherapy across five Bengaluru clinics. Evidence-based
               care for pain, mobility and long-term wellness.
             </p>
-            <div className="mt-5 flex gap-2">
-              {[Instagram, Facebook, Youtube].map((Icon, i) => (
-                <a key={i} href="#" className="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20 transition-colors">
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              <a
+                href={INSTAGRAM_PROFILE}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/20 px-3.5 py-2 text-xs font-semibold text-white transition-colors"
+                aria-label="CorpErgo on Instagram"
+              >
+                <Instagram className="h-4 w-4" />
+                Instagram
+              </a>
+              <a
+                href="#"
+                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-4 w-4" />
+              </a>
+              <a
+                href="#"
+                className="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="YouTube"
+              >
+                <Youtube className="h-4 w-4" />
+              </a>
             </div>
           </div>
 
@@ -994,6 +1147,7 @@ function LandingPage() {
       <Physios />
       <Testimonials />
       <Clinics />
+      <Founder />
       <CTA />
       <Footer />
     </main>

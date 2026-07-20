@@ -9,55 +9,286 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as PatientRouteImport } from './routes/patient'
+import { Route as PhysioRouteImport } from './routes/physio'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
+import { Route as PatientBookRouteImport } from './routes/patient/book'
+import { Route as PatientDashboardRouteImport } from './routes/patient/dashboard'
+import { Route as PatientProfileRouteImport } from './routes/patient/profile'
+import { Route as PatientQrTicketRouteImport } from './routes/patient/qr-ticket'
+import { Route as PatientReportsRouteImport } from './routes/patient/reports'
+import { Route as PatientSettingsRouteImport } from './routes/patient/settings'
+import { Route as PhysioAssessmentsRouteImport } from './routes/physio/assessments'
+import { Route as PhysioDashboardRouteImport } from './routes/physio/dashboard'
+import { Route as PhysioQueueRouteImport } from './routes/physio/queue'
+import { Route as PhysioRequestsRouteImport } from './routes/physio/requests'
+import { Route as PhysioScanRouteImport } from './routes/physio/scan'
+import { Route as PhysioAssessmentsIndexRouteImport } from './routes/physio/assessments/index'
+import { Route as PhysioAssessmentsAppointmentIdRouteImport } from './routes/physio/assessments/$appointmentId'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatientRoute = PatientRouteImport.update({
+  id: '/patient',
+  path: '/patient',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhysioRoute = PhysioRouteImport.update({
+  id: '/physio',
+  path: '/physio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const PatientAppointmentsRoute = PatientAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientBookRoute = PatientBookRouteImport.update({
+  id: '/book',
+  path: '/book',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientDashboardRoute = PatientDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientProfileRoute = PatientProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientQrTicketRoute = PatientQrTicketRouteImport.update({
+  id: '/qr-ticket',
+  path: '/qr-ticket',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientReportsRoute = PatientReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PatientSettingsRoute = PatientSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => PatientRoute,
+} as any)
+const PhysioAssessmentsRoute = PhysioAssessmentsRouteImport.update({
+  id: '/assessments',
+  path: '/assessments',
+  getParentRoute: () => PhysioRoute,
+} as any)
+const PhysioDashboardRoute = PhysioDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => PhysioRoute,
+} as any)
+const PhysioQueueRoute = PhysioQueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
+  getParentRoute: () => PhysioRoute,
+} as any)
+const PhysioRequestsRoute = PhysioRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => PhysioRoute,
+} as any)
+const PhysioScanRoute = PhysioScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => PhysioRoute,
+} as any)
+const PhysioAssessmentsIndexRoute = PhysioAssessmentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PhysioAssessmentsRoute,
+} as any)
+const PhysioAssessmentsAppointmentIdRoute =
+  PhysioAssessmentsAppointmentIdRouteImport.update({
+    id: '/$appointmentId',
+    path: '/$appointmentId',
+    getParentRoute: () => PhysioAssessmentsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/patient': typeof PatientRouteWithChildren
+  '/physio': typeof PhysioRouteWithChildren
+  '/signup': typeof SignupRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/patient/appointments': typeof PatientAppointmentsRoute
+  '/patient/book': typeof PatientBookRoute
+  '/patient/dashboard': typeof PatientDashboardRoute
+  '/patient/profile': typeof PatientProfileRoute
+  '/patient/qr-ticket': typeof PatientQrTicketRoute
+  '/patient/reports': typeof PatientReportsRoute
+  '/patient/settings': typeof PatientSettingsRoute
+  '/physio/assessments': typeof PhysioAssessmentsRouteWithChildren
+  '/physio/dashboard': typeof PhysioDashboardRoute
+  '/physio/queue': typeof PhysioQueueRoute
+  '/physio/requests': typeof PhysioRequestsRoute
+  '/physio/scan': typeof PhysioScanRoute
+  '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
+  '/physio/assessments/': typeof PhysioAssessmentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/patient': typeof PatientRouteWithChildren
+  '/physio': typeof PhysioRouteWithChildren
+  '/signup': typeof SignupRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/patient/appointments': typeof PatientAppointmentsRoute
+  '/patient/book': typeof PatientBookRoute
+  '/patient/dashboard': typeof PatientDashboardRoute
+  '/patient/profile': typeof PatientProfileRoute
+  '/patient/qr-ticket': typeof PatientQrTicketRoute
+  '/patient/reports': typeof PatientReportsRoute
+  '/patient/settings': typeof PatientSettingsRoute
+  '/physio/dashboard': typeof PhysioDashboardRoute
+  '/physio/queue': typeof PhysioQueueRoute
+  '/physio/requests': typeof PhysioRequestsRoute
+  '/physio/scan': typeof PhysioScanRoute
+  '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
+  '/physio/assessments': typeof PhysioAssessmentsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
+  '/patient': typeof PatientRouteWithChildren
+  '/physio': typeof PhysioRouteWithChildren
+  '/signup': typeof SignupRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
+  '/patient/appointments': typeof PatientAppointmentsRoute
+  '/patient/book': typeof PatientBookRoute
+  '/patient/dashboard': typeof PatientDashboardRoute
+  '/patient/profile': typeof PatientProfileRoute
+  '/patient/qr-ticket': typeof PatientQrTicketRoute
+  '/patient/reports': typeof PatientReportsRoute
+  '/patient/settings': typeof PatientSettingsRoute
+  '/physio/assessments': typeof PhysioAssessmentsRouteWithChildren
+  '/physio/dashboard': typeof PhysioDashboardRoute
+  '/physio/queue': typeof PhysioQueueRoute
+  '/physio/requests': typeof PhysioRequestsRoute
+  '/physio/scan': typeof PhysioScanRoute
+  '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
+  '/physio/assessments/': typeof PhysioAssessmentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/patient'
+    | '/physio'
+    | '/signup'
+    | '/admin/dashboard'
+    | '/patient/appointments'
+    | '/patient/book'
+    | '/patient/dashboard'
+    | '/patient/profile'
+    | '/patient/qr-ticket'
+    | '/patient/reports'
+    | '/patient/settings'
+    | '/physio/assessments'
+    | '/physio/dashboard'
+    | '/physio/queue'
+    | '/physio/requests'
+    | '/physio/scan'
+    | '/physio/assessments/$appointmentId'
+    | '/physio/assessments/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login'
-  id: '__root__' | '/' | '/login'
+  to:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/patient'
+    | '/physio'
+    | '/signup'
+    | '/admin/dashboard'
+    | '/patient/appointments'
+    | '/patient/book'
+    | '/patient/dashboard'
+    | '/patient/profile'
+    | '/patient/qr-ticket'
+    | '/patient/reports'
+    | '/patient/settings'
+    | '/physio/dashboard'
+    | '/physio/queue'
+    | '/physio/requests'
+    | '/physio/scan'
+    | '/physio/assessments/$appointmentId'
+    | '/physio/assessments'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/patient'
+    | '/physio'
+    | '/signup'
+    | '/admin/dashboard'
+    | '/patient/appointments'
+    | '/patient/book'
+    | '/patient/dashboard'
+    | '/patient/profile'
+    | '/patient/qr-ticket'
+    | '/patient/reports'
+    | '/patient/settings'
+    | '/physio/assessments'
+    | '/physio/dashboard'
+    | '/physio/queue'
+    | '/physio/requests'
+    | '/physio/scan'
+    | '/physio/assessments/$appointmentId'
+    | '/physio/assessments/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PatientRoute: typeof PatientRouteWithChildren
+  PhysioRoute: typeof PhysioRouteWithChildren
+  SignupRoute: typeof SignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -65,13 +296,232 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patient': {
+      id: '/patient'
+      path: '/patient'
+      fullPath: '/patient'
+      preLoaderRoute: typeof PatientRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/physio': {
+      id: '/physio'
+      path: '/physio'
+      fullPath: '/physio'
+      preLoaderRoute: typeof PhysioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/patient/appointments': {
+      id: '/patient/appointments'
+      path: '/appointments'
+      fullPath: '/patient/appointments'
+      preLoaderRoute: typeof PatientAppointmentsRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/book': {
+      id: '/patient/book'
+      path: '/book'
+      fullPath: '/patient/book'
+      preLoaderRoute: typeof PatientBookRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/dashboard': {
+      id: '/patient/dashboard'
+      path: '/dashboard'
+      fullPath: '/patient/dashboard'
+      preLoaderRoute: typeof PatientDashboardRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/profile': {
+      id: '/patient/profile'
+      path: '/profile'
+      fullPath: '/patient/profile'
+      preLoaderRoute: typeof PatientProfileRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/qr-ticket': {
+      id: '/patient/qr-ticket'
+      path: '/qr-ticket'
+      fullPath: '/patient/qr-ticket'
+      preLoaderRoute: typeof PatientQrTicketRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/reports': {
+      id: '/patient/reports'
+      path: '/reports'
+      fullPath: '/patient/reports'
+      preLoaderRoute: typeof PatientReportsRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/patient/settings': {
+      id: '/patient/settings'
+      path: '/settings'
+      fullPath: '/patient/settings'
+      preLoaderRoute: typeof PatientSettingsRouteImport
+      parentRoute: typeof PatientRoute
+    }
+    '/physio/assessments': {
+      id: '/physio/assessments'
+      path: '/assessments'
+      fullPath: '/physio/assessments'
+      preLoaderRoute: typeof PhysioAssessmentsRouteImport
+      parentRoute: typeof PhysioRoute
+    }
+    '/physio/dashboard': {
+      id: '/physio/dashboard'
+      path: '/dashboard'
+      fullPath: '/physio/dashboard'
+      preLoaderRoute: typeof PhysioDashboardRouteImport
+      parentRoute: typeof PhysioRoute
+    }
+    '/physio/queue': {
+      id: '/physio/queue'
+      path: '/queue'
+      fullPath: '/physio/queue'
+      preLoaderRoute: typeof PhysioQueueRouteImport
+      parentRoute: typeof PhysioRoute
+    }
+    '/physio/requests': {
+      id: '/physio/requests'
+      path: '/requests'
+      fullPath: '/physio/requests'
+      preLoaderRoute: typeof PhysioRequestsRouteImport
+      parentRoute: typeof PhysioRoute
+    }
+    '/physio/scan': {
+      id: '/physio/scan'
+      path: '/scan'
+      fullPath: '/physio/scan'
+      preLoaderRoute: typeof PhysioScanRouteImport
+      parentRoute: typeof PhysioRoute
+    }
+    '/physio/assessments/': {
+      id: '/physio/assessments/'
+      path: '/'
+      fullPath: '/physio/assessments/'
+      preLoaderRoute: typeof PhysioAssessmentsIndexRouteImport
+      parentRoute: typeof PhysioAssessmentsRoute
+    }
+    '/physio/assessments/$appointmentId': {
+      id: '/physio/assessments/$appointmentId'
+      path: '/$appointmentId'
+      fullPath: '/physio/assessments/$appointmentId'
+      preLoaderRoute: typeof PhysioAssessmentsAppointmentIdRouteImport
+      parentRoute: typeof PhysioAssessmentsRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminDashboardRoute: typeof AdminDashboardRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminDashboardRoute: AdminDashboardRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface PatientRouteChildren {
+  PatientAppointmentsRoute: typeof PatientAppointmentsRoute
+  PatientBookRoute: typeof PatientBookRoute
+  PatientDashboardRoute: typeof PatientDashboardRoute
+  PatientProfileRoute: typeof PatientProfileRoute
+  PatientQrTicketRoute: typeof PatientQrTicketRoute
+  PatientReportsRoute: typeof PatientReportsRoute
+  PatientSettingsRoute: typeof PatientSettingsRoute
+}
+
+const PatientRouteChildren: PatientRouteChildren = {
+  PatientAppointmentsRoute: PatientAppointmentsRoute,
+  PatientBookRoute: PatientBookRoute,
+  PatientDashboardRoute: PatientDashboardRoute,
+  PatientProfileRoute: PatientProfileRoute,
+  PatientQrTicketRoute: PatientQrTicketRoute,
+  PatientReportsRoute: PatientReportsRoute,
+  PatientSettingsRoute: PatientSettingsRoute,
+}
+
+const PatientRouteWithChildren =
+  PatientRoute._addFileChildren(PatientRouteChildren)
+
+interface PhysioAssessmentsRouteChildren {
+  PhysioAssessmentsAppointmentIdRoute: typeof PhysioAssessmentsAppointmentIdRoute
+  PhysioAssessmentsIndexRoute: typeof PhysioAssessmentsIndexRoute
+}
+
+const PhysioAssessmentsRouteChildren: PhysioAssessmentsRouteChildren = {
+  PhysioAssessmentsAppointmentIdRoute: PhysioAssessmentsAppointmentIdRoute,
+  PhysioAssessmentsIndexRoute: PhysioAssessmentsIndexRoute,
+}
+
+const PhysioAssessmentsRouteWithChildren =
+  PhysioAssessmentsRoute._addFileChildren(PhysioAssessmentsRouteChildren)
+
+interface PhysioRouteChildren {
+  PhysioAssessmentsRoute: typeof PhysioAssessmentsRouteWithChildren
+  PhysioDashboardRoute: typeof PhysioDashboardRoute
+  PhysioQueueRoute: typeof PhysioQueueRoute
+  PhysioRequestsRoute: typeof PhysioRequestsRoute
+  PhysioScanRoute: typeof PhysioScanRoute
+}
+
+const PhysioRouteChildren: PhysioRouteChildren = {
+  PhysioAssessmentsRoute: PhysioAssessmentsRouteWithChildren,
+  PhysioDashboardRoute: PhysioDashboardRoute,
+  PhysioQueueRoute: PhysioQueueRoute,
+  PhysioRequestsRoute: PhysioRequestsRoute,
+  PhysioScanRoute: PhysioScanRoute,
+}
+
+const PhysioRouteWithChildren =
+  PhysioRoute._addFileChildren(PhysioRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   LoginRoute: LoginRoute,
+  PatientRoute: PatientRouteWithChildren,
+  PhysioRoute: PhysioRouteWithChildren,
+  SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
