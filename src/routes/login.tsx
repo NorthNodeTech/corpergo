@@ -1,9 +1,40 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, User, Stethoscope, Sparkles } from "lucide-react";
-import logoImg from "@/assets/LOGO.png";
+import logoImg from "@/assets/LOGO.webp";
 import { signInWithPassword, resolvePostLoginPath } from "@/lib/auth";
+
+/** Shrinks the mobile logo as the visual viewport collapses (on-screen keyboard). */
+function useKeyboardAwareLogoHeight() {
+  const [height, setHeight] = useState(156);
+  const [compact, setCompact] = useState(false);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+
+    const update = () => {
+      const layoutH = window.innerHeight || 1;
+      const visualH = vv?.height ?? layoutH;
+      const ratio = Math.min(1, visualH / layoutH);
+      // Full (~156px) → keyboard (~52px)
+      setHeight(Math.round(52 + ratio * 104));
+      setCompact(ratio < 0.78);
+    };
+
+    update();
+    vv?.addEventListener("resize", update);
+    vv?.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      vv?.removeEventListener("resize", update);
+      vv?.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  return { height, compact };
+}
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -41,6 +72,7 @@ type PortalId = (typeof PORTALS)[number]["id"];
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { height: logoHeight, compact } = useKeyboardAwareLogoHeight();
   const [portal, setPortal] = useState<PortalId>("patient");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,7 +104,7 @@ function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--ivory)] grid lg:grid-cols-2">
+    <main className="min-h-dvh bg-[var(--ivory)] grid lg:grid-cols-2">
       <div
         className="relative hidden lg:block overflow-hidden"
         style={{ background: "linear-gradient(135deg, #47563F 0%, #5D725E 60%, #6F9E9C 100%)" }}
@@ -119,39 +151,75 @@ function LoginPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center p-6 sm:p-12">
+      <div className="flex min-h-dvh flex-col overflow-y-auto overscroll-contain px-6 py-5 sm:px-12 sm:py-10 lg:min-h-0 lg:items-center lg:justify-center lg:overflow-visible lg:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+          className="mx-auto flex w-full max-w-md flex-1 flex-col lg:flex-none"
         >
-          <div className="lg:hidden mb-8 space-y-5">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--ink-soft)]"
+          {/* Mobile brand — large, centered; shrinks when keyboard opens */}
+          <div className="lg:hidden">
+            <motion.div
+              animate={{ height: compact ? 0 : "auto", opacity: compact ? 0 : 1 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
             >
-              <ArrowLeft className="h-4 w-4" /> Back
-            </Link>
-            <Link to="/" aria-label="CorpErgo Physiotherapy — Home">
-              <img
-                src={logoImg}
-                alt="CorpErgo"
-                className="h-14 w-auto object-contain object-left"
-                width={56}
-                height={56}
-                decoding="async"
-              />
-            </Link>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 text-sm font-medium text-[var(--ink-soft)]"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back
+              </Link>
+            </motion.div>
+
+            <motion.div
+              animate={{
+                paddingTop: compact ? 4 : 28,
+                paddingBottom: compact ? 4 : 20,
+              }}
+              transition={{ type: "spring", stiffness: 320, damping: 34 }}
+              className="flex items-center justify-center"
+            >
+              <Link
+                to="/"
+                aria-label="CorpErgo Physiotherapy — Home"
+                className="flex flex-col items-center"
+              >
+                <motion.img
+                  src={logoImg}
+                  alt="CorpErgo"
+                  animate={{ height: logoHeight }}
+                  transition={{ type: "spring", stiffness: 320, damping: 34 }}
+                  className="w-auto max-w-[min(100%,14rem)] object-contain"
+                  style={{ height: logoHeight }}
+                  width={224}
+                  height={224}
+                  decoding="async"
+                />
+              </Link>
+            </motion.div>
           </div>
 
-          <h2 className="text-3xl font-extrabold tracking-tight text-[var(--ink)]">
+          <h2
+            className={`font-extrabold tracking-tight text-[var(--ink)] transition-[font-size] duration-200 ${
+              compact ? "text-2xl" : "text-3xl"
+            }`}
+          >
             Welcome back
           </h2>
-          <p className="mt-2 text-[var(--ink-soft)]">
+          <p
+            className={`text-[var(--ink-soft)] transition-all duration-200 ${
+              compact ? "mt-1 text-sm" : "mt-2"
+            }`}
+          >
             Sign in to continue to your dashboard.
           </p>
 
-          <div className="mt-8 grid grid-cols-2 gap-2 rounded-2xl bg-white p-1.5 ring-1 ring-black/5">
+          <div
+            className={`grid grid-cols-2 gap-2 rounded-2xl bg-white p-1.5 ring-1 ring-black/5 transition-[margin] duration-200 ${
+              compact ? "mt-4" : "mt-8"
+            }`}
+          >
             {PORTALS.map((p) => {
               const isActive = p.id === portal;
               const Icon = p.icon;
@@ -177,7 +245,10 @@ function LoginPage() {
             {active.desc}
           </div>
 
-          <form className="mt-7 space-y-4" onSubmit={onSubmit}>
+          <form
+            className={`space-y-4 transition-[margin] duration-200 ${compact ? "mt-4" : "mt-7"}`}
+            onSubmit={onSubmit}
+          >
             <div>
               <label className="text-xs font-bold uppercase tracking-widest text-[var(--ink-soft)]">
                 Email

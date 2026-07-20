@@ -16,7 +16,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 const NAV: PortalNavItem[] = [
-  { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin/dashboard", label: "Command Center", icon: LayoutDashboard },
 ];
 
 function AdminLayout() {
@@ -25,7 +25,7 @@ function AdminLayout() {
       {({ profile }) => (
         <PortalShell
           title="Admin Portal"
-          subtitle="Executive operations"
+          subtitle="Executive command center"
           nav={NAV}
           userName={profile.full_name}
         >

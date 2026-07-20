@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { FormEvent, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
-import logoImg from "@/assets/LOGO.png";
+import logoImg from "@/assets/LOGO.webp";
 import { getStoredSession, signUpPatient } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({

@@ -1,16 +1,254 @@
-import { Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { AnimatePresence, motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import { LogOut, Menu, X } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import logoImg from "@/assets/LOGO.png";
+import { ChevronDown, LogOut, Settings } from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import logoImg from "@/assets/LOGO.webp";
 import { clearSession } from "@/lib/auth";
 
 export type PortalNavItem = {
   to: string;
   label: string;
   icon: LucideIcon;
+  /** Shorter label for footer tabs */
+  shortLabel?: string;
 };
+
+export type PortalCenterAction = {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+};
+
+function initialsFromName(name?: string) {
+  if (!name?.trim()) return "U";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`.toUpperCase();
+}
+
+function pathMatches(pathname: string, to: string) {
+  if (pathname === to) return true;
+  if (to.endsWith("/dashboard")) return pathname === to;
+  return pathname === to || pathname.startsWith(`${to}/`);
+}
+
+function AccountMenu({
+  userName,
+  settingsTo,
+}: {
+  userName?: string;
+  settingsTo?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
+
+  function signOut() {
+    clearSession();
+    window.location.href = "/login";
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointer = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const label = userName?.trim() || "Account";
+
+  return (
+    <div ref={rootRef} className="relative">
+      <motion.button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={menuId}
+        whileTap={{ scale: 0.96 }}
+        onClick={() => setOpen((v) => !v)}
+        className="group flex max-w-[12rem] items-center gap-2 rounded-full border border-black/[0.08] bg-white py-1.5 pl-1.5 pr-2.5 shadow-sm sm:max-w-[16rem]"
+      >
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--sage)] text-xs font-bold text-white shadow-sm">
+          {initialsFromName(userName)}
+        </span>
+        <span className="hidden min-w-0 truncate text-sm font-semibold text-[var(--ink)] sm:block">
+          {label}
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-[var(--ink-soft)] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+        />
+      </motion.button>
+
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            id={menuId}
+            role="menu"
+            initial={{ opacity: 0, y: 8, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 420, damping: 28 }}
+            className="absolute right-0 top-[calc(100%+0.55rem)] z-50 w-56 overflow-hidden rounded-2xl border border-black/[0.08] bg-white py-1.5 shadow-[0_12px_32px_rgba(38,50,56,0.16)]"
+          >
+            <div className="border-b border-black/[0.06] px-3.5 py-3">
+              <div className="truncate text-sm font-bold text-[var(--ink)]">{label}</div>
+              <div className="mt-0.5 text-xs text-[var(--ink-soft)]">Signed in</div>
+            </div>
+
+            {settingsTo ? (
+              <Link
+                to={settingsTo}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-[var(--ink-soft)] transition-colors hover:bg-[var(--ivory)] hover:text-[var(--ink)]"
+              >
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
+            ) : null}
+
+            <div className="my-1 border-t border-black/[0.06]" />
+
+            <button
+              type="button"
+              role="menuitem"
+              onClick={signOut}
+              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-50"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function GlassFooterNav({
+  items,
+  centerAction,
+  layoutKey,
+}: {
+  items: PortalNavItem[];
+  centerAction?: PortalCenterAction;
+  layoutKey: string;
+}) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  const activeTo = useMemo(() => {
+    const matches = items.filter((item) => pathMatches(pathname, item.to));
+    if (matches.length === 0) return null;
+    return matches.sort((a, b) => b.to.length - a.to.length)[0]?.to ?? null;
+  }, [items, pathname]);
+
+  const centerActive = centerAction ? pathMatches(pathname, centerAction.to) : false;
+  const CenterIcon = centerAction?.icon;
+  const mid = Math.ceil(items.length / 2);
+  const left = centerAction ? items.slice(0, mid) : items;
+  const right = centerAction ? items.slice(mid) : [];
+
+  const Tab = ({ item }: { item: PortalNavItem }) => {
+    const active = activeTo === item.to && !centerActive;
+    const Icon = item.icon;
+    return (
+      <Link
+        to={item.to}
+        aria-current={active ? "page" : undefined}
+        className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1"
+      >
+        <motion.span
+          whileTap={{ scale: 0.86 }}
+          transition={{ type: "spring", stiffness: 520, damping: 28 }}
+          className="relative grid h-10 w-full max-w-[4.5rem] place-items-center"
+        >
+          {active ? (
+            <motion.span
+              layoutId={`portal-tab-pill-${layoutKey}`}
+              className="absolute inset-x-1 inset-y-0 rounded-2xl bg-[var(--sage)]/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
+              transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            />
+          ) : null}
+          <Icon
+            className={`relative z-[1] h-[22px] w-[22px] transition-colors duration-300 ${
+              active ? "text-[var(--sage-deep)]" : "text-[var(--ink-soft)]"
+            }`}
+            strokeWidth={active ? 2.4 : 2}
+          />
+        </motion.span>
+        <span
+          className={`relative z-[1] max-w-full truncate text-[10px] font-semibold tracking-wide transition-colors duration-300 ${
+            active ? "text-[var(--sage-deep)]" : "text-[var(--ink-soft)]"
+          }`}
+        >
+          {item.shortLabel || item.label}
+        </span>
+      </Link>
+    );
+  };
+
+  return (
+    <nav
+      aria-label="Primary"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 lg:hidden"
+    >
+      <div className="pointer-events-auto mx-auto max-w-lg">
+        <div className="portal-glass-dock relative flex items-end gap-0.5 rounded-[28px] px-1.5 pb-2 pt-2 shadow-[0_12px_40px_rgba(38,50,56,0.14)]">
+          {left.map((item) => (
+            <Tab key={item.to} item={item} />
+          ))}
+
+          {centerAction ? (
+            <div className="relative flex w-[4.75rem] shrink-0 flex-col items-center justify-end">
+              <Link
+                to={centerAction.to}
+                aria-label={centerAction.label}
+                aria-current={centerActive ? "page" : undefined}
+                className="group relative -mt-8 mb-0.5"
+              >
+                <motion.span
+                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.04 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 22 }}
+                  className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_10px_28px_rgba(71,86,63,0.45)] ring-[5px] ring-white/55 ${
+                    centerActive
+                      ? "bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)]"
+                      : "bg-gradient-to-br from-[var(--sage)] via-[var(--sage-deep)] to-[#3d4a38]"
+                  }`}
+                >
+                  <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <span className="portal-scan-pulse absolute inset-0 rounded-full" />
+                  {CenterIcon ? <CenterIcon className="relative z-[1] h-7 w-7" strokeWidth={2.25} /> : null}
+                </motion.span>
+              </Link>
+              <span
+                className={`text-[10px] font-semibold tracking-wide ${
+                  centerActive ? "text-[var(--sage-deep)]" : "text-[var(--ink-soft)]"
+                }`}
+              >
+                {centerAction.label}
+              </span>
+            </div>
+          ) : null}
+
+          {right.map((item) => (
+            <Tab key={item.to} item={item} />
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+}
 
 export function PortalShell({
   title,
@@ -18,19 +256,27 @@ export function PortalShell({
   nav,
   children,
   userName,
+  footerNav,
+  centerAction,
+  settingsPath,
 }: {
   title: string;
   subtitle: string;
   nav: PortalNavItem[];
   children: ReactNode;
   userName?: string;
+  /** Bottom glass tab bar (patient / staff). When set, mobile drawer is omitted. */
+  footerNav?: PortalNavItem[];
+  /** PhonePe/GPay-style center action (e.g. Scan). */
+  centerAction?: PortalCenterAction;
+  settingsPath?: string;
 }) {
-  const [open, setOpen] = useState(false);
-
-  function signOut() {
-    clearSession();
-    window.location.href = "/login";
-  }
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const settingsTo =
+    settingsPath ||
+    nav.find((item) => /settings/i.test(item.label) || item.to.includes("/settings"))?.to;
+  const hasFooter = Boolean(footerNav?.length);
+  const layoutKey = title.replace(/\s+/g, "-").toLowerCase();
 
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
     <nav className="flex flex-col gap-1.5 px-3">
@@ -54,98 +300,67 @@ export function PortalShell({
   );
 
   return (
-    <div className="min-h-screen bg-[var(--ivory)] lg:grid lg:grid-cols-[260px_1fr]">
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:border-r lg:border-black/[0.06] lg:bg-white/70 lg:backdrop-blur">
-        <div className="px-5 py-6">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logoImg} alt="CorpErgo" className="h-11 w-auto object-contain" />
-          </Link>
-          <div className="mt-4">
-            <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
-            <div className="text-xs text-[var(--ink-soft)] mt-0.5">{subtitle}</div>
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto pb-4">
-          <NavLinks />
-        </div>
-        <div className="border-t border-black/[0.06] p-4">
-          {userName ? (
-            <div className="mb-3 truncate px-2 text-sm font-semibold text-[var(--ink)]">
-              {userName}
+    <div className="portal-shell relative min-h-screen">
+      <div className="portal-shell__glow" aria-hidden />
+
+      <div
+        className={`relative min-h-screen ${hasFooter ? "lg:grid lg:grid-cols-[240px_1fr]" : "lg:grid lg:grid-cols-[260px_1fr]"}`}
+      >
+        {/* Desktop sidebar */}
+        <aside className="portal-glass-sidebar relative z-10 hidden lg:flex lg:flex-col lg:border-r lg:border-white/40">
+          <div className="px-5 py-6">
+            <Link to="/" className="flex items-center gap-3">
+              <img src={logoImg} alt="CorpErgo" className="h-14 w-auto object-contain" />
+            </Link>
+            <div className="mt-4">
+              <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
+              <div className="mt-0.5 text-xs text-[var(--ink-soft)]">{subtitle}</div>
             </div>
-          ) : null}
-          <button
-            type="button"
-            onClick={signOut}
-            className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold text-[var(--ink-soft)] hover:bg-rose-50 hover:text-rose-700 transition-colors"
+          </div>
+          <div className="flex-1 overflow-y-auto pb-6">
+            <NavLinks />
+          </div>
+        </aside>
+
+        <div className="relative z-[1] flex min-h-screen flex-col lg:col-start-2">
+          <header className="portal-glass-header sticky top-0 z-40 flex h-[4.25rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+            <div className="flex min-w-0 items-center gap-3">
+              <img src={logoImg} alt="CorpErgo" className="h-12 w-auto object-contain lg:hidden" />
+              <div className="min-w-0">
+                <div className="truncate text-sm font-bold text-[var(--ink)] lg:text-[15px]">
+                  {title}
+                </div>
+                <div className="truncate text-[10px] uppercase tracking-[0.16em] text-[var(--ink-soft)]">
+                  {userName?.trim() || subtitle}
+                </div>
+              </div>
+            </div>
+            <AccountMenu userName={userName} settingsTo={settingsTo} />
+          </header>
+
+          <main
+            className={`flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-8 ${
+              hasFooter ? "pb-[7.25rem] lg:pb-8" : "pb-8"
+            }`}
           >
-            <LogOut className="h-5 w-5" /> Sign out
-          </button>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </main>
         </div>
-      </aside>
-
-      {/* Mobile top bar */}
-      <div className="lg:col-start-2 flex min-h-screen flex-col">
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-black/[0.06] bg-[var(--ivory)]/95 px-4 backdrop-blur lg:hidden">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="grid h-10 w-10 place-items-center rounded-xl bg-white ring-1 ring-black/5"
-              aria-label="Open menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-            <div>
-              <div className="text-sm font-bold text-[var(--ink)]">{title}</div>
-              <div className="text-[10px] uppercase tracking-wider text-[var(--ink-soft)]">
-                {subtitle}
-              </div>
-            </div>
-          </div>
-          <img src={logoImg} alt="CorpErgo" className="h-9 w-auto object-contain" />
-        </header>
-
-        {open ? (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <button
-              type="button"
-              className="absolute inset-0 bg-black/40"
-              aria-label="Close menu"
-              onClick={() => setOpen(false)}
-            />
-            <motion.aside
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              className="relative h-full w-[280px] bg-white shadow-xl flex flex-col"
-            >
-              <div className="flex items-center justify-between px-4 py-5">
-                <img src={logoImg} alt="CorpErgo" className="h-10 w-auto" />
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-[var(--ivory)]"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <NavLinks onNavigate={() => setOpen(false)} />
-              <div className="mt-auto border-t p-4">
-                <button
-                  type="button"
-                  onClick={signOut}
-                  className="flex w-full items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold text-rose-700"
-                >
-                  <LogOut className="h-5 w-5" /> Sign out
-                </button>
-              </div>
-            </motion.aside>
-          </div>
-        ) : null}
-
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
       </div>
+
+      {hasFooter && footerNav ? (
+        <GlassFooterNav items={footerNav} centerAction={centerAction} layoutKey={layoutKey} />
+      ) : null}
     </div>
   );
 }
@@ -162,13 +377,17 @@ export function StatCard({
   icon: LucideIcon;
 }) {
   return (
-    <div className="rounded-3xl bg-white p-5 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)]">
-      <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--sage)]/10 text-[var(--sage-deep)]">
+    <motion.div
+      whileHover={{ y: -3 }}
+      transition={{ type: "spring", stiffness: 360, damping: 24 }}
+      className="portal-glass-card rounded-3xl p-5"
+    >
+      <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--sage)]/12 text-[var(--sage-deep)]">
         <Icon className="h-5 w-5" />
       </div>
       <div className="mt-4 text-2xl font-extrabold text-[var(--ink)]">{value}</div>
       <div className="text-sm font-semibold text-[var(--ink)]">{label}</div>
       {hint ? <div className="mt-0.5 text-xs text-[var(--ink-soft)]">{hint}</div> : null}
-    </div>
+    </motion.div>
   );
 }

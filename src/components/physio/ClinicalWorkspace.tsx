@@ -1,0 +1,627 @@
+import { Link } from "@tanstack/react-router";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowRight,
+  CalendarPlus,
+  CheckCircle2,
+  ClipboardList,
+  Clock3,
+  FileText,
+  ScanLine,
+  Sparkles,
+  Stethoscope,
+  UserRound,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { StatusBadge } from "@/components/portal/StatusBadge";
+import { formatTimeLabel } from "@/lib/clinic-data";
+import {
+  fetchPhysioWorkspace,
+  patientAge,
+  patientName,
+  visitTimeLabel,
+  type PhysioWorkspaceBundle,
+} from "@/lib/physio-workspace-data";
+import type { PhysioAppointment } from "@/lib/physio-data";
+import { cn } from "@/lib/utils";
+
+function greeting(h: number) {
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+function initials(name: string) {
+  const p = name.trim().split(/\s+/);
+  if (p.length === 1) return p[0]!.slice(0, 2).toUpperCase();
+  return `${p[0]![0] ?? ""}${p[p.length - 1]![0] ?? ""}`.toUpperCase();
+}
+
+function clinicalTone(status: string) {
+  switch (status) {
+    case "checked_in":
+      return "bg-orange-50 text-orange-800 ring-orange-200";
+    case "accepted":
+      return "bg-violet-50 text-violet-800 ring-violet-200";
+    case "pending":
+      return "bg-sky-50 text-sky-900 ring-sky-200";
+    case "completed":
+      return "bg-emerald-50 text-emerald-800 ring-emerald-200";
+    case "cancelled":
+    case "rejected":
+      return "bg-rose-50 text-rose-800 ring-rose-200";
+    default:
+      return "bg-slate-100 text-slate-700 ring-slate-200";
+  }
+}
+
+function clinicalLabel(status: string) {
+  if (status === "checked_in") return "Waiting";
+  if (status === "accepted") return "Confirmed";
+  if (status === "pending") return "Pending";
+  return status.replaceAll("_", " ");
+}
+
+function Skeleton({ className }: { className?: string }) {
+  return <div className={cn("animate-pulse rounded-2xl bg-black/[0.06]", className)} />;
+}
+
+function EmptyCalm({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-[24px] bg-[var(--ivory)]/80 px-6 py-10 text-center">
+      <div className="grid h-14 w-14 place-items-center rounded-full bg-white text-[var(--sage-deep)] shadow-sm ring-1 ring-black/[0.04]">
+        <CheckCircle2 className="h-6 w-6" />
+      </div>
+      <div className="mt-4 text-base font-extrabold text-[var(--ink)]">{title}</div>
+      <p className="mt-1 max-w-xs text-sm text-[var(--ink-soft)]">{body}</p>
+    </div>
+  );
+}
+
+function QueueCard({
+  appt,
+  active,
+  onSelect,
+}: {
+  appt: PhysioAppointment;
+  active?: boolean;
+  onSelect: () => void;
+}) {
+  const name = patientName(appt);
+  const time = visitTimeLabel(appt);
+  return (
+    <motion.button
+      layout
+      type="button"
+      onClick={onSelect}
+      whileTap={{ scale: 0.98 }}
+      className={cn(
+        "flex w-full gap-3 rounded-[22px] border bg-white p-3.5 text-left transition",
+        active
+          ? "border-[var(--sage)]/40 shadow-[var(--shadow-elev)] ring-2 ring-[var(--sage)]/20"
+          : "border-black/[0.05] shadow-[var(--shadow-soft)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)]",
+      )}
+    >
+      <div className="w-12 shrink-0 pt-0.5 text-center">
+        <div className="text-sm font-extrabold text-[var(--ink)]">{time}</div>
+      </div>
+      <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--sage)] text-xs font-bold text-white">
+        {initials(name)}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="truncate font-extrabold text-[var(--ink)]">{name}</div>
+          <span
+            className={cn(
+              "inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1",
+              clinicalTone(appt.status),
+            )}
+          >
+            {clinicalLabel(appt.status)}
+          </span>
+        </div>
+        <div className="mt-0.5 truncate text-xs text-[var(--ink-soft)]">
+          {appt.physiotherapy_categories?.name || "Consultation"}
+          {appt.symptoms ? ` · ${appt.symptoms}` : ""}
+        </div>
+        <div className="mt-1 text-[11px] font-semibold text-[var(--ink-soft)]">
+          {appt.clinics?.name || "Clinic"} · ~30–45 min
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+export function ClinicalWorkspace() {
+  const [data, setData] = useState<PhysioWorkspaceBundle | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [now, setNow] = useState(() => new Date());
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchPhysioWorkspace().then((bundle) => {
+      if (cancelled) return;
+      setData(bundle);
+      setSelectedId(bundle.current?.id ?? bundle.todayQueue[0]?.id ?? null);
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const selected = useMemo(() => {
+    if (!data) return null;
+    return (
+      data.todayQueue.find((a) => a.id === selectedId) ||
+      data.current ||
+      data.todayQueue[0] ||
+      null
+    );
+  }, [data, selectedId]);
+
+  const displayName = data?.profileName?.startsWith("Dr")
+    ? data.profileName
+    : data?.profileName
+      ? `Dr. ${data.profileName}`
+      : "Doctor";
+
+  return (
+    <div className="relative pb-8">
+      {/* Welcome */}
+      <motion.section
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="overflow-hidden rounded-[28px] border border-white/60 bg-white/70 p-5 shadow-[var(--shadow-soft)] backdrop-blur-xl sm:p-7"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="text-sm font-semibold text-[var(--ink-soft)]">
+              {greeting(now.getHours())},
+            </div>
+            <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-[var(--ink)] sm:text-[2.1rem]">
+              {loading ? "…" : displayName}
+            </h1>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--sage)]/12 px-3 py-1 text-xs font-bold text-[var(--sage-deep)]">
+                <Stethoscope className="h-3.5 w-3.5" />
+                {loading ? "Clinic" : data?.clinicName}
+              </span>
+              <span className="text-sm text-[var(--ink-soft)]">
+                {now.toLocaleDateString(undefined, {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
+            </div>
+            <div className="mt-2 text-xs font-semibold text-[var(--ink-soft)]">
+              Shift · Mon–Sat · 8:00 AM – 8:00 PM
+            </div>
+          </div>
+          <Link
+            to="/physio/scan"
+            className="group relative inline-flex min-h-12 items-center gap-2 overflow-hidden rounded-full bg-[var(--sage)] px-5 text-sm font-bold text-white shadow-[0_10px_28px_rgba(71,86,63,0.35)]"
+          >
+            <span className="absolute inset-0 animate-pulse bg-white/10" />
+            <ScanLine className="relative h-4 w-4" />
+            <span className="relative">Ready to Scan</span>
+          </Link>
+        </div>
+
+        <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-4 sm:overflow-visible">
+          {[
+            { label: "Patients today", value: data?.counts.today ?? 0 },
+            { label: "Waiting / QR", value: data?.counts.waiting ?? 0 },
+            { label: "Follow-ups", value: data?.counts.followUps ?? 0 },
+            { label: "Pending requests", value: data?.counts.pending ?? 0 },
+          ].map((c) => (
+            <div
+              key={c.label}
+              className="min-w-[9rem] shrink-0 rounded-2xl bg-[var(--ivory)] px-4 py-3 ring-1 ring-black/[0.04] sm:min-w-0"
+            >
+              <div className="text-[11px] font-semibold text-[var(--ink-soft)]">{c.label}</div>
+              <div className="mt-0.5 text-2xl font-extrabold text-[var(--ink)]">
+                {loading ? "—" : c.value}
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* Hero workspace */}
+      <section className="mt-6 grid gap-4 lg:grid-cols-[1.15fr_0.95fr]">
+        <div className="rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+                Today&apos;s queue
+              </div>
+              <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Who&apos;s next</h2>
+            </div>
+            <Link
+              to="/physio/queue"
+              className="text-xs font-bold text-[var(--sage-deep)] hover:underline"
+            >
+              Full queue
+            </Link>
+          </div>
+
+          <div className="mt-4 max-h-[32rem] space-y-2.5 overflow-y-auto pr-1">
+            {loading ? (
+              <>
+                <Skeleton className="h-24" />
+                <Skeleton className="h-24" />
+                <Skeleton className="h-24" />
+              </>
+            ) : (data?.todayQueue || []).length ? (
+              <AnimatePresence initial={false}>
+                {(data?.todayQueue || []).map((a) => (
+                  <QueueCard
+                    key={a.id}
+                    appt={a}
+                    active={selected?.id === a.id}
+                    onSelect={() => setSelectedId(a.id)}
+                  />
+                ))}
+              </AnimatePresence>
+            ) : (
+              <EmptyCalm
+                title="You're all caught up"
+                body="No patients are on today's floor list yet. Enjoy your free time until the next appointment."
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Current patient */}
+        <div className="rounded-[28px] bg-gradient-to-br from-white via-white to-[var(--ivory)] p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] lg:sticky lg:top-[4.75rem]">
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+            Current focus
+          </div>
+          {loading ? (
+            <Skeleton className="mt-4 h-64" />
+          ) : selected ? (
+            <>
+              <div className="mt-3 flex items-start gap-3">
+                <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--sage)] text-sm font-bold text-white">
+                  {initials(patientName(selected))}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="truncate text-2xl font-extrabold text-[var(--ink)]">
+                    {patientName(selected)}
+                  </h3>
+                  <div className="mt-1 text-sm text-[var(--ink-soft)]">
+                    {patientAge(selected) != null ? `${patientAge(selected)} yrs` : "Age —"} ·{" "}
+                    {visitTimeLabel(selected)}
+                  </div>
+                  <div className="mt-2">
+                    <span
+                      className={cn(
+                        "inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ring-1",
+                        clinicalTone(selected.status),
+                      )}
+                    >
+                      {clinicalLabel(selected.status)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-2xl bg-white/80 p-4 ring-1 ring-black/[0.04]">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                  Presenting problem
+                </div>
+                <p className="mt-1 text-sm font-semibold leading-relaxed text-[var(--ink)]">
+                  {selected.symptoms || selected.physiotherapy_categories?.name || "Not specified"}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <div className="text-[11px] font-semibold text-[var(--ink-soft)]">Category</div>
+                    <div className="font-bold text-[var(--ink)]">
+                      {selected.physiotherapy_categories?.name || "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-semibold text-[var(--ink-soft)]">Code</div>
+                    <div className="font-bold text-[var(--ink)]">{selected.appointment_code}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <Link
+                  to="/physio/assessments/$appointmentId"
+                  params={{ appointmentId: selected.id }}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[var(--sage)] px-3 text-sm font-bold text-white"
+                >
+                  Start assessment
+                </Link>
+                <Link
+                  to="/physio/scan"
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[var(--ivory)] px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
+                >
+                  Scan / chart
+                </Link>
+                <Link
+                  to="/physio/assessments/$appointmentId"
+                  params={{ appointmentId: selected.id }}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
+                >
+                  <FileText className="h-4 w-4" /> Timeline
+                </Link>
+                <Link
+                  to="/physio/assessments/$appointmentId"
+                  params={{ appointmentId: selected.id }}
+                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
+                >
+                  <CalendarPlus className="h-4 w-4" /> Follow-up
+                </Link>
+              </div>
+            </>
+          ) : (
+            <EmptyCalm
+              title="No patient in focus"
+              body="When someone checks in or your next confirmed visit arrives, they’ll appear here."
+            />
+          )}
+        </div>
+      </section>
+
+      {/* Primary scan band */}
+      <section className="mt-6">
+        <Link
+          to="/physio/scan"
+          className="group relative flex flex-col items-center justify-center overflow-hidden rounded-[28px] bg-[var(--sage-deep)] px-6 py-8 text-center text-white shadow-[0_16px_40px_rgba(71,86,63,0.35)] sm:py-10"
+        >
+          <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.18),transparent_55%)]" />
+          <motion.span
+            animate={{ scale: [1, 1.08, 1] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            className="relative grid h-20 w-20 place-items-center rounded-full bg-white/15 ring-4 ring-white/20"
+          >
+            <ScanLine className="h-9 w-9" />
+          </motion.span>
+          <div className="relative mt-4 text-2xl font-extrabold">Ready to Scan</div>
+          <p className="relative mt-1 max-w-md text-sm text-white/75">
+            Primary action for check-in. Scan the patient QR to open their chart and start care.
+          </p>
+          <span className="relative mt-4 inline-flex items-center gap-1 text-sm font-bold text-white/90">
+            Open scanner <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+      </section>
+
+      {/* Pending requests kanban-lite */}
+      <section className="mt-8">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+              Requests
+            </div>
+            <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Pending bookings</h2>
+          </div>
+          <Link to="/physio/requests" className="text-xs font-bold text-[var(--sage-deep)] hover:underline">
+            Open inbox
+          </Link>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {(loading ? [] : data?.pending || []).slice(0, 8).map((a) => (
+            <div
+              key={a.id}
+              className="min-w-[15.5rem] shrink-0 rounded-[22px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]"
+            >
+              <div className="flex items-center gap-2">
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-sky-100 text-[10px] font-bold text-sky-900">
+                  {initials(patientName(a))}
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate font-extrabold text-[var(--ink)]">{patientName(a)}</div>
+                  <div className="truncate text-[11px] text-[var(--ink-soft)]">
+                    {a.physiotherapy_categories?.name || "Category"}
+                  </div>
+                </div>
+              </div>
+              <p className="mt-3 line-clamp-2 text-xs text-[var(--ink-soft)]">
+                {a.symptoms || "No problem described"}
+              </p>
+              <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-[var(--ink-soft)]">
+                <Clock3 className="h-3.5 w-3.5" />
+                Prefers {a.preferred_date} · {formatTimeLabel(a.preferred_time)}
+              </div>
+              <Link
+                to="/physio/requests"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--sage)] py-2.5 text-xs font-bold text-white"
+              >
+                Review & accept
+              </Link>
+            </div>
+          ))}
+          {!loading && !(data?.pending || []).length ? (
+            <div className="w-full">
+              <EmptyCalm
+                title="Inbox is clear"
+                body="No pending appointment requests right now."
+              />
+            </div>
+          ) : null}
+          {loading ? (
+            <>
+              <Skeleton className="h-44 min-w-[15.5rem]" />
+              <Skeleton className="h-44 min-w-[15.5rem]" />
+            </>
+          ) : null}
+        </div>
+      </section>
+
+      {/* Insights + categories */}
+      <section className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+        <div>
+          <div className="mb-3 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-[var(--bronze)]" />
+            <h2 className="text-xl font-extrabold text-[var(--ink)]">Clinical insights</h2>
+          </div>
+          <div className="space-y-2.5">
+            {(data?.insights || []).map((ins, i) => (
+              <motion.div
+                key={ins.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className={cn(
+                  "rounded-[20px] p-4 ring-1",
+                  ins.tone === "warn"
+                    ? "bg-amber-50 ring-amber-100"
+                    : ins.tone === "good"
+                      ? "bg-emerald-50 ring-emerald-100"
+                      : "bg-white ring-black/[0.05]",
+                )}
+              >
+                <div className="text-sm font-extrabold text-[var(--ink)]">{ins.title}</div>
+                <div className="mt-0.5 text-xs text-[var(--ink-soft)]">{ins.detail}</div>
+              </motion.div>
+            ))}
+            {!loading && !(data?.insights || []).length ? (
+              <EmptyCalm title="Quiet floor" body="Insights will appear as today's list fills." />
+            ) : null}
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-xl font-extrabold text-[var(--ink)]">Treatment mix today</h2>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+            {(data?.categories || []).map((c) => (
+              <div
+                key={c.name}
+                className="min-w-[9.5rem] shrink-0 rounded-[20px] bg-white px-4 py-3 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:min-w-0"
+              >
+                <div className="text-xs font-semibold text-[var(--ink-soft)]">{c.name}</div>
+                <div className="mt-1 text-2xl font-extrabold text-[var(--sage-deep)]">{c.count}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                  patients
+                </div>
+              </div>
+            ))}
+            {!loading && !(data?.categories || []).length ? (
+              <div className="text-sm text-[var(--ink-soft)]">No category data yet.</div>
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {/* Assessments + calendar strip */}
+      <section className="mt-8 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+                Assessments
+              </div>
+              <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Ready to document</h3>
+            </div>
+            <Link to="/physio/assessments" className="text-xs font-bold text-[var(--sage-deep)]">
+              View all
+            </Link>
+          </div>
+          <ul className="mt-4 space-y-2.5">
+            {(data?.assessable || []).slice(0, 5).map((a) => (
+              <li key={a.id}>
+                <Link
+                  to="/physio/assessments/$appointmentId"
+                  params={{ appointmentId: a.id }}
+                  className="flex items-center gap-3 rounded-2xl bg-[var(--ivory)]/80 px-3 py-3 transition hover:bg-[var(--ivory)]"
+                >
+                  <div className="grid h-9 w-9 place-items-center rounded-full bg-white text-[10px] font-bold text-[var(--sage-deep)] ring-1 ring-black/[0.04]">
+                    {initials(patientName(a))}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-bold text-[var(--ink)]">{patientName(a)}</div>
+                    <div className="truncate text-[11px] text-[var(--ink-soft)]">
+                      {a.physiotherapy_categories?.name || "Visit"} · {clinicalLabel(a.status)}
+                    </div>
+                  </div>
+                  <StatusBadge status={a.status} />
+                </Link>
+              </li>
+            ))}
+            {!loading && !(data?.assessable || []).length ? (
+              <EmptyCalm
+                title="No assessments pending"
+                body="Checked-in and accepted visits will show here for notes."
+              />
+            ) : null}
+          </ul>
+        </div>
+
+        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+            Today&apos;s timeline
+          </div>
+          <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Schedule strip</h3>
+          <div className="mt-4 space-y-2">
+            {(data?.todayQueue || []).map((a) => {
+              const past = a.status === "completed";
+              const current = selected?.id === a.id;
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => setSelectedId(a.id)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition",
+                    current
+                      ? "bg-[var(--sage)] text-white"
+                      : past
+                        ? "bg-[var(--ivory)]/60 text-[var(--ink-soft)]"
+                        : "bg-[var(--ivory)] text-[var(--ink)] hover:bg-[var(--ivory)]",
+                  )}
+                >
+                  <div className="w-12 text-sm font-extrabold">{visitTimeLabel(a)}</div>
+                  <div className="min-w-0 flex-1 truncate text-sm font-semibold">
+                    {patientName(a)}
+                  </div>
+                  <UserRound className="h-4 w-4 shrink-0 opacity-70" />
+                </button>
+              );
+            })}
+            {!loading && !(data?.todayQueue || []).length ? (
+              <EmptyCalm
+                title="Open calendar"
+                body="Accepted and checked-in visits will line up here by time."
+              />
+            ) : null}
+          </div>
+        </div>
+      </section>
+
+      {/* Quick links */}
+      <section className="mt-8 grid gap-3 sm:grid-cols-3">
+        {[
+          { to: "/physio/requests" as const, label: "Requests inbox", icon: ClipboardList, hint: "Accept & schedule" },
+          { to: "/physio/queue" as const, label: "Floor queue", icon: Clock3, hint: "Waiting patients" },
+          { to: "/physio/assessments" as const, label: "Assessments", icon: FileText, hint: "Clinical notes" },
+        ].map(({ to, label, icon: Icon, hint }) => (
+          <Link
+            key={to}
+            to={to}
+            className="flex items-center gap-3 rounded-[22px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)]"
+          >
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--sage)]/12 text-[var(--sage-deep)]">
+              <Icon className="h-5 w-5" />
+            </span>
+            <span>
+              <span className="block font-extrabold text-[var(--ink)]">{label}</span>
+              <span className="text-xs text-[var(--ink-soft)]">{hint}</span>
+            </span>
+          </Link>
+        ))}
+      </section>
+    </div>
+  );
+}

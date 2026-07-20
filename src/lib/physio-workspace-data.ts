@@ -1,0 +1,218 @@
+import { fetchMyProfile } from "@/lib/auth";
+import { fetchAssessableAppointments } from "@/lib/assessment-data";
+import {
+  ageFromDob,
+  fetchClinicAppointments,
+  fetchMyPhysioId,
+  fetchTodayQueue,
+  type PhysioAppointment,
+} from "@/lib/physio-data";
+
+export type PhysioInsight = {
+  id: string;
+  title: string;
+  detail: string;
+  tone: "info" | "good" | "warn";
+};
+
+export type CategoryCount = {
+  name: string;
+  count: number;
+};
+
+export type PhysioWorkspaceBundle = {
+  profileName: string;
+  clinicName: string;
+  todayQueue: PhysioAppointment[];
+  pending: PhysioAppointment[];
+  accepted: PhysioAppointment[];
+  completedToday: PhysioAppointment[];
+  assessable: PhysioAppointment[];
+  current: PhysioAppointment | null;
+  insights: PhysioInsight[];
+  categories: CategoryCount[];
+  counts: {
+    today: number;
+    waiting: number;
+    pending: number;
+    followUps: number;
+    completed: number;
+  };
+};
+
+function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function apptTime(a: PhysioAppointment) {
+  return (a.scheduled_time || a.preferred_time || "").slice(0, 5) || "—";
+}
+
+function buildInsights(
+  queue: PhysioAppointment[],
+  pending: PhysioAppointment[],
+  assessable: PhysioAppointment[],
+): PhysioInsight[] {
+  const items: PhysioInsight[] = [];
+  const waiting = queue.filter((a) => a.status === "checked_in");
+  if (waiting.length) {
+    items.push({
+      id: "waiting",
+      tone: waiting.length > 2 ? "warn" : "info",
+      title: `${waiting.length} patient${waiting.length > 1 ? "s" : ""} waiting now`,
+      detail: waiting
+        .slice(0, 3)
+        .map((a) => a.patients?.profiles?.full_name || "Patient")
+        .join(", "),
+    });
+  } else {
+    items.push({
+      id: "clear",
+      tone: "good",
+      title: "No one is waiting",
+      detail: "You're clear until the next check-in. Enjoy the pause.",
+    });
+  }
+
+  if (pending.length) {
+    items.push({
+      id: "pending",
+      tone: "warn",
+      title: `${pending.length} booking request${pending.length > 1 ? "s" : ""} need action`,
+      detail: "Accept, reject, or reschedule from Requests.",
+    });
+  }
+
+  const needsAssess = assessable.filter((a) => a.status === "checked_in" || a.status === "accepted");
+  if (needsAssess.length) {
+    items.push({
+      id: "assess",
+      tone: "info",
+      title: `${needsAssess.length} visit${needsAssess.length > 1 ? "s" : ""} ready for assessment`,
+      detail: "Open Assessments to complete clinical notes.",
+    });
+  }
+
+  const symptoms = queue
+    .map((a) => (a.symptoms || "").toLowerCase())
+    .filter(Boolean);
+  const back = symptoms.filter((s) => /back|spine|lumbar|disc/.test(s)).length;
+  if (back >= 2) {
+    items.push({
+      id: "back-pain",
+      tone: "info",
+      title: `${back} lower-back cases on today's list`,
+      detail: "Consider grouping similar treatments for flow.",
+    });
+  }
+
+  const byHour = new Map<string, number>();
+  for (const a of queue) {
+    const h = apptTime(a).slice(0, 2);
+    if (h && h !== "—") byHour.set(h, (byHour.get(h) || 0) + 1);
+  }
+  let peak = "";
+  let peakN = 0;
+  for (const [h, n] of byHour) {
+    if (n > peakN) {
+      peak = h;
+      peakN = n;
+    }
+  }
+  if (peak) {
+    items.push({
+      id: "peak",
+      tone: "info",
+      title: `Busiest slot around ${peak}:00`,
+      detail: `${peakN} appointments clustered near that hour.`,
+    });
+  }
+
+  return items.slice(0, 5);
+}
+
+function buildCategories(appts: PhysioAppointment[]): CategoryCount[] {
+  const map = new Map<string, number>();
+  for (const a of appts) {
+    const name = a.physiotherapy_categories?.name || "General";
+    map.set(name, (map.get(name) || 0) + 1);
+  }
+  return Array.from(map.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
+}
+
+export function pickCurrentPatient(queue: PhysioAppointment[]): PhysioAppointment | null {
+  const waiting = queue.filter((a) => a.status === "checked_in");
+  if (waiting[0]) return waiting[0];
+  const next = queue.find((a) => a.status === "accepted");
+  return next || null;
+}
+
+export function patientAge(a: PhysioAppointment) {
+  return ageFromDob(a.patients?.date_of_birth);
+}
+
+export function patientName(a: PhysioAppointment) {
+  return a.patients?.profiles?.full_name?.trim() || "Patient";
+}
+
+export function visitTimeLabel(a: PhysioAppointment) {
+  return apptTime(a);
+}
+
+export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
+  const today = todayIso();
+  const [profileRes, physioRes, queueRes, pendingRes, assessRes, allRes] = await Promise.all([
+    fetchMyProfile(),
+    fetchMyPhysioId(),
+    fetchTodayQueue(),
+    fetchClinicAppointments("pending"),
+    fetchAssessableAppointments(),
+    fetchClinicAppointments(),
+  ]);
+
+  const queue = queueRes.data || [];
+  const pending = pendingRes.data || [];
+  const assessable = assessRes.data || [];
+  const all = allRes.data || [];
+
+  const clinicName =
+    queue[0]?.clinics?.name ||
+    pending[0]?.clinics?.name ||
+    all[0]?.clinics?.name ||
+    "CorpErgo Clinic";
+
+  const completedToday = queue.filter((a) => a.status === "completed");
+  const accepted = queue.filter((a) => a.status === "accepted");
+  const waiting = queue.filter((a) => a.status === "checked_in");
+
+  // Follow-ups heuristic: accepted visits that aren't checked in yet + assessable with next visit cues
+  const followUps = accepted.length;
+
+  const todayAll = all.filter((a) => (a.scheduled_date || a.preferred_date) === today);
+
+  return {
+    profileName: profileRes.data?.full_name?.trim() || "Doctor",
+    clinicName,
+    todayQueue: queue,
+    pending,
+    accepted,
+    completedToday,
+    assessable: assessable.slice(0, 8),
+    current: pickCurrentPatient(queue),
+    insights: buildInsights(queue, pending, assessable),
+    categories: buildCategories(todayAll.length ? todayAll : queue),
+    counts: {
+      today: todayAll.length || queue.length,
+      waiting: waiting.length,
+      pending: pending.length,
+      followUps,
+      completed: completedToday.length,
+    },
+  };
+}
+
+export { todayIso };

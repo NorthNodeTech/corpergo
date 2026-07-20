@@ -347,7 +347,7 @@ function BookAppointmentPage() {
                 <p className="mt-1 text-sm text-[var(--ink-soft)]">
                   Sundays and past dates are unavailable.
                 </p>
-                <div className="mt-6 flex justify-center rounded-3xl bg-[var(--ivory)] p-4">
+                <div className="mt-6 flex justify-center rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                   <Calendar
                     mode="single"
                     selected={date}
@@ -360,7 +360,25 @@ function BookAppointmentPage() {
                       today.setHours(0, 0, 0, 0);
                       return d < today || d.getDay() === 0;
                     }}
-                    className="rounded-2xl [--cell-size:2.6rem]"
+                    formatters={{
+                      formatWeekdayName: (d) =>
+                        d.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 2),
+                    }}
+                    className="std-calendar w-[300px]"
+                    classNames={{
+                      root: "w-[300px]",
+                      months: "flex w-full flex-col",
+                      month: "flex w-full flex-col gap-3",
+                      weekdays: "mb-1 grid w-full grid-cols-7",
+                      weekday:
+                        "flex h-8 w-full items-center justify-center text-[11px] font-semibold text-slate-500",
+                      week: "mt-0 grid w-full grid-cols-7",
+                      day: "h-9 w-full p-0 text-center",
+                      today: "rounded-md bg-slate-100 font-semibold text-[var(--ink)]",
+                      caption_label: "text-sm font-semibold text-[var(--ink)]",
+                      button_previous: "rounded-md hover:bg-slate-100",
+                      button_next: "rounded-md hover:bg-slate-100",
+                    }}
                   />
                 </div>
               </div>

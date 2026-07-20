@@ -3,6 +3,7 @@ import {
   CalendarPlus,
   ClipboardList,
   FileText,
+  Home,
   LayoutDashboard,
   QrCode,
   Settings,
@@ -39,6 +40,14 @@ const NAV: PortalNavItem[] = [
   { to: "/patient/settings", label: "Settings", icon: Settings },
 ];
 
+const FOOTER_NAV: PortalNavItem[] = [
+  { to: "/patient/dashboard", label: "Home", shortLabel: "Home", icon: Home },
+  { to: "/patient/book", label: "Book", shortLabel: "Book", icon: CalendarPlus },
+  { to: "/patient/appointments", label: "Visits", shortLabel: "Visits", icon: ClipboardList },
+  { to: "/patient/reports", label: "Reports", shortLabel: "Reports", icon: FileText },
+  { to: "/patient/profile", label: "Profile", shortLabel: "Profile", icon: UserRound },
+];
+
 function PatientLayout() {
   return (
     <PortalGuard pathPrefix="/patient">
@@ -47,6 +56,8 @@ function PatientLayout() {
           title="Patient Portal"
           subtitle="Your care, simplified"
           nav={NAV}
+          footerNav={FOOTER_NAV}
+          settingsPath="/patient/settings"
           userName={profile.full_name}
         >
           <Outlet />

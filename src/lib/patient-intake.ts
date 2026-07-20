@@ -29,6 +29,7 @@ export type PatientRecord = {
   food_allergies: string | null;
   other_allergies: string | null;
   other_medical_conditions: string | null;
+  created_at?: string | null;
   profiles?: {
     full_name: string;
     phone: string | null;
@@ -62,7 +63,7 @@ export const BLOOD_GROUPS = [
 ] as const;
 
 export const PATIENT_SELECT =
-  "id,user_id,date_of_birth,gender,blood_group,address,city,pincode,medical_history,allergies,current_medications,emergency_contact_name,emergency_contact_phone,emergency_contact_relation,previous_surgeries,medical_conditions,medicine_allergies,food_allergies,other_allergies,other_medical_conditions,profiles(full_name,phone,email)";
+  "id,user_id,date_of_birth,gender,blood_group,address,city,pincode,medical_history,allergies,current_medications,emergency_contact_name,emergency_contact_phone,emergency_contact_relation,previous_surgeries,medical_conditions,medicine_allergies,food_allergies,other_allergies,other_medical_conditions,created_at,profiles(full_name,phone,email)";
 
 export function ageFromDob(dob: string | null | undefined): number | null {
   if (!dob) return null;
@@ -117,4 +118,51 @@ export function isPatientIntakeComplete(p: PatientRecord): boolean {
       p.emergency_contact_name &&
       p.emergency_contact_phone,
   );
+}
+
+export type ProfileCompletion = {
+  percent: number;
+  missing: { id: string; label: string }[];
+  checks: { id: string; label: string; done: boolean }[];
+};
+
+export function computeProfileCompletion(
+  values: {
+    full_name: string;
+    phone: string;
+    email: string;
+    patient: PatientRecord;
+  },
+): ProfileCompletion {
+  const p = values.patient;
+  const conditions = p.medical_conditions || {};
+  const hasCondition = Object.values(conditions).some(Boolean) || Boolean(p.other_medical_conditions?.trim());
+  const hasAllergy =
+    Boolean(p.medicine_allergies?.trim()) ||
+    Boolean(p.food_allergies?.trim()) ||
+    Boolean(p.other_allergies?.trim()) ||
+    Boolean(p.allergies?.trim());
+
+  const checks = [
+    { id: "personal", label: "Personal details", done: Boolean(values.full_name.trim() && values.phone.trim() && p.date_of_birth && p.gender) },
+    { id: "blood", label: "Blood group", done: Boolean(p.blood_group) },
+    { id: "address", label: "Address", done: Boolean(p.address?.trim() && p.city?.trim() && p.pincode?.trim()) },
+    { id: "emergency", label: "Emergency contact", done: Boolean(p.emergency_contact_name?.trim() && p.emergency_contact_phone?.trim()) },
+    { id: "medical", label: "Medical history", done: hasCondition || Boolean(p.previous_surgeries?.trim()) },
+    { id: "allergies", label: "Allergies", done: hasAllergy },
+    { id: "medications", label: "Current medications", done: Boolean(p.current_medications?.trim()) },
+  ];
+
+  const doneCount = checks.filter((c) => c.done).length;
+  const percent = Math.round((doneCount / checks.length) * 100);
+  return {
+    percent,
+    checks,
+    missing: checks.filter((c) => !c.done).map(({ id, label }) => ({ id, label })),
+  };
+}
+
+export function formatPatientCode(patientId: string, year = new Date().getFullYear()) {
+  const tail = patientId.replace(/-/g, "").slice(-5).toUpperCase();
+  return `CE-${year}-${tail.padStart(5, "0")}`;
 }

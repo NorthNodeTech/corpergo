@@ -10,11 +10,10 @@ import {
   FileText,
   QrCode,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
 import { StatusBadge } from "@/components/portal/StatusBadge";
-import { StatCard } from "@/components/portal/PortalShell";
 import { fetchMyProfile } from "@/lib/auth";
 import {
   fetchMyAppointments,
@@ -30,6 +29,79 @@ import { isPatientIntakeComplete, normalizePatient } from "@/lib/patient-intake"
 export const Route = createFileRoute("/patient/dashboard")({
   component: PatientDashboardPage,
 });
+
+function CareSnapshot({
+  loading,
+  upcoming,
+  pending,
+  confirmed,
+  alerts,
+}: {
+  loading: boolean;
+  upcoming: number;
+  pending: number;
+  confirmed: number;
+  alerts: number;
+}) {
+  const metrics: {
+    label: string;
+    value: string;
+    icon: ComponentType<{ className?: string }>;
+    tone: string;
+  }[] = [
+    { label: "Upcoming", value: String(upcoming), icon: Calendar, tone: "text-[var(--sage-deep)]" },
+    { label: "Pending", value: String(pending), icon: Clock, tone: "text-[var(--bronze)]" },
+    { label: "Confirmed", value: String(confirmed), icon: CheckCircle2, tone: "text-[var(--teal)]" },
+    { label: "Alerts", value: String(alerts), icon: Bell, tone: "text-[var(--ink)]" },
+  ];
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="portal-glass-card overflow-hidden rounded-[26px] p-4 sm:p-5"
+    >
+      <div className="mb-3 flex items-center justify-between gap-3 px-1">
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--bronze)]">
+            Care snapshot
+          </div>
+          <div className="mt-0.5 text-sm font-semibold text-[var(--ink-soft)]">
+            Your visits at a glance
+          </div>
+        </div>
+        <Link
+          to="/patient/appointments"
+          className="shrink-0 text-xs font-bold text-[var(--sage-deep)]"
+        >
+          Details
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-4 divide-x divide-black/[0.05] rounded-2xl bg-white/55 ring-1 ring-black/[0.04]">
+        {metrics.map(({ label, value, icon: Icon, tone }) => (
+          <div
+            key={label}
+            className="flex flex-col items-center px-1.5 py-3 text-center sm:px-3 sm:py-3.5"
+          >
+            <div
+              className={`mb-1.5 grid h-8 w-8 place-items-center rounded-full bg-[var(--ivory)] ${tone}`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+            </div>
+            <div className="text-xl font-extrabold tracking-tight text-[var(--ink)] sm:text-2xl">
+              {loading ? "…" : value}
+            </div>
+            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-soft)] sm:text-[11px]">
+              {label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.section>
+  );
+}
 
 function PatientDashboardPage() {
   const [name, setName] = useState("there");
@@ -125,38 +197,19 @@ function PatientDashboardPage() {
         </Link>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          label="Upcoming"
-          value={loading ? "…" : String(upcoming.length)}
-          hint="Scheduled visits"
-          icon={Calendar}
-        />
-        <StatCard
-          label="Pending"
-          value={loading ? "…" : String(pendingCount)}
-          hint="Awaiting confirmation"
-          icon={Clock}
-        />
-        <StatCard
-          label="Confirmed"
-          value={loading ? "…" : String(acceptedCount)}
-          hint="Ready to visit"
-          icon={CheckCircle2}
-        />
-        <StatCard
-          label="Alerts"
-          value={loading ? "…" : String(notifications.length)}
-          hint="Recent updates"
-          icon={Bell}
-        />
-      </div>
+      <CareSnapshot
+        loading={loading}
+        upcoming={upcoming.length}
+        pending={pendingCount}
+        confirmed={acceptedCount}
+        alerts={notifications.length}
+      />
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-5">
+      <div className="mt-6 grid gap-6 lg:grid-cols-5">
         <motion.section
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="lg:col-span-3 rounded-3xl bg-white p-6 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)]"
+          className="portal-glass-card lg:col-span-3 rounded-3xl p-5 sm:p-6"
         >
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-extrabold text-[var(--ink)]">Upcoming appointment</h2>
@@ -169,9 +222,9 @@ function PatientDashboardPage() {
           </div>
 
           {loading ? (
-            <div className="mt-5 h-36 animate-pulse rounded-2xl bg-[var(--ivory)]" />
+            <div className="mt-5 h-36 animate-pulse rounded-2xl bg-[var(--ivory)]/80" />
           ) : followUp ? (
-            <div className="mt-5 rounded-2xl bg-[var(--ivory)] p-5">
+            <div className="mt-5 rounded-2xl bg-white/60 p-5 ring-1 ring-black/[0.04]">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="text-xl font-extrabold text-[var(--ink)]">
@@ -226,10 +279,10 @@ function PatientDashboardPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="lg:col-span-2 rounded-3xl bg-white p-6 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)]"
+          className="portal-glass-card lg:col-span-2 rounded-3xl p-5 sm:p-6"
         >
           <h2 className="text-lg font-extrabold text-[var(--ink)]">Quick actions</h2>
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid gap-2.5">
             {[
               {
                 to: "/patient/book" as const,
@@ -259,13 +312,13 @@ function PatientDashboardPage() {
               <Link
                 key={to}
                 to={to}
-                className="flex items-center gap-3 rounded-2xl bg-[var(--ivory)] px-4 py-3.5 transition-colors hover:bg-[var(--sage)]/10"
+                className="flex items-center gap-3 rounded-2xl bg-white/55 px-3.5 py-3 ring-1 ring-black/[0.03] transition-colors hover:bg-white/80"
               >
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-white text-[var(--sage-deep)] ring-1 ring-black/5">
-                  <Icon className="h-5 w-5" />
+                <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--sage)]/10 text-[var(--sage-deep)]">
+                  <Icon className="h-[18px] w-[18px]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-bold text-[var(--ink)]">{label}</div>
+                  <div className="text-sm font-bold text-[var(--ink)]">{label}</div>
                   <div className="text-xs text-[var(--ink-soft)]">{desc}</div>
                 </div>
                 <ArrowRight className="h-4 w-4 text-[var(--ink-soft)]" />
@@ -276,12 +329,12 @@ function PatientDashboardPage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <section className="rounded-3xl bg-white p-6 ring-1 ring-black/[0.05]">
+        <section className="portal-glass-card rounded-3xl p-5 sm:p-6">
           <h2 className="text-lg font-extrabold text-[var(--ink)]">Recent visits</h2>
           {loading ? (
             <div className="mt-4 space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-16 animate-pulse rounded-2xl bg-[var(--ivory)]" />
+                <div key={i} className="h-16 animate-pulse rounded-2xl bg-white/50" />
               ))}
             </div>
           ) : recentVisits.length === 0 ? (
@@ -293,7 +346,7 @@ function PatientDashboardPage() {
               {recentVisits.map((a) => (
                 <li
                   key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl bg-[var(--ivory)] px-4 py-3"
+                  className="flex items-center justify-between gap-3 rounded-2xl bg-white/55 px-4 py-3 ring-1 ring-black/[0.03]"
                 >
                   <div>
                     <div className="font-semibold text-[var(--ink)]">
@@ -310,7 +363,7 @@ function PatientDashboardPage() {
           )}
         </section>
 
-        <section className="rounded-3xl bg-white p-6 ring-1 ring-black/[0.05]">
+        <section className="portal-glass-card rounded-3xl p-5 sm:p-6">
           <div className="flex items-center gap-2">
             <Bell className="h-5 w-5 text-[var(--bronze)]" />
             <h2 className="text-lg font-extrabold text-[var(--ink)]">Notifications</h2>
@@ -322,9 +375,12 @@ function PatientDashboardPage() {
           ) : (
             <ul className="mt-4 space-y-3">
               {notifications.map((n) => (
-                <li key={n.id} className="rounded-2xl bg-[var(--ivory)] px-4 py-3">
+                <li
+                  key={n.id}
+                  className="rounded-2xl bg-white/55 px-4 py-3 ring-1 ring-black/[0.03]"
+                >
                   <div className="font-semibold text-[var(--ink)]">{n.title}</div>
-                  <p className="mt-0.5 text-sm text-[var(--ink-soft)] line-clamp-2">{n.body}</p>
+                  <p className="mt-0.5 line-clamp-2 text-sm text-[var(--ink-soft)]">{n.body}</p>
                 </li>
               ))}
             </ul>

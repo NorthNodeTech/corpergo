@@ -3,6 +3,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   FileBarChart,
+  Home,
   LayoutDashboard,
   ScanLine,
 } from "lucide-react";
@@ -22,11 +23,19 @@ export const Route = createFileRoute("/physio")({
 });
 
 const NAV: PortalNavItem[] = [
-  { to: "/physio/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/physio/dashboard", label: "Workspace", icon: LayoutDashboard },
   { to: "/physio/scan", label: "Scan QR", icon: ScanLine },
-  { to: "/physio/requests", label: "Appointment Requests", icon: ClipboardList },
   { to: "/physio/queue", label: "Today's Queue", icon: ClipboardCheck },
+  { to: "/physio/requests", label: "Requests", icon: ClipboardList },
   { to: "/physio/assessments", label: "Assessments", icon: FileBarChart },
+];
+
+/** Side tabs only — Scan sits in the elevated center action */
+const FOOTER_NAV: PortalNavItem[] = [
+  { to: "/physio/dashboard", label: "Workspace", shortLabel: "Home", icon: Home },
+  { to: "/physio/queue", label: "Queue", shortLabel: "Queue", icon: ClipboardCheck },
+  { to: "/physio/requests", label: "Requests", shortLabel: "Requests", icon: ClipboardList },
+  { to: "/physio/assessments", label: "Assess", shortLabel: "Assess", icon: FileBarChart },
 ];
 
 function PhysioLayout() {
@@ -34,9 +43,15 @@ function PhysioLayout() {
     <PortalGuard pathPrefix="/physio">
       {({ profile }) => (
         <PortalShell
-          title="Physio Portal"
-          subtitle="Clinic care workspace"
+          title="Clinical Workspace"
+          subtitle="Patient-first care floor"
           nav={NAV}
+          footerNav={FOOTER_NAV}
+          centerAction={{
+            to: "/physio/scan",
+            label: "Scan",
+            icon: ScanLine,
+          }}
           userName={profile.full_name}
         >
           <Outlet />
