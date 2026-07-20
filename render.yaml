@@ -1,0 +1,11 @@
+# Render Blueprint — Static Site for CorpErgo Wellness UI
+services:
+  - type: web
+    name: corpergo-wellness-ui
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist/client
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
