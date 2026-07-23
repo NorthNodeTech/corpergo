@@ -456,7 +456,7 @@ function BookAppointmentPage() {
           </motion.div>
         </AnimatePresence>
 
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-black/[0.05] pt-6">
+        <div className="sticky bottom-[85px] z-30 mt-28 flex flex-wrap items-center justify-between gap-3 rounded-b-[2rem] border-t border-black/[0.05] bg-white/95 py-4 backdrop-blur-md sm:bottom-4 sm:mt-12 sm:bg-white">
           <button
             type="button"
             disabled={step === 0}
@@ -466,25 +466,41 @@ function BookAppointmentPage() {
             <ArrowLeft className="h-4 w-4" /> Back
           </button>
 
-          {step < 5 ? (
-            <button
-              type="button"
-              disabled={!canNext()}
-              onClick={() => setStep((s) => s + 1)}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--sage)] px-6 py-3 text-sm font-bold text-white disabled:opacity-40 hover:bg-[var(--sage-deep)]"
-            >
-              Continue <ArrowRight className="h-4 w-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              disabled={submitting || !canNext()}
-              onClick={() => void submit()}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--sage)] px-6 py-3 text-sm font-bold text-white disabled:opacity-40 hover:bg-[var(--sage-deep)]"
-            >
-              {submitting ? "Submitting…" : "Request appointment"}
-            </button>
-          )}
+          <div className="flex-1 text-right">
+            <AnimatePresence mode="popLayout">
+              {canNext() && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                  className="inline-block"
+                >
+                  {step < 5 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStep((s) => s + 1);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--sage)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--sage)]/20 hover:bg-[var(--sage-deep)]"
+                    >
+                      Continue <ArrowRight className="h-4 w-4" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={submitting}
+                      onClick={() => void submit()}
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--sage)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--sage)]/20 disabled:opacity-40 hover:bg-[var(--sage-deep)]"
+                    >
+                      {submitting ? "Submitting…" : "Request appointment"}
+                    </button>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </div>

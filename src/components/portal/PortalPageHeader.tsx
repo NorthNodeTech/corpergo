@@ -1,19 +1,31 @@
 import { cn } from "@/lib/utils";
+import { ArrowLeft } from "lucide-react";
 
 export function PortalPageHeader({
   eyebrow,
   title,
   description,
   actions,
+  hideBack = false,
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   actions?: React.ReactNode;
+  hideBack?: boolean;
 }) {
   return (
     <div className="mb-7 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-end sm:justify-between">
-      <div>
+      <div className="flex flex-col items-start justify-start">
+        {!hideBack && (
+          <button
+            onClick={() => window.history.back()}
+            className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-[var(--ink-soft)] transition-colors hover:text-[var(--ink)]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+        )}
         {eyebrow ? (
           <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--bronze)]">
             {eyebrow}

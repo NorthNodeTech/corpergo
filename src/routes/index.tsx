@@ -149,10 +149,10 @@ function Nav() {
   }, []);
 
   const items = [
-    ["Treatments", "#treatments"],
     ["About", "#about"],
+    ["Treatments", "#treatments"],
+    ["Videos", "#videos"],
     ["Clinics", "#clinics"],
-    ["Testimonials", "#testimonials"],
     ["Contact", "#contact"],
   ];
 

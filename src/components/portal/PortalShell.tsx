@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, LogOut, Settings } from "lucide-react";
+import { ChevronDown, LogOut, Settings, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import logoImg from "@/assets/LOGO.webp";
 import { clearSession } from "@/lib/auth";
@@ -154,6 +154,9 @@ function GlassFooterNav({
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const hash = useRouterState({ select: (s) => s.location.hash });
+  const { scrollY } = useScroll();
+  const dockY = useTransform(scrollY, [0, 100], [0, 4]);
+  const dockScale = useTransform(scrollY, [0, 100], [1, 0.98]);
 
   const activeKey = useMemo(() => {
     const withHash = items.filter((item) => item.hash);
@@ -195,7 +198,7 @@ function GlassFooterNav({
         to={item.to}
         hash={item.hash}
         aria-current={active ? "page" : undefined}
-        className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1"
+        className="relative flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-1"
         onClick={() => {
           if (!item.hash) return;
           // Smooth scroll after navigation settles
@@ -205,32 +208,40 @@ function GlassFooterNav({
           });
         }}
       >
-        <motion.span
-          whileTap={{ scale: 0.86 }}
-          transition={{ type: "spring", stiffness: 520, damping: 28 }}
-          className="relative grid h-10 w-full max-w-[4.5rem] place-items-center"
+        <motion.div
+          whileTap={{ scale: 0.88, y: 2 }}
+          transition={{ type: "spring", stiffness: 450, damping: 25 }}
+          className="relative flex w-full max-w-[4.5rem] flex-col items-center justify-center gap-0.5"
         >
-          {active ? (
-            <motion.span
-              layoutId={`portal-tab-pill-${layoutKey}`}
-              className="absolute inset-x-1 inset-y-0 rounded-2xl bg-[var(--sage)]/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]"
-              transition={{ type: "spring", stiffness: 380, damping: 32 }}
-            />
-          ) : null}
-          <Icon
-            className={`relative z-[1] h-[22px] w-[22px] transition-colors duration-300 ${
-              active ? "text-[var(--sage-deep)]" : "text-[var(--ink-soft)]"
-            }`}
-            strokeWidth={active ? 2.4 : 2}
-          />
-        </motion.span>
-        <span
-          className={`relative z-[1] max-w-full truncate text-[10px] font-semibold tracking-wide transition-colors duration-300 ${
-            active ? "text-[var(--sage-deep)]" : "text-[var(--ink-soft)]"
-          }`}
-        >
-          {item.shortLabel || item.label}
-        </span>
+          <div className="relative grid h-10 w-full place-items-center">
+            {active ? (
+              <motion.span
+                layoutId={`portal-tab-pill-${layoutKey}`}
+                className="absolute inset-x-1 inset-y-0 rounded-2xl bg-[var(--sage)]/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
+                transition={{ type: "spring", stiffness: 350, damping: 30, mass: 0.8 }}
+              />
+            ) : null}
+            <motion.div
+              animate={{ 
+                scale: active ? 1.05 : 1,
+                color: active ? "var(--sage-deep)" : "var(--ink-soft)"
+              }}
+              transition={{ type: "spring", stiffness: 400, damping: 28 }}
+              className="relative z-[1] flex items-center justify-center"
+            >
+              <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.5 : 2} />
+            </motion.div>
+          </div>
+          <motion.span
+            animate={{
+              color: active ? "var(--sage-deep)" : "var(--ink-soft)"
+            }}
+            transition={{ duration: 0.2 }}
+            className={`relative z-[1] max-w-full truncate text-[10px] tracking-wide ${active ? "font-bold" : "font-semibold"}`}
+          >
+            {item.shortLabel || item.label}
+          </motion.span>
+        </motion.div>
       </Link>
     );
   };
@@ -240,8 +251,8 @@ function GlassFooterNav({
       aria-label="Primary"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 lg:hidden"
     >
-      <div className="pointer-events-auto mx-auto max-w-lg">
-        <div className="portal-glass-dock relative flex items-end gap-0.5 rounded-[28px] px-1.5 pb-2 pt-2 shadow-[0_12px_40px_rgba(38,50,56,0.14)]">
+      <motion.div style={{ y: dockY, scale: dockScale }} className="pointer-events-auto mx-auto max-w-lg">
+        <div className="portal-glass-dock relative flex items-end gap-0.5 rounded-[32px] px-1.5 pb-2 pt-2">
           {left.map((item) => (
             <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
           ))}
@@ -256,10 +267,10 @@ function GlassFooterNav({
                   className="group relative -mt-8 mb-0.5"
                 >
                   <motion.span
-                    whileTap={{ scale: 0.9 }}
-                    whileHover={{ scale: 1.04 }}
-                    transition={{ type: "spring", stiffness: 420, damping: 22 }}
-                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_10px_28px_rgba(71,86,63,0.45)] ring-[5px] ring-white/55 ${
+                    whileTap={{ scale: 0.88, y: 4 }}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_12px_32px_rgba(71,86,63,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md ${
                       centerActive
                         ? "bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)]"
                         : "bg-gradient-to-br from-[var(--sage)] via-[var(--sage-deep)] to-[#3d4a38]"
@@ -280,10 +291,10 @@ function GlassFooterNav({
                   className="group relative -mt-8 mb-0.5"
                 >
                   <motion.span
-                    whileTap={{ scale: 0.9 }}
-                    whileHover={{ scale: 1.04 }}
-                    transition={{ type: "spring", stiffness: 420, damping: 22 }}
-                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_10px_28px_rgba(71,86,63,0.45)] ring-[5px] ring-white/55 ${
+                    whileTap={{ scale: 0.88, y: 4 }}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_12px_32px_rgba(71,86,63,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md ${
                       centerActive
                         ? "bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)]"
                         : "bg-gradient-to-br from-[var(--sage)] via-[var(--sage-deep)] to-[#3d4a38]"
@@ -311,7 +322,7 @@ function GlassFooterNav({
             <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
           ))}
         </div>
-      </div>
+      </motion.div>
     </nav>
   );
 }
@@ -337,6 +348,7 @@ export function PortalShell({
   centerAction?: PortalCenterAction;
   settingsPath?: string;
 }) {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const settingsTo =
     settingsPath ||
@@ -380,27 +392,59 @@ export function PortalShell({
       <div className="portal-shell__glow" aria-hidden />
 
       <div
-        className={`relative min-h-screen min-w-0 w-full max-w-full ${hasFooter ? "lg:grid lg:grid-cols-[240px_1fr]" : "lg:grid lg:grid-cols-[260px_1fr]"}`}
+        className={`relative min-h-screen min-w-0 w-full max-w-full ${
+          hasFooter
+            ? `lg:grid ${sidebarOpen ? "lg:grid-cols-[240px_1fr]" : "lg:grid-cols-1"}`
+            : `lg:grid ${sidebarOpen ? "lg:grid-cols-[260px_1fr]" : "lg:grid-cols-1"}`
+        }`}
       >
         {/* Desktop sidebar */}
-        <aside className="portal-glass-sidebar relative z-10 hidden lg:flex lg:flex-col lg:border-r lg:border-white/40">
-          <div className="px-5 py-6">
-            <Link to="/" className="flex items-center gap-3">
-              <img src={logoImg} alt="CorpErgo" className="h-14 w-auto object-contain" />
-            </Link>
-            <div className="mt-4">
-              <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
-              <div className="mt-0.5 text-xs text-[var(--ink-soft)]">{subtitle}</div>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto pb-6">
-            <NavLinks />
-          </div>
-        </aside>
+        <AnimatePresence initial={false}>
+          {sidebarOpen ? (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: hasFooter ? 240 : 260, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="portal-glass-sidebar relative z-10 hidden lg:flex lg:flex-col lg:border-r lg:border-white/40 overflow-hidden whitespace-nowrap"
+            >
+              <div className="px-5 py-6 flex items-start justify-between">
+                <div>
+                  <Link to="/" className="flex items-center gap-3">
+                    <img src={logoImg} alt="CorpErgo" className="h-14 w-auto object-contain" />
+                  </Link>
+                  <div className="mt-4">
+                    <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
+                    <div className="mt-0.5 text-xs text-[var(--ink-soft)]">{subtitle}</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="rounded-full p-1.5 hover:bg-black/5 text-[var(--ink-soft)] transition-colors"
+                  aria-label="Close sidebar"
+                >
+                  <PanelLeftClose className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto pb-6">
+                <NavLinks />
+              </div>
+            </motion.aside>
+          ) : null}
+        </AnimatePresence>
 
-        <div className="relative z-[1] flex min-h-screen min-w-0 w-full max-w-full flex-col lg:col-start-2">
+        <div className={`relative z-[1] flex min-h-screen min-w-0 w-full max-w-full flex-col ${sidebarOpen ? "lg:col-start-2" : "lg:col-start-1"}`}>
           <header className="portal-glass-header sticky top-0 z-40 flex h-[4.25rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
+              {!sidebarOpen && (
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="hidden lg:block rounded-full p-2 hover:bg-black/5 text-[var(--ink-soft)] transition-colors -ml-2"
+                  aria-label="Open sidebar"
+                >
+                  <PanelLeftOpen className="h-5 w-5" />
+                </button>
+              )}
               <img src={logoImg} alt="CorpErgo" className="h-12 w-auto object-contain lg:hidden" />
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold text-[var(--ink)] lg:text-[15px]">

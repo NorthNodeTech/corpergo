@@ -161,6 +161,7 @@ function PatientDashboardPage() {
   return (
     <div>
       <PortalPageHeader
+        hideBack={true}
         eyebrow="Patient dashboard"
         title={`Welcome back, ${name}`}
         description="Here’s what’s next for your recovery — appointments, updates, and quick actions."
@@ -338,9 +339,12 @@ function PatientDashboardPage() {
               ))}
             </div>
           ) : recentVisits.length === 0 ? (
-            <p className="mt-4 text-sm text-[var(--ink-soft)]">
-              Completed visits will appear here after your sessions.
-            </p>
+            <div className="mt-4 flex h-32 flex-col items-center justify-center text-center">
+              <p className="text-sm font-medium text-[var(--ink)]">No recent visits</p>
+              <p className="mt-1.5 text-sm text-[var(--ink-soft)]">
+                Completed visits will appear here after your sessions.
+              </p>
+            </div>
           ) : (
             <ul className="mt-4 space-y-3">
               {recentVisits.map((a) => (
