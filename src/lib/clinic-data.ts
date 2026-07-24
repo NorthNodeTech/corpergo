@@ -184,6 +184,7 @@ export async function fetchAcceptedTickets() {
 export async function updateMyProfile(patch: {
   full_name?: string;
   phone?: string | null;
+  avatar_url?: string | null;
 }) {
   const { getStoredSession } = await import("@/lib/auth");
   const session = getStoredSession();

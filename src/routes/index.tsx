@@ -818,59 +818,6 @@ function Physios() {
   );
 }
 
-/* ------------------------------ TESTIMONIALS ------------------------------ */
-
-const TESTIMONIALS = [
-  { name: "Meera K.", role: "Marathon runner", initials: "MK", color: "#5D725E", quote: "After my ACL surgery I thought running was over. Six months at CorpErgo and I finished my half-marathon." },
-  { name: "Rahul V.", role: "Software engineer", initials: "RV", color: "#6F9E9C", quote: "Chronic back pain from years of desk work — gone. The posture program was a game-changer." },
-  { name: "Sunita P.", role: "Retired teacher", initials: "SP", color: "#9A7059", quote: "The team is kind, patient and precise. My knee mobility is better than it's been in a decade." },
-];
-
-function Testimonials() {
-  return (
-    <section id="testimonials" className="py-24 sm:py-32 bg-white/60">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="max-w-2xl mb-14">
-          <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">Testimonials</div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
-            Stories that matter more than metrics.
-          </h2>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {TESTIMONIALS.map((t, i) => (
-            <motion.div
-              key={t.name}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass rounded-3xl p-7 shadow-[var(--shadow-soft)]"
-            >
-              <div className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, k) => (
-                  <Star key={k} className="h-4 w-4 fill-[var(--bronze)] text-[var(--bronze)]" />
-                ))}
-              </div>
-              <p className="mt-5 text-[var(--ink)] leading-relaxed text-[15px]">
-                "{t.quote}"
-              </p>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="grid h-11 w-11 place-items-center rounded-full text-white font-bold" style={{ background: t.color }}>
-                  {t.initials}
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-[var(--ink)]">{t.name}</div>
-                  <div className="text-xs text-[var(--ink-soft)]">{t.role}</div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ------------------------------ CLINICS ------------------------------ */
 
 const CLINICS = [
@@ -1218,7 +1165,7 @@ function Footer() {
           <div>
             <div className="text-white font-bold text-sm uppercase tracking-widest">Quick Links</div>
             <ul className="mt-5 space-y-3 text-sm">
-              {["Treatments", "About", "Clinics", "Testimonials", "Book Appointment"].map((x) => (
+              {["Treatments", "About", "Clinics", "Book Appointment"].map((x) => (
                 <li key={x}>
                   <a
                     href={x === "Book Appointment" ? "/login" : `#${x.toLowerCase()}`}
@@ -1286,7 +1233,6 @@ function LandingPage() {
       <WhyChoose />
       <VideoStories />
       <Physios />
-      <Testimonials />
       <Clinics />
       <CTA />
       <Footer />

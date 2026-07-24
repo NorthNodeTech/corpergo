@@ -39,6 +39,7 @@ function PatientProfilePage() {
           full_name: profile.full_name,
           phone: profile.phone || "",
           email: profile.email || "",
+          avatar_url: profile.avatar_url || null,
           patient,
         };
         snapshot.current = structuredClone(next);
@@ -67,7 +68,11 @@ function PatientProfilePage() {
     if (!values) return;
     setSaving(true);
     const [a, b] = await Promise.all([
-      updateMyProfile({ full_name: values.full_name, phone: values.phone || null }),
+      updateMyProfile({ 
+        full_name: values.full_name, 
+        phone: values.phone || null,
+        avatar_url: values.avatar_url || null
+      }),
       updateMyPatient(values.patient.id, values.patient),
     ]);
     setSaving(false);

@@ -19,6 +19,7 @@ export type PatientIntakeValues = {
   full_name: string;
   phone: string;
   email: string;
+  avatar_url?: string | null;
   patient: PatientRecord;
 };
 

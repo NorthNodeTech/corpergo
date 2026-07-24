@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Fragment } from "react";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -28,7 +28,9 @@ import {
   fetchAdminDashboard,
   utilizationPct,
   type AdminDashboardBundle,
+  type ActivityItem,
   type ClinicStatus,
+  type RecentBooking,
 } from "@/lib/admin-dashboard-data";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +64,116 @@ function formatTime(iso: string) {
   } catch {
     return "—";
   }
+}
+
+function formatActivityTime(iso: string, groupLabel: string) {
+  try {
+    const d = new Date(iso);
+    const time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    if (groupLabel === "Today") return time;
+    return `${d.toLocaleDateString([], { weekday: "short" })} ${time}`;
+  } catch {
+    return "—";
+  }
+}
+
+function groupActivityByTime(items: ActivityItem[], now: Date) {
+  const groups: { label: string; items: ActivityItem[] }[] = [
+    { label: "Today", items: [] },
+    { label: "Yesterday", items: [] },
+    { label: "This Week", items: [] },
+    { label: "This Month", items: [] },
+    { label: "Older", items: [] },
+  ];
+
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const yesterdayStart = todayStart - 1 * 24 * 60 * 60 * 1000;
+  const thisWeekStart = todayStart - 7 * 24 * 60 * 60 * 1000;
+  const thisMonthStart = todayStart - 30 * 24 * 60 * 60 * 1000;
+
+  for (const item of items) {
+    const t = new Date(item.at).getTime();
+    if (t >= todayStart) {
+      groups[0].items.push(item);
+    } else if (t >= yesterdayStart) {
+      groups[1].items.push(item);
+    } else if (t >= thisWeekStart) {
+      groups[2].items.push(item);
+    } else if (t >= thisMonthStart) {
+      groups[3].items.push(item);
+    } else {
+      groups[4].items.push(item);
+    }
+  }
+
+  return groups.filter((g) => g.items.length > 0);
+}
+
+function groupBookingsByTime(items: RecentBooking[], now: Date) {
+  const groups: { label: string; items: RecentBooking[] }[] = [
+    { label: "Today", items: [] },
+    { label: "Yesterday", items: [] },
+    { label: "This Week", items: [] },
+    { label: "This Month", items: [] },
+    { label: "Older", items: [] },
+  ];
+
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const yesterdayStart = todayStart - 1 * 24 * 60 * 60 * 1000;
+  const thisWeekStart = todayStart - 7 * 24 * 60 * 60 * 1000;
+  const thisMonthStart = todayStart - 30 * 24 * 60 * 60 * 1000;
+
+  for (const item of items) {
+    const t = new Date(item.created_at).getTime();
+    if (t >= todayStart) {
+      groups[0].items.push(item);
+    } else if (t >= yesterdayStart) {
+      groups[1].items.push(item);
+    } else if (t >= thisWeekStart) {
+      groups[2].items.push(item);
+    } else if (t >= thisMonthStart) {
+      groups[3].items.push(item);
+    } else {
+      groups[4].items.push(item);
+    }
+  }
+
+  return groups.filter((g) => g.items.length > 0);
+}
+
+function groupUpcomingByTime(items: RecentBooking[], now: Date) {
+  const groups: { label: string; items: RecentBooking[] }[] = [
+    { label: "Today", items: [] },
+    { label: "Tomorrow", items: [] },
+    { label: "This Week", items: [] },
+    { label: "Next Week", items: [] },
+    { label: "Later", items: [] },
+  ];
+
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const tomorrowStart = todayStart + 1 * 24 * 60 * 60 * 1000;
+  const inOneWeek = todayStart + 7 * 24 * 60 * 60 * 1000;
+  const inTwoWeeks = todayStart + 14 * 24 * 60 * 60 * 1000;
+
+  for (const item of items) {
+    const rawDate = item.scheduled_date || item.preferred_date;
+    const t = rawDate ? new Date(rawDate).getTime() : 0;
+    if (t === 0) continue;
+
+    if (t < tomorrowStart) {
+      groups[0].items.push(item);
+    } else if (t < todayStart + 2 * 24 * 60 * 60 * 1000) {
+      groups[1].items.push(item);
+    } else if (t < inOneWeek) {
+      groups[2].items.push(item);
+    } else if (t < inTwoWeeks) {
+      groups[3].items.push(item);
+    } else {
+      groups[4].items.push(item);
+    }
+  }
+
+  return groups.filter((g) => g.items.length > 0);
 }
 
 function formatApptWhen(b: AdminDashboardBundle["bookings"][number]) {
@@ -117,6 +229,7 @@ export function AdminCommandCenter() {
   const [now, setNow] = useState(() => new Date());
   const [expandedClinic, setExpandedClinic] = useState<string | null>(null);
   const [notifyOpen, setNotifyOpen] = useState(false);
+  const [bookingTab, setBookingTab] = useState<"recent" | "upcoming">("recent");
 
   useEffect(() => {
     let cancelled = false;
@@ -196,7 +309,7 @@ export function AdminCommandCenter() {
         id="admin-overview"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="scroll-mt-24 overflow-hidden rounded-[28px] border border-white/60 bg-white/65 p-4 shadow-[var(--shadow-soft)] backdrop-blur-xl sm:p-7"
+        className="min-w-0 scroll-mt-24 overflow-hidden rounded-[28px] border border-white/60 bg-white/65 p-4 shadow-[var(--shadow-soft)] backdrop-blur-xl sm:p-7"
       >
         <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
@@ -394,7 +507,7 @@ export function AdminCommandCenter() {
           </div>
         </div>
 
-        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+        <div className="min-w-0 rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
@@ -412,35 +525,44 @@ export function AdminCommandCenter() {
                 <Skeleton className="h-14" />
               </>
             ) : (data?.activity || []).length ? (
-              (data?.activity || []).map((a, i) => (
-                <motion.li
-                  key={a.id}
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="flex gap-3"
-                >
-                  <div className="w-14 shrink-0 pt-0.5 text-[11px] font-bold text-[var(--ink-soft)]">
-                    {formatTime(a.at)}
+              groupActivityByTime(data!.activity, now).map((group, gi) => (
+                <div key={group.label} className="mb-4 last:mb-0">
+                  <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                    {group.label}
                   </div>
-                  <div className="relative flex-1 rounded-2xl bg-[var(--ivory)]/80 px-3 py-2.5">
-                    <span
-                      className="absolute left-0 top-3 h-2 w-2 -translate-x-1/2 rounded-full"
-                      style={{
-                        background:
-                          a.tone === "attention"
-                            ? STATUS_COLOR.attention
-                            : a.tone === "busy"
-                              ? STATUS_COLOR.busy
-                              : a.tone === "normal"
-                                ? STATUS_COLOR.normal
-                                : "#94a3b8",
-                      }}
-                    />
-                    <div className="text-sm font-semibold text-[var(--ink)]">{a.label}</div>
-                    <div className="mt-0.5 text-[11px] text-[var(--ink-soft)]">{a.meta}</div>
+                  <div className="space-y-3">
+                    {group.items.map((a, i) => (
+                      <motion.li
+                        key={a.id}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: (gi * 2 + i) * 0.04 }}
+                        className="flex gap-3"
+                      >
+                        <div className="w-16 shrink-0 pt-0.5 text-[11px] font-bold text-[var(--ink-soft)]">
+                          {formatActivityTime(a.at, group.label)}
+                        </div>
+                        <div className="relative min-w-0 flex-1 rounded-2xl bg-[var(--ivory)]/80 px-3 py-2.5">
+                          <span
+                            className="absolute left-0 top-3 h-2 w-2 -translate-x-1/2 rounded-full"
+                            style={{
+                              background:
+                                a.tone === "attention"
+                                  ? STATUS_COLOR.attention
+                                  : a.tone === "busy"
+                                    ? STATUS_COLOR.busy
+                                    : a.tone === "normal"
+                                      ? STATUS_COLOR.normal
+                                      : "#94a3b8",
+                            }}
+                          />
+                          <div className="truncate text-sm font-semibold text-[var(--ink)]">{a.label}</div>
+                          <div className="mt-0.5 truncate text-[11px] text-[var(--ink-soft)]">{a.meta}</div>
+                        </div>
+                      </motion.li>
+                    ))}
                   </div>
-                </motion.li>
+                </div>
               ))
             ) : (
               <li className="rounded-2xl bg-[var(--ivory)] px-3 py-6 text-center text-sm text-[var(--ink-soft)]">
@@ -577,7 +699,7 @@ export function AdminCommandCenter() {
       </section>
 
       {/* Doctor performance */}
-      <section className="mt-8">
+      <section className="mt-8 min-w-0">
         <div className="mb-3 flex items-end justify-between">
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
@@ -679,58 +801,97 @@ export function AdminCommandCenter() {
 
       {/* Recent bookings */}
       <section id="admin-bookings" className="mt-6 scroll-mt-24 sm:mt-8">
-        <div className="mb-3 flex items-end justify-between">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
               Queue
             </div>
-            <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Recent bookings</h2>
+            <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">
+              {bookingTab === "recent" ? "Recent requests" : "Upcoming schedule"}
+            </h2>
+          </div>
+          <div className="flex w-full items-center rounded-2xl bg-black/[0.03] p-1 sm:w-auto">
+            <button
+              onClick={() => setBookingTab("recent")}
+              className={cn(
+                "flex-1 rounded-xl px-4 py-2 text-xs font-bold transition sm:flex-none",
+                bookingTab === "recent"
+                  ? "bg-white text-[var(--ink)] shadow-sm"
+                  : "text-[var(--ink-soft)] hover:text-[var(--ink)]",
+              )}
+            >
+              Recent requests
+            </button>
+            <button
+              onClick={() => setBookingTab("upcoming")}
+              className={cn(
+                "flex-1 rounded-xl px-4 py-2 text-xs font-bold transition sm:flex-none",
+                bookingTab === "upcoming"
+                  ? "bg-white text-[var(--ink)] shadow-sm"
+                  : "text-[var(--ink-soft)] hover:text-[var(--ink)]",
+              )}
+            >
+              Upcoming schedule
+            </button>
           </div>
         </div>
 
         {/* Mobile cards */}
-        <div className="space-y-3 md:hidden">
-          {(data?.bookings || []).map((b) => {
-            const patient = b.patients?.profiles?.full_name || "Patient";
-            return (
-              <div
-                key={b.id}
-                className="rounded-3xl bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--sage)]/15 text-[10px] font-bold text-[var(--sage-deep)]">
-                      {initials(patient)}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="truncate font-extrabold text-[var(--ink)]">{patient}</div>
-                      <div className="truncate text-xs text-[var(--ink-soft)]">
-                        {b.clinics?.name || "—"}
-                      </div>
-                    </div>
-                  </div>
-                  <span
-                    className={cn(
-                      "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold capitalize",
-                      statusBadgeClass(b.status),
-                    )}
-                  >
-                    {b.status.replace(/_/g, " ")}
-                  </span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--ink-soft)]">
-                  <span>{formatApptWhen(b)}</span>
-                  <span>{b.physiotherapists?.profiles?.full_name || "Unassigned"}</span>
-                  <span>{b.physiotherapy_categories?.name || "—"}</span>
-                </div>
-              </div>
-            );
-          })}
-          {!loading && !(data?.bookings || []).length ? (
+        <div className="md:hidden">
+          {!(bookingTab === "recent" ? data?.bookings : data?.upcoming_bookings)?.length && !loading ? (
             <div className="rounded-3xl bg-white px-5 py-10 text-center text-sm text-[var(--ink-soft)] ring-1 ring-black/[0.05]">
               No bookings yet.
             </div>
-          ) : null}
+          ) : (
+            (bookingTab === "recent"
+              ? groupBookingsByTime(data?.bookings || [], now)
+              : groupUpcomingByTime(data?.upcoming_bookings || [], now)
+            ).map((group) => (
+              <div key={group.label} className="mb-6 last:mb-0">
+                <div className="mb-3 pl-1 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                  {group.label}
+                </div>
+                <div className="space-y-3">
+                  {group.items.map((b) => {
+                    const patient = b.patients?.profiles?.full_name || "Patient";
+                    return (
+                      <div
+                        key={b.id}
+                        className="rounded-3xl bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--sage)]/15 text-[10px] font-bold text-[var(--sage-deep)]">
+                              {initials(patient)}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="truncate font-extrabold text-[var(--ink)]">{patient}</div>
+                              <div className="truncate text-xs text-[var(--ink-soft)]">
+                                {b.clinics?.name || "—"}
+                              </div>
+                            </div>
+                          </div>
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold capitalize",
+                              statusBadgeClass(b.status),
+                            )}
+                          >
+                            {b.status.replace(/_/g, " ")}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--ink-soft)]">
+                          <span>{formatApptWhen(b)}</span>
+                          <span>{b.physiotherapists?.profiles?.full_name || "Unassigned"}</span>
+                          <span>{b.physiotherapy_categories?.name || "—"}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Desktop table */}
@@ -747,49 +908,65 @@ export function AdminCommandCenter() {
               </tr>
             </thead>
             <tbody>
-              {(data?.bookings || []).map((b) => {
-                const patient = b.patients?.profiles?.full_name || "Patient";
-                return (
-                  <tr
-                    key={b.id}
-                    className="border-b border-black/[0.04] transition hover:bg-[var(--ivory)]/70"
-                  >
-                    <td className="px-4 py-3 sm:px-5">
-                      <div className="flex items-center gap-2.5">
-                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--sage)]/15 text-[10px] font-bold text-[var(--sage-deep)]">
-                          {initials(patient)}
-                        </span>
-                        <span className="font-semibold text-[var(--ink)]">{patient}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-[var(--ink-soft)]">{b.clinics?.name || "—"}</td>
-                    <td className="hidden px-4 py-3 text-[var(--ink-soft)] md:table-cell">
-                      {b.physiotherapists?.profiles?.full_name || "Unassigned"}
-                    </td>
-                    <td className="hidden px-4 py-3 text-[var(--ink-soft)] lg:table-cell">
-                      {b.physiotherapy_categories?.name || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--ink-soft)]">{formatApptWhen(b)}</td>
-                    <td className="px-4 py-3 sm:px-5">
-                      <span
-                        className={cn(
-                          "inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold capitalize",
-                          statusBadgeClass(b.status),
-                        )}
-                      >
-                        {b.status.replace(/_/g, " ")}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-              {!loading && !(data?.bookings || []).length ? (
+              {!(bookingTab === "recent" ? data?.bookings : data?.upcoming_bookings)?.length && !loading ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-10 text-center text-[var(--ink-soft)]">
                     No bookings yet.
                   </td>
                 </tr>
-              ) : null}
+              ) : (
+                (bookingTab === "recent"
+                  ? groupBookingsByTime(data?.bookings || [], now)
+                  : groupUpcomingByTime(data?.upcoming_bookings || [], now)
+                ).map((group) => (
+                  <Fragment key={group.label}>
+                    <tr className="bg-[var(--ivory)]/40">
+                      <td
+                        colSpan={6}
+                        className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:px-5"
+                      >
+                        {group.label}
+                      </td>
+                    </tr>
+                    {group.items.map((b) => {
+                      const patient = b.patients?.profiles?.full_name || "Patient";
+                      return (
+                        <tr
+                          key={b.id}
+                          className="border-b border-black/[0.04] transition hover:bg-[var(--ivory)]/70 last:border-none"
+                        >
+                          <td className="px-4 py-3 sm:px-5">
+                            <div className="flex items-center gap-2.5">
+                              <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--sage)]/15 text-[10px] font-bold text-[var(--sage-deep)]">
+                                {initials(patient)}
+                              </span>
+                              <span className="font-semibold text-[var(--ink)]">{patient}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--ink-soft)]">{b.clinics?.name || "—"}</td>
+                          <td className="hidden px-4 py-3 text-[var(--ink-soft)] md:table-cell">
+                            {b.physiotherapists?.profiles?.full_name || "Unassigned"}
+                          </td>
+                          <td className="hidden px-4 py-3 text-[var(--ink-soft)] lg:table-cell">
+                            {b.physiotherapy_categories?.name || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-[var(--ink-soft)]">{formatApptWhen(b)}</td>
+                          <td className="px-4 py-3 sm:px-5">
+                            <span
+                              className={cn(
+                                "inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold capitalize",
+                                statusBadgeClass(b.status),
+                              )}
+                            >
+                              {b.status.replace(/_/g, " ")}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </Fragment>
+                ))
+              )}
             </tbody>
           </table>
         </div>

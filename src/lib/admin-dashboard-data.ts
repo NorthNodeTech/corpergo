@@ -93,6 +93,7 @@ export type AdminDashboardBundle = {
   conditions: TopCondition[];
   heatmap: HeatmapCell[];
   bookings: RecentBooking[];
+  upcoming_bookings: RecentBooking[];
   series7d: DayPoint[];
   totals: { clinics: number; physios: number; patients: number };
   insights: Insight[];
@@ -192,7 +193,7 @@ function buildInsights(
 }
 
 function buildActivity(bookings: RecentBooking[]): ActivityItem[] {
-  return bookings.slice(0, 12).map((b) => {
+  return bookings.slice(0, 50).map((b) => {
     const clinic = b.clinics?.name || "Clinic";
     const patient = b.patients?.profiles?.full_name || "Patient";
     const doctor = b.physiotherapists?.profiles?.full_name;
@@ -243,6 +244,7 @@ function buildSeries7d(
 
 export async function fetchAdminDashboard(): Promise<AdminDashboardBundle> {
   const since = isoDate(daysAgo(6));
+  const today = isoDate(new Date());
   const [
     kpisRes,
     clinicsRes,
@@ -250,6 +252,7 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardBundle> {
     conditionsRes,
     heatmapRes,
     bookingsRes,
+    upcomingRes,
     seriesRes,
     clinicCount,
     physioCount,
@@ -269,7 +272,10 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardBundle> {
       "v_admin_appointment_heatmap?select=day_of_week,hour_of_day,booking_count",
     ),
     supabaseRest<RecentBooking[]>(
-      `appointments?deleted_at=is.null&select=${BOOKING_SELECT}&order=created_at.desc&limit=18`,
+      `appointments?deleted_at=is.null&select=${BOOKING_SELECT}&order=created_at.desc&limit=50`,
+    ),
+    supabaseRest<RecentBooking[]>(
+      `appointments?deleted_at=is.null&or=(scheduled_date.gte.${today},and(scheduled_date.is.null,preferred_date.gte.${today}))&select=${BOOKING_SELECT}&order=scheduled_date.asc.nullslast,preferred_date.asc.nullslast&limit=50`,
     ),
     supabaseRest<{ preferred_date: string; scheduled_date: string | null }[]>(
       `appointments?deleted_at=is.null&or=(scheduled_date.gte.${since},and(scheduled_date.is.null,preferred_date.gte.${since}))&select=preferred_date,scheduled_date&limit=2000`,
@@ -291,6 +297,7 @@ export async function fetchAdminDashboard(): Promise<AdminDashboardBundle> {
     conditions: conditionsRes.data || [],
     heatmap: heatmapRes.data || [],
     bookings,
+    upcoming_bookings: upcomingRes.data || [],
     series7d: buildSeries7d(seriesRes.data || []),
     totals: {
       clinics: clinicCount.data?.length || clinics.length,

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FormEvent, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, User, Stethoscope, Sparkles } from "lucide-react";
 import logoImg from "@/assets/LOGO.webp";
+import loginImg from "@/assets/login.png";
 import { signInWithPassword, resolvePostLoginPath } from "@/lib/auth";
 
 /** Shrinks the mobile logo as the visual viewport collapses (on-screen keyboard). */
@@ -115,6 +116,11 @@ function LoginPage() {
         className="relative hidden lg:block overflow-hidden"
         style={{ background: "linear-gradient(135deg, #47563F 0%, #5D725E 60%, #6F9E9C 100%)" }}
       >
+        <img 
+          src={loginImg} 
+          alt="Background" 
+          className="absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-overlay" 
+        />
         <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[var(--bronze)]/20 blur-3xl" />
         <div className="absolute inset-0 grain opacity-60" />
@@ -128,10 +134,7 @@ function LoginPage() {
           </Link>
 
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-3 py-1.5 text-xs font-semibold ring-1 ring-white/20">
-              <Sparkles className="h-3.5 w-3.5" /> CorpErgo Portal
-            </div>
-            <h1 className="mt-6 text-5xl font-extrabold tracking-tight leading-[1.05] text-balance">
+            <h1 className="text-5xl font-extrabold tracking-tight leading-[1.05] text-balance">
               Your recovery journey, all in one place.
             </h1>
             <p className="mt-5 text-white/80 text-lg max-w-md">

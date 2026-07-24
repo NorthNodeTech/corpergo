@@ -18,7 +18,12 @@ import {
   Shield,
   UserRound,
   Users,
+  Camera,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { uploadAvatar } from "@/lib/auth";
+import { updateMyProfile } from "@/lib/clinic-data";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { GlassDatePicker } from "@/components/portal/GlassDatePicker";
 import { StatusBadge } from "@/components/portal/StatusBadge";
@@ -84,7 +89,9 @@ function SectionCard({
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.15 }}
-      className="scroll-mt-28 rounded-[22px] border border-black/[0.04] bg-[color-mix(in_oklab,white_88%,var(--ivory))] p-5 shadow-[var(--shadow-soft)] sm:p-6"
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.3 }}
+      className="portal-glass-card scroll-mt-28 rounded-[22px] p-5 sm:p-6"
     >
       <div className="mb-5 flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
@@ -126,7 +133,7 @@ function Field({
 }
 
 const inputClass =
-  "premium-input w-full rounded-2xl border border-black/[0.06] bg-white/90 px-4 py-3.5 text-[15px] text-[var(--ink)] outline-none transition placeholder:text-[var(--ink-soft)]/70 focus:border-[var(--sage)]/40 focus:ring-4 focus:ring-[var(--sage)]/15 disabled:bg-[var(--ivory)] disabled:opacity-70 min-h-12";
+  "premium-input w-full rounded-2xl border border-black/[0.06] bg-white/90 px-4 py-3.5 text-[15px] text-[var(--ink)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] outline-none transition-all placeholder:text-[var(--ink-soft)]/70 hover:border-[var(--sage)]/30 focus:border-[var(--teal)]/50 focus:bg-white focus:ring-[4px] focus:ring-[var(--teal)]/20 disabled:bg-[var(--ivory)] disabled:opacity-70 min-h-12";
 
 function Chip({
   active,
@@ -149,18 +156,19 @@ function Chip({
   }
 
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
+      whileTap={{ scale: 0.95 }}
       className={cn(
-        "inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-semibold transition",
+        "inline-flex min-h-11 items-center rounded-full px-4 py-2 text-sm font-semibold transition-all",
         active
-          ? "bg-[var(--sage)] text-white shadow-sm"
-          : "bg-white text-[var(--ink-soft)] ring-1 ring-black/[0.06] hover:bg-[var(--sage)]/8 hover:text-[var(--sage-deep)]",
+          ? "bg-gradient-to-b from-[var(--sage)] to-[var(--sage-deep)] text-white shadow-[0_2px_8px_rgba(93,114,94,0.3)] ring-1 ring-black/10"
+          : "bg-white text-[var(--ink-soft)] shadow-[0_1px_3px_rgba(0,0,0,0.04)] ring-1 ring-black/[0.06] hover:bg-[var(--sage)]/8 hover:text-[var(--sage-deep)] hover:shadow-md",
       )}
     >
       {children}
-    </button>
+    </motion.button>
   );
 }
 
@@ -214,6 +222,7 @@ export function PremiumPatientProfile({
 }) {
   const [editing, setEditing] = useState(false);
   const [extrasOpen, setExtrasOpen] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const age = ageFromDob(values.patient.date_of_birth);
   const completion = useMemo(() => computeProfileCompletion(values), [values]);
@@ -366,6 +375,37 @@ export function PremiumPatientProfile({
     setEditing(false);
   }
 
+  async function handleAvatarSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Max 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    const { url, error } = await uploadAvatar(file);
+    
+    if (error || !url) {
+      toast.error(error || "Failed to upload photo");
+      setUploadingAvatar(false);
+      return;
+    }
+
+    // Save URL to profile immediately
+    const res = await updateMyProfile({ avatar_url: url });
+    if (res.error) {
+      toast.error("Failed to save profile picture");
+    } else {
+      toast.success("Profile picture updated");
+      // Update local state so it shows up instantly
+      onChange({ ...values, avatar_url: url });
+    }
+    setUploadingAvatar(false);
+  }
+
   const alerts = [
     allergyActive.medicine || allergyActive.food || allergyActive.dust || allergyActive.latex
       ? "Allergies on file"
@@ -380,13 +420,57 @@ export function PremiumPatientProfile({
       <motion.header
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="overflow-hidden rounded-[24px] border border-black/[0.04] bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)] p-6 text-white shadow-[var(--shadow-elev)] sm:p-8"
+        className="relative overflow-hidden rounded-[24px] border border-black/[0.04] bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)] p-6 text-white shadow-[var(--shadow-elev)] sm:p-8"
       >
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="alive-orb alive-orb--cta-a blur-[60px]" />
+        <div className="alive-orb alive-orb--cta-b blur-[60px]" />
+        
+        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="grid h-20 w-20 place-items-center rounded-full bg-white/15 text-2xl font-extrabold ring-4 ring-white/25 backdrop-blur">
-              {initials(values.full_name)}
-            </div>
+            <label 
+              className={cn(
+                "relative block shrink-0 cursor-pointer group",
+                uploadingAvatar && "pointer-events-none opacity-80"
+              )}
+            >
+              <input 
+                type="file" 
+                accept="image/jpeg,image/png,image/webp,image/heic"
+                className="hidden" 
+                onChange={handleAvatarSelect}
+              />
+              
+              <div className="relative grid h-20 w-20 place-items-center rounded-full bg-white/15 text-2xl font-extrabold ring-4 ring-white/25 backdrop-blur transition-all group-hover:ring-white/40 overflow-hidden">
+                <div className="absolute inset-0 rounded-full bg-white/20 blur-md animate-pulse" />
+                
+                {values.avatar_url ? (
+                  <img 
+                    src={values.avatar_url} 
+                    alt="Profile" 
+                    className="absolute inset-0 h-full w-full rounded-full object-cover z-10"
+                  />
+                ) : (
+                  <span className="relative z-10">{initials(values.full_name)}</span>
+                )}
+
+                {/* Upload overlay */}
+                <div className="absolute inset-0 z-20 grid place-items-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-sm">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+
+                {/* Loading spinner */}
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 z-30 grid place-items-center rounded-full bg-black/40 backdrop-blur-sm">
+                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                  </div>
+                )}
+              </div>
+
+              {/* Permanent Edit Badge */}
+              <div className="absolute bottom-0 right-0 z-40 grid h-7 w-7 place-items-center rounded-full bg-white text-[var(--teal)] shadow-sm ring-2 ring-[var(--teal)] transition-transform group-hover:scale-110">
+                <Camera className="h-3.5 w-3.5" />
+              </div>
+            </label>
             <div>
               <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
                 Health record
@@ -447,12 +531,14 @@ export function PremiumPatientProfile({
             value: alerts.length ? String(alerts.length) : "None",
           },
         ].map(({ icon: Icon, label, value }) => (
-          <div
+          <motion.div
             key={label}
-            className="rounded-[20px] border border-black/[0.04] bg-white/80 p-4 shadow-[var(--shadow-soft)]"
+            whileHover={{ y: -4, scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="portal-glass-card group flex flex-col justify-between rounded-[20px] p-4 shadow-[var(--shadow-soft)] transition-shadow hover:shadow-[var(--shadow-elev)]"
           >
             <div className="flex items-center gap-2 text-[var(--sage-deep)]">
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4 transition-transform group-hover:scale-110 group-hover:text-[var(--teal)]" />
               <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
                 {label}
               </span>
@@ -460,7 +546,7 @@ export function PremiumPatientProfile({
             <div className="mt-2 truncate text-base font-extrabold text-[var(--ink)] capitalize">
               {value}
             </div>
-          </div>
+          </motion.div>
         ))}
       </motion.div>
 
@@ -879,18 +965,19 @@ export function PremiumPatientProfile({
 
           <SectionCard title="Next appointment" subtitle="Upcoming clinic visit" icon={Calendar}>
             {upcoming ? (
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="text-lg font-extrabold text-[var(--ink)]">
-                      {upcoming.clinics?.name || "Clinic"}
+              <div className="group relative overflow-hidden rounded-[18px] bg-gradient-to-br from-[var(--sage)]/10 via-transparent to-[var(--teal)]/5 p-4 ring-1 ring-[var(--sage)]/20 transition-all hover:ring-[var(--sage)]/40 hover:shadow-[0_8px_24px_rgba(93,114,94,0.12)]">
+                <div className="relative z-10 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="text-lg font-extrabold text-[var(--ink)]">
+                        {upcoming.clinics?.name || "Clinic"}
+                      </div>
+                      <div className="text-sm text-[var(--ink-soft)]">
+                        {upcoming.physiotherapy_categories?.name || "Physiotherapy"}
+                      </div>
                     </div>
-                    <div className="text-sm text-[var(--ink-soft)]">
-                      {upcoming.physiotherapy_categories?.name || "Physiotherapy"}
-                    </div>
+                    <StatusBadge status={upcoming.status} />
                   </div>
-                  <StatusBadge status={upcoming.status} />
-                </div>
                 <div className="flex flex-wrap gap-3 text-sm font-semibold text-[var(--ink)]">
                   <span className="inline-flex items-center gap-1.5">
                     <CalendarDays className="h-4 w-4 text-[var(--bronze)]" />
@@ -919,6 +1006,7 @@ export function PremiumPatientProfile({
                     View appointments
                   </Link>
                 )}
+                </div>
               </div>
             ) : (
               <div className="rounded-2xl bg-[var(--ivory)] px-4 py-6 text-center">
@@ -939,12 +1027,17 @@ export function PremiumPatientProfile({
             ) : (
               <ol className="space-y-0">
                 {recent.map((a, i) => (
-                  <li key={a.id} className="relative flex gap-3 pb-5 last:pb-0">
+                  <li key={a.id} className="group relative flex gap-3 pb-5 last:pb-0">
                     {i < recent.length - 1 ? (
-                      <span className="absolute left-[9px] top-5 h-[calc(100%-12px)] w-px bg-[var(--sage)]/25" />
+                      <span className="absolute left-[9px] top-5 h-[calc(100%-12px)] w-px bg-[var(--sage)]/15 transition-colors group-hover:bg-[var(--sage)]/40" />
                     ) : null}
-                    <span className="relative z-[1] mt-1 h-[18px] w-[18px] shrink-0 rounded-full bg-[var(--sage)] ring-4 ring-[var(--sage)]/15" />
-                    <div className="min-w-0">
+                    <span className={cn(
+                      "relative z-[1] mt-1 h-[18px] w-[18px] shrink-0 rounded-full ring-4 transition-all",
+                      i === 0 
+                        ? "bg-[var(--sage)] ring-[var(--sage)]/20 shadow-[0_0_12px_rgba(93,114,94,0.5)]" 
+                        : "bg-white ring-black/[0.04] border-[4px] border-white ring-inset ring-2 ring-[var(--sage)]/40 group-hover:ring-[var(--sage)]"
+                    )} />
+                    <div className="min-w-0 transition-transform group-hover:translate-x-1">
                       <div className="text-sm font-bold text-[var(--ink)] capitalize">
                         {a.status.replaceAll("_", " ")} · {a.appointment_code}
                       </div>

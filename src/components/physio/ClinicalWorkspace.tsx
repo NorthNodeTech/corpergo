@@ -94,12 +94,13 @@ function QueueCard({
       layout
       type="button"
       onClick={onSelect}
+      style={{ borderRadius: 22 }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "flex w-full gap-3 rounded-[22px] border bg-white p-3.5 text-left transition",
+        "flex w-full min-w-0 gap-3 rounded-[22px] border bg-white p-3.5 text-left transition outline-none",
         active
-          ? "border-[var(--sage)]/40 shadow-[var(--shadow-elev)] ring-2 ring-[var(--sage)]/20"
-          : "border-black/[0.05] shadow-[var(--shadow-soft)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)]",
+          ? "border-[var(--sage)]/40 bg-[var(--sage)]/5 ring-1 ring-[var(--sage)]/20"
+          : "border-black/[0.05] hover:bg-black/[0.02] hover:-translate-y-0.5",
       )}
     >
       <div className="w-12 shrink-0 pt-0.5 text-center">
@@ -236,8 +237,8 @@ export function ClinicalWorkspace() {
       </motion.section>
 
       {/* Hero workspace */}
-      <section className="mt-6 grid gap-4 lg:grid-cols-[1.15fr_0.95fr]">
-        <div className="rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
+      <section className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[1.15fr_0.95fr]">
+        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
@@ -281,7 +282,7 @@ export function ClinicalWorkspace() {
         </div>
 
         {/* Current patient */}
-        <div className="rounded-[28px] bg-gradient-to-br from-white via-white to-[var(--ivory)] p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] lg:sticky lg:top-[4.75rem]">
+        <div className="min-w-0 rounded-[28px] bg-gradient-to-br from-white via-white to-[var(--ivory)] p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] lg:sticky lg:top-[4.75rem]">
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
             Current focus
           </div>
@@ -399,7 +400,7 @@ export function ClinicalWorkspace() {
       </section>
 
       {/* Pending requests kanban-lite */}
-      <section className="mt-8">
+      <section className="mt-8 min-w-0">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
@@ -461,7 +462,7 @@ export function ClinicalWorkspace() {
       </section>
 
       {/* Insights + categories */}
-      <section className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
+      <section className="mt-8 grid min-w-0 gap-4 lg:grid-cols-[1.2fr_1fr]">
         <div>
           <div className="mb-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-[var(--bronze)]" />

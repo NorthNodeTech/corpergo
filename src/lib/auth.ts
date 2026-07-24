@@ -27,6 +27,7 @@ export type UserProfile = {
   phone: string | null;
   email: string | null;
   clinic_id: string | null;
+  avatar_url: string | null;
 };
 
 type AuthErrorBody = {
@@ -183,7 +184,7 @@ export async function fetchMyProfile(): Promise<{
   if (!session?.user?.id) return { data: null, error: "Not signed in" };
 
   const { data, error } = await supabaseRest<UserProfile[]>(
-    `profiles?id=eq.${session.user.id}&select=id,role,full_name,phone,email,clinic_id&limit=1`,
+    `profiles?id=eq.${session.user.id}&select=id,role,full_name,phone,email,clinic_id,avatar_url&limit=1`,
   );
 
   if (error) return { data: null, error };
@@ -266,4 +267,38 @@ export function rolesAllowedForPath(pathname: string): AppRole[] {
   }
   if (pathname.startsWith("/admin")) return ["admin", "super_admin"];
   return [];
+}
+
+/** Upload a profile avatar to Supabase storage */
+export async function uploadAvatar(file: File): Promise<{ url: string | null; error: string | null }> {
+  const session = getStoredSession();
+  if (!session?.user?.id) return { url: null, error: "Not signed in" };
+
+  const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
+  
+  // Use a clean, unique file path: avatars/{userId}/{timestamp}_{filename}
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${session.user.id}/${Date.now()}_avatar.${ext}`;
+  
+  const res = await fetch(`${supabaseUrl}/storage/v1/object/avatars/${path}`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": file.type || "application/octet-stream",
+    },
+    body: file,
+  });
+
+  if (!res.ok) {
+    const json = (await res.json().catch(() => ({}))) as AuthErrorBody;
+    return {
+      url: null,
+      error: json.msg || json.message || json.error || `Upload failed (${res.status})`,
+    };
+  }
+
+  // Construct the public URL
+  const publicUrl = `${supabaseUrl}/storage/v1/object/public/avatars/${path}`;
+  return { url: publicUrl, error: null };
 }
