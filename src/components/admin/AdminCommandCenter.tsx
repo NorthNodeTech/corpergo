@@ -669,19 +669,27 @@ export function AdminCommandCenter() {
           <p className="mt-1 text-sm text-[var(--ink-soft)]">Today&apos;s appointments by location</p>
           <div className="mt-4 h-64 w-full min-w-0 sm:h-72">
             <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <BarChart data={clinicBars} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                <XAxis 
+              <BarChart data={clinicBars} layout="vertical" margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorToday" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#5D725E" stopOpacity={0.8}/>
+                    <stop offset="100%" stopColor="#5D725E" stopOpacity={1}/>
+                  </linearGradient>
+                  <linearGradient id="colorPending" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#C48A3A" stopOpacity={0.8}/>
+                    <stop offset="100%" stopColor="#C48A3A" stopOpacity={1}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
+                <XAxis type="number" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
+                <YAxis 
                   dataKey="name" 
+                  type="category" 
                   tickLine={false} 
                   axisLine={false} 
+                  width={90} 
                   tick={{ fill: "#5E6A6A", fontSize: 11 }} 
-                  interval={0}
-                  angle={-45}
-                  textAnchor="end"
-                  height={50}
                 />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
                 <Tooltip
                   cursor={{ fill: "rgba(0,0,0,0.03)" }}
                   contentStyle={{
@@ -696,8 +704,8 @@ export function AdminCommandCenter() {
                   }
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: "#5E6A6A", paddingTop: 10 }} />
-                <Bar name="Today" dataKey="today" fill="#5D725E" radius={[4, 4, 0, 0]} maxBarSize={32} />
-                <Bar name="Pending" dataKey="pending" fill="#C48A3A" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                <Bar name="Today" dataKey="today" stackId="a" fill="url(#colorToday)" radius={[0, 0, 0, 0]} maxBarSize={20} />
+                <Bar name="Pending" dataKey="pending" stackId="a" fill="url(#colorPending)" radius={[0, 4, 4, 0]} maxBarSize={20} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -707,12 +715,18 @@ export function AdminCommandCenter() {
           <p className="mt-1 text-sm text-[var(--ink-soft)]">Booking intensity across the day</p>
           <div className="mt-4 h-64 w-full min-w-0 sm:h-72">
             <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <BarChart data={peakHours} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={peakHours} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorPeak" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6F9E9C" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#6F9E9C" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                 <XAxis dataKey="hour" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
                 <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
                 <Tooltip
-                  cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                  cursor={{ stroke: "rgba(0,0,0,0.1)", strokeWidth: 1, strokeDasharray: "4 4" }}
                   contentStyle={{
                     borderRadius: 12,
                     border: "1px solid rgba(0,0,0,0.06)",
@@ -721,8 +735,8 @@ export function AdminCommandCenter() {
                   }}
                   formatter={(value) => [value as number, "Bookings"]}
                 />
-                <Bar name="Bookings" dataKey="count" fill="#6F9E9C" radius={[4, 4, 0, 0]} maxBarSize={48} />
-              </BarChart>
+                <Area type="monotone" name="Bookings" dataKey="count" stroke="#6F9E9C" strokeWidth={3} fillOpacity={1} fill="url(#colorPeak)" />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>

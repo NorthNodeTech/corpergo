@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { FormEvent, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, User, Stethoscope, Sparkles } from "lucide-react";
 import logoImg from "@/assets/LOGO.webp";
-import loginImg from "@/assets/login.png";
+import loginImg from "@/assets/login.webp";
 import { signInWithPassword, resolvePostLoginPath } from "@/lib/auth";
 
 /** Shrinks the mobile logo as the visual viewport collapses (on-screen keyboard). */
