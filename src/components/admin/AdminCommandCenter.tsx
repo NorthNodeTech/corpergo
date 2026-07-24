@@ -15,7 +15,9 @@ import {
   AreaChart,
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
+  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -665,19 +667,37 @@ export function AdminCommandCenter() {
         <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
           <h3 className="text-lg font-extrabold text-[var(--ink)]">Clinic comparison</h3>
           <p className="mt-1 text-sm text-[var(--ink-soft)]">Today&apos;s appointments by location</p>
-          <div className="mt-4 h-52 w-full min-w-0 overflow-hidden sm:h-64">
+          <div className="mt-4 h-64 w-full min-w-0 sm:h-72">
             <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <BarChart data={clinicBars}>
-                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 10 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
+              <BarChart data={clinicBars} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                <XAxis 
+                  dataKey="name" 
+                  tickLine={false} 
+                  axisLine={false} 
+                  tick={{ fill: "#5E6A6A", fontSize: 11 }} 
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={50}
+                />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
                 <Tooltip
+                  cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    boxShadow: "0 8px 24px rgba(38,50,56,0.08)",
+                    fontSize: 13,
+                  }}
                   formatter={(value) => [value as number, "Count"]}
                   labelFormatter={(_, payload) =>
                     String((payload?.[0]?.payload as { full?: string } | undefined)?.full || "")
                   }
                 />
-                <Bar dataKey="today" fill="#5D725E" radius={[10, 10, 0, 0]} />
-                <Bar dataKey="pending" fill="#C48A3A" radius={[10, 10, 0, 0]} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: "#5E6A6A", paddingTop: 10 }} />
+                <Bar name="Today" dataKey="today" fill="#5D725E" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                <Bar name="Pending" dataKey="pending" fill="#C48A3A" radius={[4, 4, 0, 0]} maxBarSize={32} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -685,13 +705,23 @@ export function AdminCommandCenter() {
         <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
           <h3 className="text-lg font-extrabold text-[var(--ink)]">Peak hours</h3>
           <p className="mt-1 text-sm text-[var(--ink-soft)]">Booking intensity across the day</p>
-          <div className="mt-4 h-52 w-full min-w-0 overflow-hidden sm:h-64">
+          <div className="mt-4 h-64 w-full min-w-0 sm:h-72">
             <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <BarChart data={peakHours}>
-                <XAxis dataKey="hour" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 10 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#6F9E9C" radius={[8, 8, 0, 0]} />
+              <BarChart data={peakHours} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                <XAxis dataKey="hour" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
+                <Tooltip
+                  cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid rgba(0,0,0,0.06)",
+                    boxShadow: "0 8px 24px rgba(38,50,56,0.08)",
+                    fontSize: 13,
+                  }}
+                  formatter={(value) => [value as number, "Bookings"]}
+                />
+                <Bar name="Bookings" dataKey="count" fill="#6F9E9C" radius={[4, 4, 0, 0]} maxBarSize={48} />
               </BarChart>
             </ResponsiveContainer>
           </div>
