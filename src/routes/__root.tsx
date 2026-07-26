@@ -1,3 +1,23 @@
+// Industry-standard bypass for buggy native BarcodeDetector implementation on iOS devices.
+// WebKit's experimental BarcodeDetector implementation is currently non-functional for QR codes.
+// Disabling it on iOS forces libraries (like @yudiel/react-qr-scanner) to correctly fall back to the robust ZXing JS engine.
+if (typeof window !== "undefined") {
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (isIOS && "BarcodeDetector" in window) {
+    try {
+      // @ts-ignore
+      delete window.BarcodeDetector;
+    } catch (e) {
+      // @ts-ignore
+      window.BarcodeDetector = undefined;
+    }
+  }
+}
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
