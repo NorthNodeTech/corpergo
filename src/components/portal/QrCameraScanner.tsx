@@ -63,9 +63,7 @@ export function QrCameraScanner({ onScan, paused = false, className }: QrCameraS
         const size = Math.floor(Math.min(w, h) * 0.72);
         return { width: size, height: size };
       },
-      aspectRatio: 1.333,
       disableFlip: false,
-      videoConstraints: undefined as MediaTrackConstraints | undefined,
     };
 
     async function waitForHost() {
@@ -143,18 +141,18 @@ export function QrCameraScanner({ onScan, paused = false, className }: QrCameraS
 
         const attempts: Array<{ label: string; camera: string | MediaTrackConstraints }> = [];
 
-        // 1) Prefer rear camera on phones via facingMode (no deviceId needed)
+        // 1) iOS Safari prefers exact facingMode string
         attempts.push({
           label: "Back camera",
+          camera: { facingMode: "environment" },
+        });
+        attempts.push({
+          label: "Back camera (fallback)",
           camera: { facingMode: { ideal: "environment" } },
         });
         attempts.push({
           label: "Front camera",
-          camera: { facingMode: { ideal: "user" } },
-        });
-        attempts.push({
-          label: "Any camera",
-          camera: { facingMode: "environment" },
+          camera: { facingMode: "user" },
         });
 
         // 2) Then explicit device IDs from the device list
@@ -400,10 +398,10 @@ export function QrCameraScanner({ onScan, paused = false, className }: QrCameraS
         #${regionId} img,
         #${regionId} #qr-shaded-region,
         #${regionId} [id*="qr-shaded"] {
-          display: none !important;
-          visibility: hidden !important;
           opacity: 0 !important;
           pointer-events: none !important;
+          position: absolute !important;
+          z-index: -1 !important;
         }
       `}</style>
     </div>

@@ -501,34 +501,34 @@ function Treatments() {
           <span>Explore</span>
           <ArrowRight className="alive-nudge h-3.5 w-3.5" />
         </div>
-      </div>
 
-      {/*
-        Mobile: narrower card so the next one peeks in before any swipe.
-        No opacity:0 on enter — peeked cards must stay visible.
-      */}
-      <div className="treatments-scroll mt-8 flex gap-3 overflow-x-auto overscroll-x-contain scroll-pl-4 pb-4 pl-4 pr-0 snap-x snap-mandatory sm:gap-5 sm:scroll-pl-6 sm:pl-6 sm:pr-6">
-        {TREATMENTS.map(({ icon: Icon, title, desc }, i) => (
-          <motion.div
-            key={title}
-            initial={{ opacity: 1, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.05 }}
-            transition={{ delay: Math.min(i, 2) * 0.04, duration: 0.45 }}
-            whileHover={{ y: -6 }}
-            className="group relative w-[calc(100vw-5.25rem)] max-w-[20rem] shrink-0 grow-0 snap-start rounded-3xl bg-[var(--ivory)] p-6 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] transition-all overflow-hidden sm:w-[20rem] lg:w-[21rem]"
-          >
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--sage)] via-[var(--teal)] to-[var(--bronze)] opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[var(--sage)]/10 text-[var(--sage-deep)] group-hover:bg-[var(--sage)] group-hover:text-white transition-colors">
-              <Icon className="h-6 w-6" />
-            </div>
-            <div className="mt-5 text-lg font-bold text-[var(--ink)] leading-snug">{title}</div>
-            <div className="mt-2 text-sm text-[var(--ink-soft)] leading-relaxed">{desc}</div>
-            <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-[var(--sage-deep)] opacity-0 group-hover:opacity-100 transition-opacity">
-              Learn more <ArrowRight className="h-4 w-4" />
-            </div>
-          </motion.div>
-        ))}
+        {/*
+          Mobile: narrower card so the next one peeks in before any swipe.
+          No opacity:0 on enter — peeked cards must stay visible.
+        */}
+        <div className="treatments-scroll -mr-4 mt-8 flex gap-4 overflow-x-auto overscroll-x-contain scroll-pr-4 pb-4 pr-4 snap-x snap-mandatory sm:-mr-6 sm:gap-5 sm:scroll-pr-6 sm:pr-6 md:mr-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:pb-0 md:pr-0 md:snap-none lg:grid-cols-4 lg:gap-6">
+          {TREATMENTS.map(({ icon: Icon, title, desc }, i) => (
+            <motion.div
+              key={title}
+              initial={{ opacity: 1, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.05 }}
+              transition={{ delay: Math.min(i, 2) * 0.04, duration: 0.45 }}
+              whileHover={{ y: -6 }}
+              className="group relative w-[calc(100vw-5.25rem)] max-w-[20rem] shrink-0 grow-0 snap-start rounded-3xl bg-[var(--ivory)] p-6 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] transition-all overflow-hidden sm:w-[20rem] md:w-auto md:max-w-none"
+            >
+              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--sage)] via-[var(--teal)] to-[var(--bronze)] opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[var(--sage)]/10 text-[var(--sage-deep)] group-hover:bg-[var(--sage)] group-hover:text-white transition-colors">
+                <Icon className="h-6 w-6" />
+              </div>
+              <div className="mt-5 text-lg font-bold text-[var(--ink)] leading-snug">{title}</div>
+              <div className="mt-2 text-sm text-[var(--ink-soft)] leading-relaxed">{desc}</div>
+              <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-[var(--sage-deep)] opacity-0 group-hover:opacity-100 transition-opacity">
+                Learn more <ArrowRight className="h-4 w-4" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
