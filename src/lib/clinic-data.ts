@@ -24,6 +24,7 @@ export type Category = {
 
 export type Appointment = {
   id: string;
+  created_at: string;
   appointment_code: string;
   preferred_date: string;
   preferred_time: string;
@@ -72,7 +73,7 @@ export type QrTicket = {
 };
 
 const APPOINTMENT_SELECT =
-  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),physiotherapists(id,profiles(full_name))";
+  "id,created_at,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),physiotherapists(id,profiles(full_name))";
 
 export async function fetchClinics() {
   return supabaseRest<Clinic[]>(
@@ -98,7 +99,7 @@ export async function fetchPatientById(patientId: string) {
 
 export async function fetchMyAppointments() {
   return supabaseRest<Appointment[]>(
-    `appointments?deleted_at=is.null&select=${APPOINTMENT_SELECT}&order=preferred_date.desc,preferred_time.desc`,
+    `appointments?deleted_at=is.null&select=${APPOINTMENT_SELECT}&order=created_at.desc`,
   );
 }
 

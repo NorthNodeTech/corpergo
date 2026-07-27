@@ -207,16 +207,18 @@ function Nav() {
           <div className="flex items-center gap-2">
             <Link
               to="/login"
-              className="hidden sm:inline-flex items-center px-3 py-1.5 text-sm font-medium text-[var(--ink)]/80 hover:text-[var(--sage-deep)] transition-colors"
+              className="inline-flex items-center px-2.5 py-1.5 text-xs sm:text-sm font-medium text-[var(--ink)]/80 hover:text-[var(--sage-deep)] transition-colors"
             >
               Login
             </Link>
             <Link
               to="/login"
-              className="group inline-flex items-center gap-1.5 rounded-full bg-[var(--sage)] px-4 sm:px-5 py-2 text-sm font-semibold text-white shadow-[var(--shadow-soft)] hover:bg-[var(--sage-deep)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5"
+              className="group inline-flex items-center gap-1 rounded-full bg-[var(--sage)] px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] hover:bg-[var(--sage-deep)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5"
             >
-              Book Appointment
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <span>
+                Book<span className="hidden sm:inline"> Appointment</span>
+              </span>
+              <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
             <button
               onClick={() => setOpen((v) => !v)}
@@ -243,6 +245,14 @@ function Nav() {
                 {label}
               </a>
             ))}
+            <div className="my-1 border-t border-black/[0.05]" />
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-3 text-sm font-semibold text-[var(--ink)]/85 hover:bg-white/50 rounded-xl text-left"
+            >
+              Login
+            </Link>
           </motion.div>
         )}
       </div>
