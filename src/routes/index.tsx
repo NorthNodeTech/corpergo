@@ -185,19 +185,19 @@ function Nav() {
             <img
               src={logoImg}
               alt="CorpErgo"
-              className="h-12 w-auto sm:h-14 object-contain object-left transition-opacity duration-300 group-hover:opacity-90"
-              width={56}
-              height={56}
+              className="h-16 w-auto sm:h-20 lg:h-24 object-contain object-left transition-all duration-300 group-hover:opacity-90 drop-shadow-sm"
+              width={96}
+              height={96}
               decoding="async"
             />
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-0.5">
+          <nav className="hidden lg:flex items-center gap-1.5">
             {items.map(([label, href]) => (
               <a
                 key={label}
                 href={href}
-                className="relative px-3.5 py-1.5 text-sm font-medium text-[var(--ink)]/80 hover:text-[var(--sage-deep)] transition-colors"
+                className="rounded-full bg-[#06261E] px-4 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105"
               >
                 {label}
               </a>
@@ -207,18 +207,18 @@ function Nav() {
           <div className="flex items-center gap-2">
             <Link
               to="/login"
-              className="inline-flex items-center px-2.5 py-1.5 text-xs sm:text-sm font-medium text-[var(--ink)]/80 hover:text-[var(--sage-deep)] transition-colors"
+              className="inline-flex items-center rounded-full bg-[#06261E] px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105"
             >
               Login
             </Link>
             <Link
               to="/login"
-              className="group inline-flex items-center gap-1 rounded-full bg-[var(--sage)] px-3 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] hover:bg-[var(--sage-deep)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5"
+              className="group inline-flex items-center gap-1 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5"
             >
               <span>
                 Book<span className="hidden sm:inline"> Appointment</span>
               </span>
-              <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
             <button
               onClick={() => setOpen((v) => !v)}
@@ -273,16 +273,18 @@ function Hero() {
     <section className="hero-fit relative">
       {/* Full-bleed hero background — subjects stay right; copy sits in the left clear zone */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
-        <img
-          src={heroImg}
-          alt=""
-          fetchPriority="high"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover object-[78%_42%] sm:object-[72%_40%] lg:object-[right_center]"
+        <video
+          src="/hero_corpergo.mp4"
+          poster={heroImg}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[var(--ivory)] from-0% via-[var(--ivory)]/98 via-[48%] to-transparent to-[88%] sm:via-[var(--ivory)]/96 sm:via-[42%] sm:to-[72%] lg:via-[var(--ivory)]/90 lg:via-[48%] lg:to-[58%]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--ivory)]/95 via-[var(--ivory)]/35 to-[var(--ivory)]/40 sm:from-[var(--ivory)]/70 sm:via-transparent sm:to-[var(--ivory)]/20 lg:from-transparent lg:via-transparent lg:to-[var(--ivory)]/12" />
-        <div className="absolute inset-0 grain opacity-[0.35]" />
+        {/* Subtle dark scrim so white text is readable directly on the video */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/15" />
       </div>
 
       <div className="hero-fit__inner relative z-10">
@@ -293,10 +295,10 @@ function Hero() {
             animate="show"
             className="max-w-[34rem] lg:max-w-[36rem]"
           >
-            <motion.h1 variants={fadeItem} className="hero-fit__title text-[#1a2428] text-balance">
+            <motion.h1 variants={fadeItem} className="hero-fit__title text-white text-balance drop-shadow-lg">
               Relieve pain.
               <br />
-              <span className="text-[var(--sage-deep)]">Restore</span>{" "}
+              <span className="text-[#A8E6CF]">Restore</span>{" "}
               <span className="relative inline-block">
                 movement.
                 <svg
@@ -308,7 +310,7 @@ function Hero() {
                 >
                   <motion.path
                     d="M2 7 Q 75 2, 150 6 T 298 5"
-                    stroke="var(--bronze)"
+                    stroke="#E05A8D"
                     strokeWidth="3"
                     strokeLinecap="round"
                     fill="none"
@@ -320,7 +322,7 @@ function Hero() {
               </span>
             </motion.h1>
 
-            <motion.p variants={fadeItem} className="hero-fit__body text-[#2f3a3c]">
+            <motion.p variants={fadeItem} className="hero-fit__body text-white/85 drop-shadow-sm">
               Professional physiotherapy for pain relief, mobility restoration,
               neurological rehabilitation, sports injuries and long-term wellness —
               delivered by certified physiotherapists.
@@ -329,14 +331,14 @@ function Hero() {
             <motion.div variants={fadeItem} className="hero-fit__actions flex flex-col sm:flex-row sm:flex-wrap sm:items-center">
               <Link
                 to="/login"
-                className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--sage)] font-semibold text-white shadow-[var(--shadow-elev)] transition-all hover:-translate-y-0.5 hover:bg-[var(--sage-deep)] sm:w-auto"
+                className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 sm:w-auto"
               >
                 Book Appointment
                 <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
               </Link>
               <a
                 href="#treatments"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/85 font-semibold text-[var(--ink)] shadow-sm ring-1 ring-black/5 backdrop-blur-md transition-all hover:bg-white sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/20 font-semibold text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md transition-all hover:bg-white/30 sm:w-auto"
               >
                 Explore Treatments
               </a>
@@ -348,8 +350,8 @@ function Hero() {
             >
               {heroStats.map(([n, l]) => (
                 <div key={l} className="text-left">
-                  <div className="hero-fit__stat-n font-extrabold text-[var(--ink)]">{n}</div>
-                  <div className="hero-fit__stat-l mt-0.5 font-semibold uppercase tracking-widest text-[var(--ink-soft)]">
+                  <div className="hero-fit__stat-n font-extrabold text-white drop-shadow-sm">{n}</div>
+                  <div className="hero-fit__stat-l mt-0.5 font-semibold uppercase tracking-widest text-white/70">
                     {l}
                   </div>
                 </div>
@@ -362,12 +364,12 @@ function Hero() {
           variants={fadeItem}
           initial="hidden"
           animate="show"
-          className="hero-fit__stats grid grid-cols-3 rounded-2xl bg-white/50 p-3 shadow-sm ring-1 ring-black/[0.04] backdrop-blur-md sm:hidden"
+          className="hero-fit__stats grid grid-cols-3 rounded-2xl bg-black/30 p-3 shadow-sm ring-1 ring-white/15 backdrop-blur-md sm:hidden"
         >
           {heroStats.map(([n, l]) => (
             <div key={l} className="text-center">
-              <div className="hero-fit__stat-n font-extrabold text-[var(--ink)]">{n}</div>
-              <div className="hero-fit__stat-l mt-0.5 font-semibold uppercase tracking-widest text-[var(--ink-soft)]">
+              <div className="hero-fit__stat-n font-extrabold text-white">{n}</div>
+              <div className="hero-fit__stat-l mt-0.5 font-semibold uppercase tracking-widest text-white/70">
                 {l}
               </div>
             </div>
@@ -506,17 +508,11 @@ function Treatments() {
             protocols — not a template.
           </p>
         </motion.div>
-
-        <div className="mt-6 flex items-center justify-end gap-2 text-xs uppercase tracking-[0.22em] text-[var(--bronze)]">
-          <span>Explore</span>
-          <ArrowRight className="alive-nudge h-3.5 w-3.5" />
-        </div>
-
         {/*
           Mobile: narrower card so the next one peeks in before any swipe.
           No opacity:0 on enter — peeked cards must stay visible.
         */}
-        <div className="treatments-scroll -mr-4 mt-8 flex gap-4 overflow-x-auto overscroll-x-contain scroll-pr-4 pb-4 pr-4 snap-x snap-mandatory sm:-mr-6 sm:gap-5 sm:scroll-pr-6 sm:pr-6 md:mr-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:pb-0 md:pr-0 md:snap-none lg:grid-cols-4 lg:gap-6">
+        <div className="treatments-scroll mt-8 flex gap-4 overflow-x-auto overscroll-x-contain scroll-pr-4 pb-4 pr-4 snap-x snap-mandatory sm:-mr-6 sm:gap-5 sm:scroll-pr-6 sm:pr-6 md:mr-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:pb-0 md:pr-0 md:snap-none lg:grid-cols-4 lg:gap-6">
           {TREATMENTS.map(({ icon: Icon, title, desc }, i) => (
             <motion.div
               key={title}
@@ -524,18 +520,13 @@ function Treatments() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.05 }}
               transition={{ delay: Math.min(i, 2) * 0.04, duration: 0.45 }}
-              whileHover={{ y: -6 }}
-              className="group relative w-[calc(100vw-5.25rem)] max-w-[20rem] shrink-0 grow-0 snap-start rounded-3xl bg-[var(--ivory)] p-6 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] transition-all overflow-hidden sm:w-[20rem] md:w-auto md:max-w-none"
+              className="group relative w-[calc(100vw-5.25rem)] max-w-[20rem] shrink-0 grow-0 snap-start rounded-3xl bg-[var(--ivory)] p-6 border-2 border-transparent shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] transition-all overflow-hidden sm:w-[20rem] md:w-auto md:max-w-none landing-card-hover"
             >
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--sage)] via-[var(--teal)] to-[var(--bronze)] opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[var(--sage)]/10 text-[var(--sage-deep)] group-hover:bg-[var(--sage)] group-hover:text-white transition-colors">
                 <Icon className="h-6 w-6" />
               </div>
               <div className="mt-5 text-lg font-bold text-[var(--ink)] leading-snug">{title}</div>
               <div className="mt-2 text-sm text-[var(--ink-soft)] leading-relaxed">{desc}</div>
-              <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-[var(--sage-deep)] opacity-0 group-hover:opacity-100 transition-opacity">
-                Learn more <ArrowRight className="h-4 w-4" />
-              </div>
             </motion.div>
           ))}
         </div>
@@ -574,8 +565,7 @@ function WhyChoose() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.06 }}
-              className="group relative min-w-[17.5rem] max-w-[17.5rem] shrink-0 snap-start rounded-3xl p-7 bg-white ring-1 ring-black/[0.05] hover:ring-[var(--sage)]/20 transition-all shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] overflow-hidden sm:min-w-[19rem] sm:max-w-[19rem] sm:p-8 md:min-w-0 md:max-w-none"
+              className="group relative min-w-[17.5rem] max-w-[17.5rem] shrink-0 snap-start rounded-3xl p-7 bg-white border-2 border-transparent transition-all shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] overflow-hidden sm:min-w-[19rem] sm:max-w-[19rem] sm:p-8 md:min-w-0 md:max-w-none landing-card-hover"
             >
               <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[var(--sage)]/8 group-hover:scale-125 transition-transform duration-700" />
               <div className="relative">
@@ -796,9 +786,7 @@ function Physios() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -8 }}
-              className="group min-w-[16.5rem] max-w-[16.5rem] shrink-0 snap-start rounded-3xl bg-white p-5 ring-1 ring-black/[0.05] hover:shadow-[var(--shadow-elev)] transition-all sm:min-w-[18rem] sm:max-w-[18rem] sm:p-6 lg:min-w-0 lg:max-w-none"
+              className="group min-w-[16.5rem] max-w-[16.5rem] shrink-0 snap-start rounded-3xl bg-white p-5 border-2 border-transparent hover:shadow-[var(--shadow-elev)] transition-all sm:min-w-[18rem] sm:max-w-[18rem] sm:p-6 lg:min-w-0 lg:max-w-none landing-card-hover"
             >
               <div className="relative aspect-square rounded-2xl overflow-hidden mb-5 bg-[var(--ivory)]">
                 <img
@@ -896,17 +884,17 @@ function Clinics() {
             <ChevronLeft className="h-5 w-5" />
           </button>
 
-          <div className="relative mx-auto h-[320px] w-full max-w-4xl px-1 sm:h-[340px]">
+          <div className="relative mx-auto h-[380px] w-full max-w-6xl px-1 sm:h-[420px] [--carousel-offset:13.5rem] sm:[--carousel-offset:22rem] lg:[--carousel-offset:28rem]">
             {CLINICS.map((c, i) => {
               const d = offsetOf(i);
               const visible = Math.abs(d) <= 1;
               return (
                 <motion.div
                   key={c.name}
-                  className="absolute left-1/2 top-1/2 w-[min(100%,18.5rem)] sm:w-[20rem]"
+                  className="absolute left-1/2 top-1/2 w-[min(calc(100vw-3rem),21rem)] sm:w-[26rem] lg:w-[28rem]"
                   initial={false}
                   animate={{
-                    x: `calc(-50% + ${d * 15.5}rem)`,
+                    x: `calc(-50% + ${d} * var(--carousel-offset))`,
                     y: "-50%",
                     scale: d === 0 ? 1 : 0.88,
                     opacity: visible ? (d === 0 ? 1 : 0.55) : 0,
@@ -917,10 +905,10 @@ function Clinics() {
                   aria-hidden={!visible}
                 >
                   <div
-                    className={`group rounded-3xl bg-white p-6 ring-1 transition-shadow ${
+                    className={`group rounded-3xl bg-white p-7 border-2 border-transparent transition-all landing-card-hover ${
                       d === 0
-                        ? "shadow-[var(--shadow-elev)] ring-black/[0.06]"
-                        : "shadow-[var(--shadow-soft)] ring-black/[0.04]"
+                        ? "shadow-[var(--shadow-elev)]"
+                        : "shadow-[var(--shadow-soft)]"
                     }`}
                   >
                     <div className="flex items-start justify-between">
@@ -1084,11 +1072,11 @@ function CTA() {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.75, ease: easeOut }}
-          className="relative overflow-hidden rounded-[36px] p-10 sm:p-16 lg:p-20 grain"
-          style={{ background: "linear-gradient(135deg, #47563F 0%, #5D725E 40%, #6F9E9C 100%)" }}
+          className="relative overflow-hidden rounded-[36px] p-10 sm:p-16 lg:p-20 border-2 border-[#06261E] grain"
+          style={{ background: "#06261E" }}
         >
           <div className="alive-orb alive-orb--cta-a absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-          <div className="alive-orb alive-orb--cta-b absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-[var(--bronze)]/20 blur-3xl" />
+          <div className="alive-orb alive-orb--cta-b absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-[#E05A8D]/20 blur-3xl" />
           <div className="relative max-w-3xl">
             <motion.div
               variants={stagger}
@@ -1096,20 +1084,20 @@ function CTA() {
               whileInView="show"
               viewport={{ once: true }}
             >
-              <motion.div variants={fadeItem} className="text-xs uppercase tracking-[0.22em] text-white/70 font-semibold">Ready when you are</motion.div>
-              <motion.h2 variants={fadeItem} className="mt-4 text-4xl sm:text-6xl font-extrabold tracking-tight text-white text-balance leading-[1.05]">
+              <motion.div variants={fadeItem} className="text-xs uppercase tracking-[0.22em] text-white/80 font-bold">Ready when you are</motion.div>
+              <motion.h2 variants={fadeItem} className="mt-4 text-4xl sm:text-6xl font-extrabold tracking-tight text-white drop-shadow-md text-balance leading-[1.05]">
                 Ready to start your recovery journey?
               </motion.h2>
-              <motion.p variants={fadeItem} className="mt-5 text-lg text-white/80 max-w-xl">
+              <motion.p variants={fadeItem} className="mt-5 text-lg text-white/90 font-medium max-w-xl">
                 Book a first assessment with a certified CorpErgo physiotherapist —
                 at the clinic closest to you.
               </motion.p>
               <motion.div variants={fadeItem} className="mt-8 flex flex-wrap gap-3">
-                <Link to="/login" className="group alive-cta inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-[var(--sage-deep)] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl">
+                <Link to="/login" className="group alive-cta inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[#053926] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl">
                   Book Appointment
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
-                <a href="tel:+911234567890" className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-6 py-3.5 text-sm font-semibold text-white ring-1 ring-white/20 hover:bg-white/20 transition-all">
+                <a href="tel:+911234567890" className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-6 py-3.5 text-sm font-bold text-white ring-1 ring-white/30 hover:bg-white/20 transition-all">
                   <Phone className="h-4 w-4" /> Call us
                 </a>
               </motion.div>
@@ -1125,16 +1113,16 @@ function CTA() {
 
 function Footer() {
   return (
-    <footer id="contact" className="bg-[#2E3B33] text-white/80">
+    <footer id="contact" className="bg-[#06261E] text-white/80">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
             <img
               src={logoImg}
               alt="CorpErgo"
-              className="h-16 w-auto object-contain object-left brightness-110"
-              width={64}
-              height={64}
+              className="h-20 w-auto sm:h-24 object-contain object-left brightness-110 drop-shadow-md"
+              width={96}
+              height={96}
               decoding="async"
             />
             <p className="mt-5 text-[10px] uppercase tracking-[0.2em] text-white/50 font-semibold">

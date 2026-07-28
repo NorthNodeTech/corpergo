@@ -41,68 +41,76 @@
   --color-sage-deep: var(--sage-deep);
   --color-teal: var(--teal);
   --color-bronze: var(--bronze);
+  --color-pink-main: var(--pink-main);
+  --color-pink-hover: var(--pink-hover);
+  --color-pink-light: var(--pink-light);
   --color-ivory: var(--ivory);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
 
-  --shadow-soft: 0 2px 4px rgba(38, 50, 56, 0.05), 0 12px 32px rgba(93, 114, 94, 0.12);
-  --shadow-elev: 0 8px 24px rgba(38, 50, 56, 0.1), 0 28px 56px rgba(93, 114, 94, 0.18);
+  --shadow-soft: 0 4px 20px rgba(15, 107, 88, 0.08), 0 1px 3px rgba(224, 90, 141, 0.06);
+  --shadow-elev: 0 12px 36px rgba(15, 107, 88, 0.14), 0 4px 16px rgba(224, 90, 141, 0.12);
   --hover-lift: -4px;
   --hover-scale: 1.02;
   --hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --gradient-sage: linear-gradient(135deg, oklch(0.52 0.04 145) 0%, oklch(0.62 0.05 175) 100%);
-  --gradient-warm: linear-gradient(135deg, #FAF8F5 0%, #F1EDE4 100%);
+  --gradient-sage: linear-gradient(135deg, #0F6B58 0%, #00A896 100%);
+  --gradient-pink: linear-gradient(135deg, #E05A8D 0%, #F58DB2 100%);
+  --gradient-warm: linear-gradient(135deg, #FCF6F8 0%, #FCE8EF 100%);
 }
 
 :root {
-  --sage: #5D725E;
-  --sage-deep: #47563F;
-  --teal: #6F9E9C;
-  --bronze: #9A7059;
-  --ivory: #FAF8F5;
-  --ink: #263238;
-  --ink-soft: #5E6A6A;
+  --sage: #0F6B58;
+  --sage-deep: #06261E;
+  --teal: #00A896;
+  --bronze: #E05A8D;
+  --pink-main: #E05A8D;
+  --pink-hover: #C94B7C;
+  --pink-light: #FAD6DE;
+  --pink-subtle: #FCE8EF;
+  --ivory: #E8F3EF;
+  --ink: #06261E;
+  --ink-soft: #1D4A3E;
 
   --radius: 16px;
-  --background: #FAF8F5;
-  --foreground: #263238;
+  --background: #E8F3EF;
+  --foreground: #06261E;
   --card: #FFFFFF;
-  --card-foreground: #263238;
+  --card-foreground: #06261E;
   --popover: #FFFFFF;
-  --popover-foreground: #263238;
-  --primary: #5D725E;
-  --primary-foreground: #FAF8F5;
-  --secondary: #EEE8DD;
-  --secondary-foreground: #263238;
-  --muted: #F1EDE4;
-  --muted-foreground: #5E6A6A;
-  --accent: #9A7059;
-  --accent-foreground: #FAF8F5;
-  --destructive: #C46A6A;
-  --destructive-foreground: #FAF8F5;
-  --border: rgba(38, 50, 56, 0.08);
-  --input: rgba(38, 50, 56, 0.12);
-  --ring: #6F9E9C;
+  --popover-foreground: #06261E;
+  --primary: #E05A8D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FCE8EF;
+  --secondary-foreground: #C94B7C;
+  --muted: #D5ECE4;
+  --muted-foreground: #1D4A3E;
+  --accent: #00A896;
+  --accent-foreground: #FFFFFF;
+  --destructive: #E53935;
+  --destructive-foreground: #FFFFFF;
+  --border: #06261E;
+  --input: #06261E;
+  --ring: #E05A8D;
 }
 
 .dark {
-  --background: #1B2320;
-  --foreground: #FAF8F5;
-  --card: #232C29;
-  --card-foreground: #FAF8F5;
-  --popover: #232C29;
-  --popover-foreground: #FAF8F5;
-  --primary: #8FA890;
-  --primary-foreground: #1B2320;
-  --secondary: #2E3936;
-  --secondary-foreground: #FAF8F5;
-  --muted: #2E3936;
-  --muted-foreground: #B8C2BF;
-  --accent: #C89478;
-  --accent-foreground: #1B2320;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #6F9E9C;
+  --background: #071914;
+  --foreground: #FCF6F8;
+  --card: #0E2922;
+  --card-foreground: #FCF6F8;
+  --popover: #0E2922;
+  --popover-foreground: #FCF6F8;
+  --primary: #E05A8D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #1B3D34;
+  --secondary-foreground: #FAD6DE;
+  --muted: #12332B;
+  --muted-foreground: #A3C7BD;
+  --accent: #00A896;
+  --accent-foreground: #FFFFFF;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.16);
+  --ring: #E05A8D;
 }
 
 @layer base {
@@ -783,54 +791,56 @@
   opacity: 0.9;
 }
 
-.portal-glass,
-.portal-glass-header,
-.portal-glass-sidebar,
-.portal-glass-card,
-.portal-glass-chip {
-  background: color-mix(in oklab, white 72%, transparent);
-  backdrop-filter: blur(22px) saturate(180%);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-  border: 1px solid color-mix(in oklab, white 70%, transparent);
+.portal-shell .portal-glass,
+.portal-shell .portal-glass-header,
+.portal-shell .portal-glass-sidebar,
+.portal-shell .portal-glass-card,
+.portal-shell .portal-glass-chip,
+.portal-shell .card,
+.portal-shell [class*="rounded-[28px]"],
+.portal-shell [class*="rounded-[24px]"],
+.portal-shell [class*="rounded-2xl"],
+.portal-shell [class*="rounded-3xl"] {
+  border: 1.5px solid rgba(6, 38, 30, 0.35) !important;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.65) inset,
-    0 8px 28px rgba(38, 50, 56, 0.06);
+    0 4px 20px rgba(6, 38, 30, 0.08),
+    0 1px 3px rgba(15, 107, 88, 0.12);
 }
 
 .portal-glass-header {
-  background: color-mix(in oklab, white 55%, transparent);
-  border-bottom: 1px solid color-mix(in oklab, white 50%, rgba(38, 50, 56, 0.06));
-  border-left: 0;
-  border-right: 0;
-  border-top: 0;
-  border-radius: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 2px solid rgba(6, 38, 30, 0.35) !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 0 !important;
+  border-radius: 0 !important;
 }
 
 .portal-glass-sidebar {
-  background: color-mix(in oklab, white 68%, transparent);
-  border-radius: 0;
-  box-shadow: none;
+  background: rgba(255, 255, 255, 0.96);
+  border-right: 2px solid rgba(6, 38, 30, 0.35) !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 0 16px rgba(6, 38, 30, 0.06);
 }
 
 .portal-glass-dock {
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(40px) saturate(200%) contrast(100%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%) contrast(100%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(40px) saturate(200%);
+  border: 2px solid rgba(6, 38, 30, 0.35) !important;
+  border-top: 2.5px solid #E05A8D !important;
   box-shadow:
-    0 1px 1.5px inset rgba(255, 255, 255, 0.9),
-    0 -1px 2px inset rgba(255, 255, 255, 0.3),
-    0 24px 48px rgba(0, 0, 0, 0.15),
-    0 8px 16px rgba(0, 0, 0, 0.08);
+    0 24px 48px rgba(6, 38, 30, 0.22),
+    0 8px 20px rgba(15, 107, 88, 0.15);
 }
 
 .portal-glass-card {
+  border: 1.5px solid rgba(6, 38, 30, 0.35) !important;
   box-shadow: var(--shadow-soft);
 }
 
 .portal-glass-chip {
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 4px 14px rgba(38, 50, 56, 0.06);
+  border: 1.5px solid rgba(6, 38, 30, 0.35) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 4px 14px rgba(6, 38, 30, 0.06);
 }
 
 @keyframes portal-scan-pulse {
@@ -881,4 +891,15 @@
 
 .premium-input:focus {
   box-shadow: 0 0 0 4px color-mix(in oklab, var(--sage) 18%, transparent);
+}
+
+/* Premium pinkish hover effect for landing page cards */
+.landing-card-hover {
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.landing-card-hover:hover {
+  background-color: #FCE8EF !important;
+  border-color: #E05A8D !important;
+  box-shadow: 0 12px 32px rgba(224, 90, 141, 0.18) !important;
 }

@@ -1,14 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, User, Stethoscope, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, User, Stethoscope, Sparkles, Eye, EyeOff } from "lucide-react";
 import logoImg from "@/assets/LOGO.webp";
 import loginImg from "@/assets/login.webp";
 import { signInWithPassword, resolvePostLoginPath } from "@/lib/auth";
 
 /** Shrinks the mobile logo as the visual viewport collapses (on-screen keyboard). */
 function useKeyboardAwareLogoHeight() {
-  const [height, setHeight] = useState(156);
+  const [height, setHeight] = useState(210);
   const [compact, setCompact] = useState(false);
 
   useEffect(() => {
@@ -18,8 +18,8 @@ function useKeyboardAwareLogoHeight() {
       const layoutH = window.innerHeight || 1;
       const visualH = vv?.height ?? layoutH;
       const ratio = Math.min(1, visualH / layoutH);
-      // Full (~156px) → keyboard (~52px)
-      setHeight(Math.round(52 + ratio * 104));
+      // Full (~210px) → keyboard (~70px)
+      setHeight(Math.round(70 + ratio * 140));
       setCompact(ratio < 0.78);
     };
 
@@ -77,6 +77,7 @@ function LoginPage() {
   const [portal, setPortal] = useState<PortalId>("patient");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const active = PORTALS.find((p) => p.id === portal)!;
@@ -114,21 +115,21 @@ function LoginPage() {
     <main className="min-h-dvh bg-[var(--ivory)] grid lg:grid-cols-2">
       <div
         className="relative hidden lg:block overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #47563F 0%, #5D725E 60%, #6F9E9C 100%)" }}
+        style={{ background: "linear-gradient(135deg, #06261E 0%, #0F6B58 60%, #00A896 100%)" }}
       >
         <img 
           src={loginImg} 
           alt="Background" 
-          className="absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-overlay" 
+          className="absolute inset-0 h-full w-full object-cover opacity-25 mix-blend-overlay" 
         />
         <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[var(--bronze)]/20 blur-3xl" />
+        <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[var(--pink-main)]/25 blur-3xl" />
         <div className="absolute inset-0 grain opacity-60" />
 
         <div className="relative h-full flex flex-col justify-between p-12 text-white">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white"
+            className="inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4" /> Back home
           </Link>
@@ -137,7 +138,7 @@ function LoginPage() {
             <h1 className="text-5xl font-extrabold tracking-tight leading-[1.05] text-balance">
               Your recovery journey, all in one place.
             </h1>
-            <p className="mt-5 text-white/80 text-lg max-w-md">
+            <p className="mt-5 text-white/85 text-lg max-w-md">
               Manage appointments, view reports and stay connected with your
               physiotherapist across all five CorpErgo clinics.
             </p>
@@ -147,14 +148,14 @@ function LoginPage() {
             <img
               src={logoImg}
               alt="CorpErgo"
-              className="h-16 w-auto object-contain object-left drop-shadow-sm"
-              width={64}
-              height={64}
+              className="h-20 w-auto object-contain object-left drop-shadow-md sm:h-24"
+              width={96}
+              height={96}
               decoding="async"
             />
             <div className="border-l border-white/20 pl-4">
               <div className="text-sm font-semibold tracking-wide">Physiotherapy</div>
-              <div className="text-xs text-white/60 mt-0.5">Bengaluru · 5 Clinics</div>
+              <div className="text-xs text-white/70 mt-0.5">Bengaluru · 5 Clinics</div>
             </div>
           </div>
         </div>
@@ -199,10 +200,10 @@ function LoginPage() {
                   alt="CorpErgo"
                   animate={{ height: logoHeight }}
                   transition={{ type: "spring", stiffness: 320, damping: 34 }}
-                  className="w-auto max-w-[min(100%,14rem)] object-contain"
+                  className="w-auto max-w-[min(100%,18rem)] object-contain"
                   style={{ height: logoHeight }}
-                  width={224}
-                  height={224}
+                  width={280}
+                  height={280}
                   decoding="async"
                 />
               </Link>
@@ -275,21 +276,35 @@ function LoginPage() {
               <label className="text-xs font-bold uppercase tracking-widest text-[var(--ink-soft)]">
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                className="mt-2 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-5 py-3.5 text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
-              />
+              <div className="relative mt-2">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className="w-full rounded-2xl bg-white ring-1 ring-black/[0.08] pl-5 pr-12 py-3.5 text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-[var(--ink-soft)] hover:text-[var(--sage)] focus:outline-none rounded-lg transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <label className="flex items-center gap-2 text-[var(--ink-soft)]">
-                <input type="checkbox" className="rounded" /> Remember me
+              <label className="flex items-center gap-2 text-[var(--ink-soft)] cursor-pointer">
+                <input type="checkbox" className="rounded accent-[var(--pink-main)]" /> Remember me
               </label>
-              <a href="#" className="font-semibold text-[var(--sage-deep)] hover:underline">
+              <a href="#" className="font-semibold text-[var(--sage)] hover:underline">
                 Forgot password?
               </a>
             </div>
@@ -303,7 +318,7 @@ function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--sage)] px-5 py-3.5 text-sm font-semibold text-white hover:bg-[var(--sage-deep)] transition-all shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] disabled:opacity-60 disabled:pointer-events-none"
+              className="group w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-5 py-3.5 text-sm font-semibold text-white transition-all shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 disabled:opacity-60 disabled:pointer-events-none"
             >
               {loading ? "Signing in…" : `Sign in as ${active.buttonLabel}`}
               {!loading ? (

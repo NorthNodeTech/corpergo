@@ -68,12 +68,12 @@ function Skeleton({ className }: { className?: string }) {
 
 function EmptyCalm({ title, body }: { title: string; body: string }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-[24px] bg-[var(--ivory)]/80 px-6 py-10 text-center">
-      <div className="grid h-14 w-14 place-items-center rounded-full bg-white text-[var(--sage-deep)] shadow-sm ring-1 ring-black/[0.04]">
+    <div className="flex flex-col items-center justify-center rounded-[24px] border-2 border-[#06261E]/20 bg-gradient-to-br from-[#FDE8EF]/40 via-white to-[#E8F3EF]/60 px-6 py-12 text-center">
+      <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[var(--sage)] text-white shadow-md">
         <CheckCircle2 className="h-6 w-6" />
       </div>
-      <div className="mt-4 text-base font-extrabold text-[var(--ink)]">{title}</div>
-      <p className="mt-1 max-w-xs text-sm text-[var(--ink-soft)]">{body}</p>
+      <div className="mt-4 text-lg font-extrabold text-[var(--ink)]">{title}</div>
+      <p className="mt-1.5 max-w-xs text-sm leading-relaxed text-[var(--ink-soft)]">{body}</p>
     </div>
   );
 }
@@ -97,10 +97,10 @@ function QueueCard({
       style={{ borderRadius: 22 }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "flex w-full min-w-0 gap-3 rounded-[22px] border bg-white p-3.5 text-left transition outline-none",
+        "flex w-full min-w-0 gap-3 rounded-[22px] border-2 bg-white p-3.5 text-left transition outline-none shadow-sm",
         active
-          ? "border-[var(--sage)]/40 bg-[var(--sage)]/5 ring-1 ring-[var(--sage)]/20"
-          : "border-black/[0.05] hover:bg-black/[0.02] hover:-translate-y-0.5",
+          ? "border-2 border-[#0F6B58] bg-[#EAF3F0] ring-2 ring-[#0F6B58]/30"
+          : "border-2 border-[#06261E]/30 bg-white hover:border-[#06261E] hover:bg-[#E8F3EF] hover:-translate-y-0.5",
       )}
     >
       <div className="w-12 shrink-0 pt-0.5 text-center">
@@ -179,7 +179,7 @@ export function ClinicalWorkspace() {
       <motion.section
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="overflow-hidden rounded-[28px] border border-white/60 bg-white/70 p-5 shadow-[var(--shadow-soft)] backdrop-blur-xl sm:p-7"
+        className="overflow-hidden rounded-[28px] border-2 border-[#06261E] bg-white p-5 shadow-md sm:p-7"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -190,11 +190,11 @@ export function ClinicalWorkspace() {
               {loading ? "…" : displayName}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--sage)]/12 px-3 py-1 text-xs font-bold text-[var(--sage-deep)]">
-                <Stethoscope className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0F6B58]/15 border border-[#06261E] px-3.5 py-1 text-xs font-bold text-[#06261E]">
+                <Stethoscope className="h-3.5 w-3.5 text-[#0F6B58]" />
                 {loading ? "Clinic" : data?.clinicName}
               </span>
-              <span className="text-sm text-[var(--ink-soft)]">
+              <span className="text-sm font-medium text-[var(--ink-soft)]">
                 {now.toLocaleDateString(undefined, {
                   weekday: "long",
                   month: "long",
@@ -208,9 +208,8 @@ export function ClinicalWorkspace() {
           </div>
           <Link
             to="/physio/scan"
-            className="group relative inline-flex min-h-12 items-center gap-2 overflow-hidden rounded-full bg-[var(--sage)] px-5 text-sm font-bold text-white shadow-[0_10px_28px_rgba(71,86,63,0.35)]"
+            className="group relative inline-flex min-h-12 items-center gap-2 overflow-hidden rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-5 text-sm font-bold text-white shadow-md border-2 border-[#06261E] transition-all hover:-translate-y-0.5"
           >
-            <span className="absolute inset-0 animate-pulse bg-white/10" />
             <ScanLine className="relative h-4 w-4" />
             <span className="relative">Ready to Scan</span>
           </Link>
@@ -218,17 +217,17 @@ export function ClinicalWorkspace() {
 
         <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-4 sm:overflow-visible">
           {[
-            { label: "Patients today", value: data?.counts.today ?? 0 },
-            { label: "Waiting / QR", value: data?.counts.waiting ?? 0 },
-            { label: "Follow-ups", value: data?.counts.followUps ?? 0 },
-            { label: "Pending requests", value: data?.counts.pending ?? 0 },
+            { label: "Patients today", value: data?.counts.today ?? 0, bg: "bg-[#EAF3F0]", border: "border-[#06261E]", text: "text-[#06261E]" },
+            { label: "Waiting / QR", value: data?.counts.waiting ?? 0, bg: "bg-[#E0F4F1]", border: "border-[#00A896]", text: "text-[#007A6D]" },
+            { label: "Follow-ups", value: data?.counts.followUps ?? 0, bg: "bg-[#E3EFEA]", border: "border-[#0F6B58]", text: "text-[#0F6B58]" },
+            { label: "Pending requests", value: data?.counts.pending ?? 0, bg: "bg-[#FDE8EF]", border: "border-[#E05A8D]", text: "text-[#C94B7C]" },
           ].map((c) => (
             <div
               key={c.label}
-              className="min-w-[9rem] shrink-0 rounded-2xl bg-[var(--ivory)] px-4 py-3 ring-1 ring-black/[0.04] sm:min-w-0"
+              className={`min-w-[9rem] shrink-0 rounded-2xl ${c.bg} border-2 ${c.border} px-4 py-3 shadow-sm sm:min-w-0`}
             >
-              <div className="text-[11px] font-semibold text-[var(--ink-soft)]">{c.label}</div>
-              <div className="mt-0.5 text-2xl font-extrabold text-[var(--ink)]">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">{c.label}</div>
+              <div className={`mt-1 text-2xl font-extrabold ${c.text}`}>
                 {loading ? "—" : c.value}
               </div>
             </div>
@@ -238,17 +237,17 @@ export function ClinicalWorkspace() {
 
       {/* Hero workspace */}
       <section className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[1.15fr_0.95fr]">
-        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
+        <div className="min-w-0 rounded-[28px] border-2 border-[#06261E] bg-white p-4 shadow-md sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--pink-main)]">
                 Today&apos;s queue
               </div>
               <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Who&apos;s next</h2>
             </div>
             <Link
               to="/physio/queue"
-              className="text-xs font-bold text-[var(--sage-deep)] hover:underline"
+              className="text-xs font-bold text-[#0F6B58] hover:underline"
             >
               Full queue
             </Link>
@@ -282,8 +281,8 @@ export function ClinicalWorkspace() {
         </div>
 
         {/* Current patient */}
-        <div className="min-w-0 rounded-[28px] bg-gradient-to-br from-white via-white to-[var(--ivory)] p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] lg:sticky lg:top-[4.75rem]">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+        <div className="flex min-w-0 flex-col rounded-[28px] border-2 border-[#06261E] bg-gradient-to-br from-white via-white to-[#E8F3EF] p-5 shadow-md lg:self-start">
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--pink-main)]">
             Current focus
           </div>
           {loading ? (
@@ -379,7 +378,7 @@ export function ClinicalWorkspace() {
       <section className="mt-6">
         <Link
           to="/physio/scan"
-          className="group relative flex flex-col items-center justify-center overflow-hidden rounded-[28px] bg-[var(--sage-deep)] px-6 py-8 text-center text-white shadow-[0_16px_40px_rgba(71,86,63,0.35)] sm:py-10"
+          className="group relative flex flex-col items-center justify-center overflow-hidden rounded-[28px] border-2 border-[#06261E] bg-gradient-to-br from-[#06261E] via-[#0F6B58] to-[#00A896] px-6 py-8 text-center text-white shadow-lg sm:py-10"
         >
           <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.18),transparent_55%)]" />
           <motion.span
@@ -416,7 +415,7 @@ export function ClinicalWorkspace() {
           {(loading ? [] : data?.pending || []).slice(0, 8).map((a) => (
             <div
               key={a.id}
-              className="min-w-[15.5rem] shrink-0 rounded-[22px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]"
+              className="min-w-[15.5rem] shrink-0 rounded-[22px] border-2 border-[#06261E]/30 bg-white p-4 shadow-md"
             >
               <div className="flex items-center gap-2">
                 <div className="grid h-9 w-9 place-items-center rounded-full bg-sky-100 text-[10px] font-bold text-sky-900">
@@ -438,7 +437,7 @@ export function ClinicalWorkspace() {
               </div>
               <Link
                 to="/physio/requests"
-                className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--sage)] py-2.5 text-xs font-bold text-white"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] py-2.5 text-xs font-bold text-white border border-[#06261E]/30 transition-colors"
               >
                 Review & accept
               </Link>
@@ -476,12 +475,12 @@ export function ClinicalWorkspace() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 className={cn(
-                  "rounded-[20px] p-4 ring-1",
+                  "rounded-[20px] border-2 p-4",
                   ins.tone === "warn"
-                    ? "bg-amber-50 ring-amber-100"
+                    ? "bg-amber-50 border-amber-400"
                     : ins.tone === "good"
-                      ? "bg-emerald-50 ring-emerald-100"
-                      : "bg-white ring-black/[0.05]",
+                      ? "bg-emerald-50 border-emerald-500"
+                      : "bg-white border-[#06261E]/25",
                 )}
               >
                 <div className="text-sm font-extrabold text-[var(--ink)]">{ins.title}</div>
@@ -500,7 +499,7 @@ export function ClinicalWorkspace() {
             {(data?.categories || []).map((c) => (
               <div
                 key={c.name}
-                className="min-w-[9.5rem] shrink-0 rounded-[20px] bg-white px-4 py-3 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:min-w-0"
+                className="min-w-[9.5rem] shrink-0 rounded-[20px] border-2 border-[#0F6B58]/40 bg-white px-4 py-3 shadow-sm sm:min-w-0"
               >
                 <div className="text-xs font-semibold text-[var(--ink-soft)]">{c.name}</div>
                 <div className="mt-1 text-2xl font-extrabold text-[var(--sage-deep)]">{c.count}</div>
@@ -518,7 +517,7 @@ export function ClinicalWorkspace() {
 
       {/* Assessments + calendar strip */}
       <section className="mt-8 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+        <div className="rounded-[28px] border-2 border-[#06261E] bg-white p-5 shadow-md">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
@@ -560,7 +559,7 @@ export function ClinicalWorkspace() {
           </ul>
         </div>
 
-        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+        <div className="rounded-[28px] border-2 border-[#06261E] bg-white p-5 shadow-md">
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
             Today&apos;s timeline
           </div>
@@ -611,7 +610,7 @@ export function ClinicalWorkspace() {
           <Link
             key={to}
             to={to}
-            className="flex items-center gap-3 rounded-[22px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)]"
+            className="flex items-center gap-3 rounded-[22px] border-2 border-[#06261E]/30 bg-white p-4 shadow-md transition hover:-translate-y-0.5 hover:border-[#06261E] hover:shadow-lg"
           >
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--sage)]/12 text-[var(--sage-deep)]">
               <Icon className="h-5 w-5" />

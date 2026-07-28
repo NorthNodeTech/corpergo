@@ -18,10 +18,10 @@ function pickKey(raw: string | undefined, fallback: string) {
 export function getSupabaseConfig() {
   const supabaseUrl = pickKey(import.meta.env.VITE_SUPABASE_URL, PROJECT_URL);
 
-  // Prefer publishable key, then legacy anon JWT, then baked-in fallbacks
+  // Prefer legacy JWT anon key (required for REST headers apikey & Authorization)
   const supabaseAnonKey = pickKey(
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY,
-    PUBLISHABLE_KEY || LEGACY_ANON_KEY,
+    import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    LEGACY_ANON_KEY || PUBLISHABLE_KEY,
   );
 
   return {

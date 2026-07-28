@@ -388,11 +388,11 @@ export function PortalShell({
   );
 
   return (
-    <div className="portal-shell relative min-h-screen">
+    <div className="portal-shell relative min-h-screen lg:h-screen lg:max-h-screen lg:overflow-hidden">
       <div className="portal-shell__glow" aria-hidden />
 
       <div
-        className={`relative min-h-screen min-w-0 w-full max-w-full ${
+        className={`relative min-h-screen lg:h-screen lg:max-h-screen min-w-0 w-full max-w-full ${
           hasFooter
             ? `lg:grid ${sidebarOpen ? "lg:grid-cols-[240px_1fr]" : "lg:grid-cols-1"}`
             : `lg:grid ${sidebarOpen ? "lg:grid-cols-[260px_1fr]" : "lg:grid-cols-1"}`
@@ -406,12 +406,12 @@ export function PortalShell({
               animate={{ width: hasFooter ? 240 : 260, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="portal-glass-sidebar relative z-10 hidden lg:flex lg:flex-col lg:border-r lg:border-white/40 overflow-hidden whitespace-nowrap"
+              className="portal-glass-sidebar sticky top-0 z-30 hidden h-screen max-h-screen shrink-0 lg:flex lg:flex-col border-r-2 border-[#06261E]/20 overflow-hidden whitespace-nowrap bg-white/95"
             >
               <div className="px-5 py-6 flex items-start justify-between">
                 <div>
                   <Link to="/" className="flex items-center gap-3">
-                    <img src={logoImg} alt="CorpErgo" className="h-14 w-auto object-contain" />
+                    <img src={logoImg} alt="CorpErgo" className="h-18 sm:h-20 w-auto object-contain drop-shadow-sm" />
                   </Link>
                   <div className="mt-4">
                     <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
@@ -433,7 +433,7 @@ export function PortalShell({
           ) : null}
         </AnimatePresence>
 
-        <div className={`relative z-[1] flex min-h-screen min-w-0 w-full max-w-full flex-col ${sidebarOpen ? "lg:col-start-2" : "lg:col-start-1"}`}>
+        <div className={`relative z-[1] flex min-h-screen lg:h-screen lg:max-h-screen min-w-0 w-full max-w-full flex-col lg:overflow-y-auto ${sidebarOpen ? "lg:col-start-2" : "lg:col-start-1"}`}>
           <header className="portal-glass-header sticky top-0 z-40 flex h-[4.25rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
               {!sidebarOpen && (
@@ -445,7 +445,7 @@ export function PortalShell({
                   <PanelLeftOpen className="h-5 w-5" />
                 </button>
               )}
-              <img src={logoImg} alt="CorpErgo" className="h-12 w-auto object-contain lg:hidden" />
+              <img src={logoImg} alt="CorpErgo" className="h-16 sm:h-18 w-auto object-contain lg:hidden drop-shadow-sm" />
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold text-[var(--ink)] lg:text-[15px]">
                   {title}
