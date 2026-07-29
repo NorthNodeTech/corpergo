@@ -31,6 +31,7 @@ import {
 import logoImg from "@/assets/LOGO.webp";
 import heroImg from "@/assets/hero.webp";
 import bgImg from "@/assets/corpergo-background.png";
+import mobileBgImg from "@/assets/corpergo mobile background.png";
 import aboutImg from "@/assets/abt.webp";
 import pinkyImg from "@/assets/Pinkyce.webp";
 import physioAarav from "@/assets/team/physio-aarav-menon.webp";
@@ -270,6 +271,7 @@ function Hero() {
     <section className="hero-fit relative">
       {/* Full-bleed hero background — subjects stay right; copy sits in the left clear zone */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
+        {/* Desktop Hero Video */}
         <video
           src="/hero_corpergo.mp4"
           poster={heroImg}
@@ -277,7 +279,17 @@ function Hero() {
           loop
           muted
           playsInline
-          className="absolute inset-0 h-full w-full object-cover object-center"
+          className="hidden lg:block absolute inset-0 h-full w-full object-cover object-center"
+        />
+        {/* Mobile Hero Video */}
+        <video
+          src="/hero_corpergo_mobile.mp4"
+          poster={heroImg}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="block lg:hidden absolute inset-0 h-full w-full object-cover object-center"
         />
         {/* Subtle dark scrim so white text is readable directly on the video */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/30 to-transparent" />
@@ -797,9 +809,9 @@ function Physios() {
                   {p.exp}
                 </div>
               </div>
-              <div className="text-base font-bold text-white">{p.name}</div>
-              <div className="text-sm text-slate-200 font-semibold mt-0.5">{p.spec}</div>
-              <div className="text-xs text-slate-300 mt-1 flex items-center gap-1">
+              <div className="text-base font-bold text-white group-hover:text-[var(--ink)] transition-colors duration-300">{p.name}</div>
+              <div className="text-sm text-slate-200 group-hover:text-[var(--ink-soft)] font-semibold mt-0.5 transition-colors duration-300">{p.spec}</div>
+              <div className="text-xs text-slate-300 group-hover:text-[var(--ink-soft)] mt-1 flex items-center gap-1 transition-colors duration-300">
                 <MapPin className="h-3 w-3" /> {p.clinic} Clinic
               </div>
               <Link to="/login" className="mt-5 flex items-center justify-center gap-1.5 rounded-full bg-[var(--sage)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--sage)]/95 transition-all">
@@ -1216,11 +1228,19 @@ function Footer() {
 function FloatingBackgroundLayout({ children }: { children: React.ReactNode }) {
   return (
     <section className="relative overflow-hidden">
+      {/* Desktop/Laptop Background */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-fixed"
+        className="hidden lg:block absolute inset-0 bg-cover bg-center bg-fixed"
         style={{
           backgroundImage: `url(${bgImg})`,
           backgroundAttachment: "fixed",
+        }}
+      />
+      {/* Mobile Background */}
+      <div
+        className="block lg:hidden absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `url(${mobileBgImg})`,
         }}
       />
       <div className="absolute inset-0 bg-slate-950/80" />
