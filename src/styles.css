@@ -56,6 +56,7 @@
   --gradient-sage: linear-gradient(135deg, #0F6B58 0%, #00A896 100%);
   --gradient-pink: linear-gradient(135deg, #E05A8D 0%, #F58DB2 100%);
   --gradient-warm: linear-gradient(135deg, #FCF6F8 0%, #FCE8EF 100%);
+  --page-background: radial-gradient(circle at top, rgba(15, 107, 88, 0.95) 0%, rgba(9, 84, 58, 0.92) 24%, rgba(7, 58, 39, 0.88) 55%, rgba(5, 26, 15, 1) 100%), linear-gradient(180deg, rgba(224, 90, 141, 0.05), transparent 35%, transparent 100%);
 }
 
 :root {
@@ -132,6 +133,13 @@
     overflow-x: hidden;
   }
   h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  section h1,
+  section h2,
+  section h3,
+  section h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
@@ -315,6 +323,15 @@
   line-height: 1.12;
   letter-spacing: 0.01em;
   text-shadow: 0 1px 0 rgba(250, 248, 245, 0.85), 0 0 24px rgba(250, 248, 245, 0.55);
+}
+
+/* Section headings should use the same hero-style font family */
+main > section:not(.hero-fit) h1,
+main > section:not(.hero-fit) h2,
+main > section:not(.hero-fit) h3,
+main > section:not(.hero-fit) h4 {
+  font-family: var(--font-cursive);
+  letter-spacing: 0.01em;
 }
 
 .hero-fit__body {

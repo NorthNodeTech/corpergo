@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import logoImg from "@/assets/LOGO.webp";
 import heroImg from "@/assets/hero.webp";
+import bgImg from "@/assets/corpergo-background.png";
 import aboutImg from "@/assets/abt.webp";
 import pinkyImg from "@/assets/Pinkyce.webp";
 import physioAarav from "@/assets/team/physio-aarav-menon.webp";
@@ -120,12 +121,12 @@ function MotionMarquee() {
   ];
   const loop = [...items, ...items];
   return (
-    <div className="relative overflow-hidden border-y border-black/[0.05] bg-white/40 py-4 backdrop-blur-sm">
+    <div className="relative overflow-hidden border-y border-black/[0.05] bg-white/10 py-4 backdrop-blur-sm">
       <div className="alive-marquee flex w-max gap-10 whitespace-nowrap">
         {loop.map((label, i) => (
           <span
             key={`${label}-${i}`}
-            className="inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-[var(--ink-soft)]"
+            className="inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-white/70"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--sage)]" />
             {label}
@@ -162,16 +163,12 @@ function Nav() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
       className={`fixed inset-x-0 top-0 z-50 transition-[padding] duration-300 ${
-        scrolled ? "py-1.5" : "py-2"
+        scrolled ? "py-1" : "py-1.5"
       }`}
     >
-      <div
-        className={`mx-auto max-w-7xl px-4 sm:px-6 transition-all duration-300 ${
-          scrolled ? "" : ""
-        }`}
-      >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 transition-all duration-300">
         <div
-          className={`flex items-center justify-between rounded-2xl px-3 sm:px-5 py-1.5 sm:py-2 transition-all duration-300 ${
+          className={`flex items-center justify-between rounded-2xl px-2.5 sm:px-4 py-1 sm:py-1.5 transition-all duration-300 ${
             scrolled
               ? "glass shadow-[var(--shadow-soft)]"
               : "bg-white/55 shadow-sm ring-1 ring-black/[0.04] backdrop-blur-md lg:bg-transparent lg:shadow-none lg:ring-0 lg:backdrop-blur-none"
@@ -192,12 +189,12 @@ function Nav() {
             />
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1.5">
+          <nav className="hidden lg:flex items-center gap-1">
             {items.map(([label, href]) => (
               <a
                 key={label}
                 href={href}
-                className="rounded-full bg-[#06261E] px-4 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105"
+                className="rounded-full bg-[#06261E] px-3 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105"
               >
                 {label}
               </a>
@@ -207,13 +204,13 @@ function Nav() {
           <div className="flex items-center gap-2">
             <Link
               to="/login"
-              className="inline-flex items-center rounded-full bg-[#06261E] px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105"
+              className="inline-flex items-center rounded-full bg-[#06261E] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105"
             >
               Login
             </Link>
             <Link
               to="/login"
-              className="group inline-flex items-center gap-1 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-3.5 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5"
+              className="group inline-flex items-center gap-1 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5"
             >
               <span>
                 Book<span className="hidden sm:inline"> Appointment</span>
@@ -222,7 +219,7 @@ function Nav() {
             </Link>
             <button
               onClick={() => setOpen((v) => !v)}
-              className="lg:hidden grid h-9 w-9 place-items-center rounded-xl bg-white/60 ring-1 ring-black/5"
+              className="lg:hidden grid h-8 w-8 place-items-center rounded-xl bg-white/60 ring-1 ring-black/5"
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -384,7 +381,7 @@ function Hero() {
 
 function About() {
   return (
-    <section id="about" className="about-fit relative">
+    <section id="about" className="about-fit relative bg-slate-950/10 backdrop-blur-sm">
       <div className="about-fit__shell mx-auto max-w-7xl px-4 sm:px-6">
         <div className="about-fit__grid grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <motion.div
@@ -404,10 +401,10 @@ function About() {
               viewport={{ once: true }}
               transition={{ delay: 0.35, duration: 0.6, ease: easeOut }}
             >
-              <div className="about-fit__years-n font-extrabold text-[var(--sage-deep)]">
+              <div className="about-fit__years-n font-extrabold text-white">
                 <Counter to={12} />+
               </div>
-              <div className="about-fit__years-l text-[var(--ink-soft)]">Years of hands-on physiotherapy expertise</div>
+              <div className="about-fit__years-l text-slate-200">Years of hands-on physiotherapy expertise</div>
             </motion.div>
           </motion.div>
 
@@ -421,10 +418,10 @@ function About() {
             <div className="about-fit__eyebrow uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
               About CorpErgo
             </div>
-            <h2 className="about-fit__title font-extrabold tracking-tight text-[var(--ink)] text-balance">
+            <h2 className="about-fit__title font-extrabold tracking-tight text-white text-balance">
               Recovery, reimagined for how you live and move.
             </h2>
-            <p className="about-fit__body text-[var(--ink-soft)]">
+            <p className="about-fit__body text-slate-200">
               CorpErgo is a physiotherapy-first clinic chain built on evidence,
               empathy and outcomes. From posture correction to post-surgery
               rehabilitation, our team designs a plan for your body, your goals
@@ -459,8 +456,8 @@ function About() {
                 [<Counter to={98} suffix="%" />, "Satisfaction"],
               ].map(([v, l], i) => (
                 <div key={i}>
-                  <div className="about-fit__stat-n font-extrabold text-[var(--sage-deep)]">{v}</div>
-                  <div className="about-fit__stat-l uppercase tracking-widest text-[var(--ink-soft)]">
+                  <div className="about-fit__stat-n font-extrabold text-white">{v}</div>
+                  <div className="about-fit__stat-l uppercase tracking-widest text-slate-300">
                     {l}
                   </div>
                 </div>
@@ -488,7 +485,7 @@ const TREATMENTS = [
 
 function Treatments() {
   return (
-    <section id="treatments" className="py-24 sm:py-32 bg-white/60 relative">
+    <section id="treatments" className="py-24 sm:py-32 relative bg-slate-950/10 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <motion.div
           variants={fadeUp}
@@ -500,10 +497,10 @@ function Treatments() {
           <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
             Treatments
           </div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
+          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-white text-balance">
             Specialized programs, delivered with precision.
           </h2>
-          <p className="mt-4 text-lg text-[var(--ink-soft)]">
+          <p className="mt-4 text-lg text-slate-200">
             Every plan is built around your assessment, your goals and evidence-based
             protocols — not a template.
           </p>
@@ -547,13 +544,13 @@ function WhyChoose() {
     { t: "Affordable Care", d: "Transparent pricing and flexible session packages." },
   ];
   return (
-    <section className="py-24 sm:py-32 bg-gradient-to-b from-[var(--ivory)] to-white">
+    <section className="py-24 sm:py-32 relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl mb-10 sm:mb-14">
           <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
             Why choose CorpErgo
           </div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
+          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-white text-balance">
             A different kind of physiotherapy clinic.
           </h2>
         </div>
@@ -565,15 +562,15 @@ function WhyChoose() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="group relative min-w-[17.5rem] max-w-[17.5rem] shrink-0 snap-start rounded-3xl p-7 bg-white border-2 border-transparent transition-all shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] overflow-hidden sm:min-w-[19rem] sm:max-w-[19rem] sm:p-8 md:min-w-0 md:max-w-none landing-card-hover"
+              className="relative min-w-[17.5rem] max-w-[17.5rem] shrink-0 snap-start rounded-3xl p-7 bg-white/10 backdrop-blur-xl ring-1 ring-white/20 border border-white/10 transition-all shadow-[var(--shadow-soft)] overflow-hidden sm:min-w-[19rem] sm:max-w-[19rem] sm:p-8 md:min-w-0 md:max-w-none"
             >
-              <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[var(--sage)]/8 group-hover:scale-125 transition-transform duration-700" />
+              <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[var(--sage)]/10 transition-transform duration-700" />
               <div className="relative">
-                <div className="text-5xl font-extrabold text-[var(--sage)]/25 group-hover:text-[var(--sage)]/40 transition-colors">
+                <div className="text-5xl font-extrabold text-[var(--sage)]/40 transition-colors">
                   0{i + 1}
                 </div>
-                <div className="mt-4 text-xl font-bold text-[var(--ink)]">{x.t}</div>
-                <div className="mt-2 text-sm text-[var(--ink-soft)] leading-relaxed">{x.d}</div>
+                <div className="mt-4 text-xl font-bold text-white">{x.t}</div>
+                <div className="mt-2 text-sm text-slate-200 leading-relaxed">{x.d}</div>
               </div>
             </motion.div>
           ))}
@@ -650,7 +647,7 @@ function VideoStories() {
   }, [activeReel]);
 
   return (
-    <section id="videos" className="py-24 bg-[var(--ink)] text-white relative overflow-hidden">
+    <section id="videos" className="py-24 relative overflow-hidden bg-slate-950/10 backdrop-blur-sm">
       <div className="pointer-events-none absolute inset-0 opacity-40">
         <div className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-[var(--sage)]/20 blur-3xl" />
         <div className="absolute bottom-0 left-10 h-64 w-64 rounded-full bg-[var(--bronze)]/15 blur-3xl" />
@@ -662,10 +659,10 @@ function VideoStories() {
             <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--bronze)]">
               Watch & Learn
             </div>
-            <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-tight sm:text-5xl">
+            <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-tight sm:text-5xl text-white">
               Real recoveries. Real people.
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/65 sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/75 sm:text-base">
               Clinic stories from CorpErgo — treatment moments, rehab progress, and care you can trust.
             </p>
           </div>
@@ -770,11 +767,11 @@ const PHYSIOS = [
 
 function Physios() {
   return (
-    <section className="py-24 sm:py-32">
+    <section className="py-24 sm:py-32 relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl mb-10 sm:mb-14">
           <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">Our Team</div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
+          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-white text-balance">
             Meet the hands behind your recovery.
           </h2>
         </div>
@@ -786,9 +783,9 @@ function Physios() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="group min-w-[16.5rem] max-w-[16.5rem] shrink-0 snap-start rounded-3xl bg-white p-5 border-2 border-transparent hover:shadow-[var(--shadow-elev)] transition-all sm:min-w-[18rem] sm:max-w-[18rem] sm:p-6 lg:min-w-0 lg:max-w-none landing-card-hover"
+              className="group min-w-[16.5rem] max-w-[16.5rem] shrink-0 snap-start rounded-3xl bg-white/10 backdrop-blur-xl border border-white/10 p-5 shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] sm:min-w-[18rem] sm:max-w-[18rem] sm:p-6 lg:min-w-0 lg:max-w-none landing-card-hover"
             >
-              <div className="relative aspect-square rounded-2xl overflow-hidden mb-5 bg-[var(--ivory)]">
+              <div className="relative aspect-square rounded-2xl overflow-hidden mb-5 bg-white/10">
                 <img
                   src={p.img}
                   alt={p.name}
@@ -800,12 +797,12 @@ function Physios() {
                   {p.exp}
                 </div>
               </div>
-              <div className="text-base font-bold text-[var(--ink)]">{p.name}</div>
-              <div className="text-sm text-[var(--sage-deep)] font-semibold mt-0.5">{p.spec}</div>
-              <div className="text-xs text-[var(--ink-soft)] mt-1 flex items-center gap-1">
+              <div className="text-base font-bold text-white">{p.name}</div>
+              <div className="text-sm text-slate-200 font-semibold mt-0.5">{p.spec}</div>
+              <div className="text-xs text-slate-300 mt-1 flex items-center gap-1">
                 <MapPin className="h-3 w-3" /> {p.clinic} Clinic
               </div>
-              <Link to="/login" className="mt-5 flex items-center justify-center gap-1.5 rounded-full bg-[var(--ivory)] py-2.5 text-sm font-semibold text-[var(--ink)] hover:bg-[var(--sage)] hover:text-white transition-all">
+              <Link to="/login" className="mt-5 flex items-center justify-center gap-1.5 rounded-full bg-[var(--sage)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--sage)]/95 transition-all">
                 Book Session <ArrowRight className="h-4 w-4" />
               </Link>
             </motion.div>
@@ -865,11 +862,11 @@ function Clinics() {
   };
 
   return (
-    <section id="clinics" className="py-24 sm:py-32">
+    <section id="clinics" className="py-24 sm:py-32 relative bg-slate-950/10 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 max-w-2xl sm:mb-14">
           <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">Locations</div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
+          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-white text-balance">
             Five clinics. One standard of care.
           </h2>
         </div>
@@ -979,7 +976,7 @@ function Clinics() {
 
 function Founder() {
   return (
-    <section id="founder" className="founder-fit relative bg-white/60">
+    <section id="founder" className="founder-fit relative bg-slate-950/10 backdrop-blur-sm">
       <div className="founder-fit__shell mx-auto max-w-7xl px-4 sm:px-6">
         <div className="founder-fit__grid grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-10 lg:gap-16 items-center">
           <motion.div
@@ -1020,7 +1017,7 @@ function Founder() {
             <div className="founder-fit__eyebrow uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
               Leadership
             </div>
-            <h2 className="founder-fit__title font-extrabold tracking-tight text-[var(--ink)] text-balance">
+            <h2 className="founder-fit__title font-extrabold tracking-tight text-white text-balance">
               Care that starts with clinical conviction.
             </h2>
 
@@ -1029,7 +1026,7 @@ function Founder() {
                 className="founder-fit__quote-mark absolute -left-1 -top-1 text-[var(--sage)]/20"
                 aria-hidden
               />
-              <blockquote className="founder-fit__quote-text relative font-medium text-[var(--ink)] text-balance pl-8">
+              <blockquote className="founder-fit__quote-text relative font-medium text-white text-balance pl-8">
                 “Pain is only the beginning of the story. At CorpErgo, we restore
                 movement, rebuild confidence, and walk with every patient until
                 they feel strong in their own body again.”
@@ -1038,13 +1035,13 @@ function Founder() {
 
             <div className="founder-fit__meta flex flex-col sm:flex-row sm:items-end">
               <div>
-                <div className="founder-fit__name font-extrabold tracking-tight text-[var(--ink)]">
+                <div className="founder-fit__name font-extrabold tracking-tight text-white">
                   Dr. Pinky Dutta PT
                 </div>
-                <div className="founder-fit__role font-semibold text-[var(--sage-deep)]">
+                <div className="founder-fit__role font-semibold text-slate-200">
                   Head of the Department
                 </div>
-                <div className="founder-fit__specialty text-[var(--ink-soft)]">
+                <div className="founder-fit__specialty text-slate-300">
                   Musculoskeletal &amp; Sports Physiotherapist
                 </div>
               </div>
@@ -1216,23 +1213,41 @@ function Footer() {
   );
 }
 
+function FloatingBackgroundLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="relative overflow-hidden">
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-fixed"
+        style={{
+          backgroundImage: `url(${bgImg})`,
+          backgroundAttachment: "fixed",
+        }}
+      />
+      <div className="absolute inset-0 bg-slate-950/80" />
+      <div className="relative z-10 text-white">{children}</div>
+    </section>
+  );
+}
+
 /* ------------------------------ PAGE ------------------------------ */
 
 function LandingPage() {
   return (
-    <main className="relative overflow-x-clip bg-[var(--ivory)]">
+    <main className="relative overflow-x-clip">
       <AmbientOrbs />
       <Nav />
       <Hero />
-      <MotionMarquee />
-      <About />
-      <Treatments />
-      <Founder />
-      <WhyChoose />
-      <VideoStories />
-      <Physios />
-      <Clinics />
-      <CTA />
+      <FloatingBackgroundLayout>
+        <MotionMarquee />
+        <About />
+        <Treatments />
+        <Founder />
+        <WhyChoose />
+        <VideoStories />
+        <Physios />
+        <Clinics />
+        <CTA />
+      </FloatingBackgroundLayout>
       <Footer />
     </main>
   );
