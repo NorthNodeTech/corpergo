@@ -45,6 +45,7 @@ import reelPatientJourney from "@/assets/reels/reel-patient-journey.webp";
 import reelTherapyInsights from "@/assets/reels/reel-therapy-insights.webp";
 import reelHandsOnCare from "@/assets/reels/reel-hands-on-care.webp";
 import reelStrongerEveryday from "@/assets/reels/reel-stronger-everyday.webp";
+import { LoginModal } from "@/components/auth/LoginModal";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -140,7 +141,7 @@ function MotionMarquee() {
 
 /* ------------------------------ NAV ------------------------------ */
 
-function Nav() {
+function Nav({ onLoginClick }: { onLoginClick: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -203,21 +204,21 @@ function Nav() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link
-              to="/login"
-              className="inline-flex items-center rounded-full bg-[#06261E] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105"
+            <button
+              onClick={onLoginClick}
+              className="inline-flex items-center rounded-full bg-[#06261E] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105 cursor-pointer focus:outline-none"
             >
               Login
-            </Link>
-            <Link
-              to="/login"
-              className="group inline-flex items-center gap-1 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5"
+            </button>
+            <button
+              onClick={onLoginClick}
+              className="group inline-flex items-center gap-1 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 cursor-pointer focus:outline-none"
             >
               <span>
                 Book<span className="hidden sm:inline"> Appointment</span>
               </span>
               <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </Link>
+            </button>
             <button
               onClick={() => setOpen((v) => !v)}
               className="lg:hidden grid h-8 w-8 place-items-center rounded-xl bg-white/60 ring-1 ring-black/5"
@@ -244,13 +245,15 @@ function Nav() {
               </a>
             ))}
             <div className="my-1 border-t border-black/[0.05]" />
-            <Link
-              to="/login"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-3 text-sm font-semibold text-[var(--ink)]/85 hover:bg-white/50 rounded-xl text-left"
+            <button
+              onClick={() => {
+                setOpen(false);
+                onLoginClick();
+              }}
+              className="w-full block px-4 py-3 text-sm font-semibold text-[var(--ink)]/85 hover:bg-white/50 rounded-xl text-left cursor-pointer focus:outline-none"
             >
               Login
-            </Link>
+            </button>
           </motion.div>
         )}
       </div>
@@ -260,7 +263,7 @@ function Nav() {
 
 /* ------------------------------ HERO ------------------------------ */
 
-function Hero() {
+function Hero({ onLoginClick }: { onLoginClick: () => void }) {
   const heroStats = [
     ["5", "Clinics"],
     ["1000+", "Patients"],
@@ -338,13 +341,13 @@ function Hero() {
             </motion.p>
 
             <motion.div variants={fadeItem} className="hero-fit__actions flex flex-col sm:flex-row sm:flex-wrap sm:items-center">
-              <Link
-                to="/login"
-                className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 sm:w-auto"
+              <button
+                onClick={onLoginClick}
+                className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 sm:w-auto cursor-pointer focus:outline-none"
               >
                 Book Appointment
                 <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
-              </Link>
+              </button>
               <a
                 href="#treatments"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/20 font-semibold text-white shadow-sm ring-1 ring-white/30 backdrop-blur-md transition-all hover:bg-white/30 sm:w-auto"
@@ -777,7 +780,7 @@ const PHYSIOS = [
   { name: "Dr. Vikram Desai", spec: "Post-Surgery Rehab", exp: "9 yrs", clinic: "Manduru", img: physioVikram },
 ];
 
-function Physios() {
+function Physios({ onLoginClick }: { onLoginClick: () => void }) {
   return (
     <section className="py-24 sm:py-32 relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -814,9 +817,12 @@ function Physios() {
               <div className="text-xs text-slate-300 group-hover:text-[var(--ink-soft)] mt-1 flex items-center gap-1 transition-colors duration-300">
                 <MapPin className="h-3 w-3" /> {p.clinic} Clinic
               </div>
-              <Link to="/login" className="mt-5 flex items-center justify-center gap-1.5 rounded-full bg-[var(--sage)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--sage)]/95 transition-all">
+              <button
+                onClick={onLoginClick}
+                className="w-full mt-5 flex items-center justify-center gap-1.5 rounded-full bg-[var(--sage)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--sage)]/95 transition-all cursor-pointer focus:outline-none"
+              >
                 Book Session <ArrowRight className="h-4 w-4" />
-              </Link>
+              </button>
             </motion.div>
           ))}
         </div>
@@ -860,7 +866,7 @@ const CLINICS = [
   },
 ];
 
-function Clinics() {
+function Clinics({ onLoginClick }: { onLoginClick: () => void }) {
   const n = CLINICS.length;
   const [active, setActive] = useState(0);
 
@@ -934,12 +940,12 @@ function Clinics() {
                       <Clock className="h-3.5 w-3.5" /> {c.hours}
                     </div>
                     <div className="mt-5 flex gap-2">
-                      <Link
-                        to="/login"
-                        className="flex-1 rounded-full bg-[var(--sage)] py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--sage-deep)]"
+                      <button
+                        onClick={onLoginClick}
+                        className="flex-1 rounded-full bg-[var(--sage)] py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--sage-deep)] cursor-pointer focus:outline-none"
                       >
                         Book
-                      </Link>
+                      </button>
                       <a
                         href={c.mapUrl}
                         target="_blank"
@@ -1072,7 +1078,7 @@ function Founder() {
 
 /* ------------------------------ CTA ------------------------------ */
 
-function CTA() {
+function CTA({ onLoginClick }: { onLoginClick: () => void }) {
   return (
     <section id="book" className="py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -1102,10 +1108,13 @@ function CTA() {
                 at the clinic closest to you.
               </motion.p>
               <motion.div variants={fadeItem} className="mt-8 flex flex-wrap gap-3">
-                <Link to="/login" className="group alive-cta inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[#053926] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl">
+                <button
+                  onClick={onLoginClick}
+                  className="group alive-cta inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[#053926] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl cursor-pointer focus:outline-none"
+                >
                   Book Appointment
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Link>
+                </button>
                 <a href="tel:+911234567890" className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-6 py-3.5 text-sm font-bold text-white ring-1 ring-white/30 hover:bg-white/20 transition-all">
                   <Phone className="h-4 w-4" /> Call us
                 </a>
@@ -1120,7 +1129,7 @@ function CTA() {
 
 /* ------------------------------ FOOTER ------------------------------ */
 
-function Footer() {
+function Footer({ onLoginClick }: { onLoginClick: () => void }) {
   return (
     <footer id="contact" className="bg-[#06261E] text-white/80">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
@@ -1175,7 +1184,13 @@ function Footer() {
               {["Treatments", "About", "Clinics", "Book Appointment"].map((x) => (
                 <li key={x}>
                   <a
-                    href={x === "Book Appointment" ? "/login" : `#${x.toLowerCase()}`}
+                    href={x === "Book Appointment" ? "#" : `#${x.toLowerCase()}`}
+                    onClick={(e) => {
+                      if (x === "Book Appointment") {
+                        e.preventDefault();
+                        onLoginClick();
+                      }
+                    }}
                     className="hover:text-white transition-colors"
                   >
                     {x}
@@ -1252,11 +1267,24 @@ function FloatingBackgroundLayout({ children }: { children: React.ReactNode }) {
 /* ------------------------------ PAGE ------------------------------ */
 
 function LandingPage() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("login") === "true") {
+      setIsLoginOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  const handleLoginClick = () => {
+    setIsLoginOpen(true);
+  };
+
   return (
     <main className="relative overflow-x-clip">
       <AmbientOrbs />
-      <Nav />
-      <Hero />
+      <Nav onLoginClick={handleLoginClick} />
+      <Hero onLoginClick={handleLoginClick} />
       <FloatingBackgroundLayout>
         <MotionMarquee />
         <About />
@@ -1264,11 +1292,13 @@ function LandingPage() {
         <Founder />
         <WhyChoose />
         <VideoStories />
-        <Physios />
-        <Clinics />
-        <CTA />
+        <Physios onLoginClick={handleLoginClick} />
+        <Clinics onLoginClick={handleLoginClick} />
+        <CTA onLoginClick={handleLoginClick} />
       </FloatingBackgroundLayout>
-      <Footer />
+      <Footer onLoginClick={handleLoginClick} />
+
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
     </main>
   );
 }
