@@ -97,10 +97,10 @@ function QueueCard({
       style={{ borderRadius: 22 }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "flex w-full min-w-0 gap-3 rounded-[22px] border-2 bg-white p-3.5 text-left transition outline-none shadow-sm",
+        "flex w-full min-w-0 gap-3 rounded-[22px] border bg-white p-3.5 text-left transition outline-none shadow-sm",
         active
-          ? "border-2 border-[#0F6B58] bg-[#EAF3F0] ring-2 ring-[#0F6B58]/30"
-          : "border-2 border-[#06261E]/30 bg-white hover:border-[#06261E] hover:bg-[#E8F3EF] hover:-translate-y-0.5",
+          ? "border-[var(--sage)] bg-[#EAF3F0] ring-2 ring-[#0F6B58]/20"
+          : "border-black/[0.06] bg-white hover:border-[var(--sage)] hover:bg-[#EAF3F0]/40 hover:-translate-y-0.5",
       )}
     >
       <div className="w-12 shrink-0 pt-0.5 text-center">
@@ -179,7 +179,7 @@ export function ClinicalWorkspace() {
       <motion.section
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="overflow-hidden rounded-[28px] border-2 border-[#06261E] bg-white p-5 shadow-md sm:p-7"
+        className="portal-glass-card overflow-hidden p-5 sm:p-7"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -190,7 +190,7 @@ export function ClinicalWorkspace() {
               {loading ? "…" : displayName}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0F6B58]/15 border border-[#06261E] px-3.5 py-1 text-xs font-bold text-[#06261E]">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0F6B58]/15 border border-[#06261E]/15 px-3.5 py-1 text-xs font-bold text-[#06261E]">
                 <Stethoscope className="h-3.5 w-3.5 text-[#0F6B58]" />
                 {loading ? "Clinic" : data?.clinicName}
               </span>
@@ -208,23 +208,23 @@ export function ClinicalWorkspace() {
           </div>
           <Link
             to="/physio/scan"
-            className="group relative inline-flex min-h-12 items-center gap-2 overflow-hidden rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-5 text-sm font-bold text-white shadow-md border-2 border-[#06261E] transition-all hover:-translate-y-0.5"
+            className="group relative inline-flex min-h-12 items-center gap-2 overflow-hidden rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-5 text-sm font-bold text-white shadow-md border border-[#06261E]/15 transition-all hover:-translate-y-0.5"
           >
             <ScanLine className="relative h-4 w-4" />
             <span className="relative">Ready to Scan</span>
           </Link>
         </div>
 
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-4 sm:overflow-visible">
+        <div className="mt-5 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-4 sm:overflow-visible">
           {[
-            { label: "Patients today", value: data?.counts.today ?? 0, bg: "bg-[#EAF3F0]", border: "border-[#06261E]", text: "text-[#06261E]" },
-            { label: "Waiting / QR", value: data?.counts.waiting ?? 0, bg: "bg-[#E0F4F1]", border: "border-[#00A896]", text: "text-[#007A6D]" },
-            { label: "Follow-ups", value: data?.counts.followUps ?? 0, bg: "bg-[#E3EFEA]", border: "border-[#0F6B58]", text: "text-[#0F6B58]" },
-            { label: "Pending requests", value: data?.counts.pending ?? 0, bg: "bg-[#FDE8EF]", border: "border-[#E05A8D]", text: "text-[#C94B7C]" },
+            { label: "Patients today", value: data?.counts.today ?? 0, bg: "bg-[#EAF3F0]", border: "border-[#06261E]/15", text: "text-[#06261E]" },
+            { label: "Waiting / QR", value: data?.counts.waiting ?? 0, bg: "bg-[#E0F4F1]", border: "border-[#00A896]/20", text: "text-[#007A6D]" },
+            { label: "Follow-ups", value: data?.counts.followUps ?? 0, bg: "bg-[#E3EFEA]", border: "border-[#0F6B58]/20", text: "text-[#0F6B58]" },
+            { label: "Pending requests", value: data?.counts.pending ?? 0, bg: "bg-[#FDE8EF]", border: "border-[#E05A8D]/20", text: "text-[#C94B7C]" },
           ].map((c) => (
             <div
               key={c.label}
-              className={`min-w-[9rem] shrink-0 rounded-2xl ${c.bg} border-2 ${c.border} px-4 py-3 shadow-sm sm:min-w-0`}
+              className={`min-w-[9.5rem] shrink-0 rounded-2xl ${c.bg} border ${c.border} px-4 py-3 shadow-sm sm:min-w-0 transition-transform hover:-translate-y-0.5`}
             >
               <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">{c.label}</div>
               <div className={`mt-1 text-2xl font-extrabold ${c.text}`}>
@@ -236,8 +236,8 @@ export function ClinicalWorkspace() {
       </motion.section>
 
       {/* Hero workspace */}
-      <section className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[1.15fr_0.95fr]">
-        <div className="min-w-0 rounded-[28px] border-2 border-[#06261E] bg-white p-4 shadow-md sm:p-5">
+      <section className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[1.15fr_0.95fr]">
+        <div className="min-w-0 portal-glass-card p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--pink-main)]">
@@ -281,7 +281,7 @@ export function ClinicalWorkspace() {
         </div>
 
         {/* Current patient */}
-        <div className="flex min-w-0 flex-col rounded-[28px] border-2 border-[#06261E] bg-gradient-to-br from-white via-white to-[#E8F3EF] p-5 shadow-md lg:self-start">
+        <div className="portal-glass-card flex min-w-0 flex-col p-5 lg:self-start bg-gradient-to-br from-white via-white to-[#E8F3EF]">
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--pink-main)]">
             Current focus
           </div>

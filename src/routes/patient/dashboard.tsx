@@ -49,20 +49,15 @@ function CareSnapshot({
     icon: ComponentType<{ className?: string }>;
     tone: string;
   }[] = [
-    { label: "Upcoming", value: String(upcoming), icon: Calendar, tone: "text-[var(--sage-deep)]" },
-    { label: "Pending", value: String(pending), icon: Clock, tone: "text-[var(--bronze)]" },
-    { label: "Confirmed", value: String(confirmed), icon: CheckCircle2, tone: "text-[var(--teal)]" },
-    { label: "Alerts", value: String(alerts), icon: Bell, tone: "text-[var(--ink)]" },
+    { label: "Upcoming", value: String(upcoming), icon: Calendar, tone: "text-[#0F6B58] bg-[#0F6B58]/10" },
+    { label: "Pending", value: String(pending), icon: Clock, tone: "text-[#E05A8D] bg-[#E05A8D]/10" },
+    { label: "Confirmed", value: String(confirmed), icon: CheckCircle2, tone: "text-[#00A896] bg-[#00A896]/10" },
+    { label: "Alerts", value: String(alerts), icon: Bell, tone: "text-[#06261E] bg-[#06261E]/10" },
   ];
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="portal-glass-card overflow-hidden rounded-[26px] p-4 sm:p-5"
-    >
-      <div className="mb-3 flex items-center justify-between gap-3 px-1">
+    <div className="mb-6">
+      <div className="mb-3.5 flex items-end justify-between gap-3 px-1">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--bronze)]">
             Care snapshot
@@ -73,33 +68,33 @@ function CareSnapshot({
         </div>
         <Link
           to="/patient/appointments"
-          className="shrink-0 text-xs font-bold text-[var(--sage-deep)]"
+          className="shrink-0 text-xs font-bold text-[var(--sage-deep)] hover:underline"
         >
           Details
         </Link>
       </div>
 
-      <div className="grid grid-cols-4 divide-x divide-black/[0.05] rounded-2xl bg-white/55 ring-1 ring-black/[0.04]">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {metrics.map(({ label, value, icon: Icon, tone }) => (
-          <div
+          <motion.div
             key={label}
-            className="flex flex-col items-center px-1.5 py-3 text-center sm:px-3 sm:py-3.5"
+            whileHover={{ y: -3 }}
+            transition={{ type: "spring", stiffness: 360, damping: 24 }}
+            className="portal-glass-card flex flex-col items-center justify-center p-5 text-center"
           >
-            <div
-              className={`mb-1.5 grid h-8 w-8 place-items-center rounded-full bg-[var(--ivory)] ${tone}`}
-            >
-              <Icon className="h-3.5 w-3.5" />
+            <div className={`mb-3 grid h-11 w-11 place-items-center rounded-2xl ${tone}`}>
+              <Icon className="h-5 w-5" />
             </div>
-            <div className="text-xl font-extrabold tracking-tight text-[var(--ink)] sm:text-2xl">
+            <div className="text-2xl font-extrabold tracking-tight text-[var(--ink)] sm:text-3xl">
               {loading ? "…" : value}
             </div>
-            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--ink-soft)] sm:text-[11px]">
+            <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
               {label}
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
-    </motion.section>
+    </div>
   );
 }
 
@@ -207,12 +202,8 @@ function PatientDashboardPage() {
       />
 
       <div className="mt-6 grid gap-6 lg:grid-cols-5">
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="portal-glass-card lg:col-span-3 rounded-3xl p-5 sm:p-6"
-        >
-          <div className="flex items-center justify-between gap-3">
+        <div className="lg:col-span-3 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3 px-1">
             <h2 className="text-lg font-extrabold text-[var(--ink)]">Upcoming appointment</h2>
             <Link
               to="/patient/appointments"
@@ -223,9 +214,9 @@ function PatientDashboardPage() {
           </div>
 
           {loading ? (
-            <div className="mt-5 h-36 animate-pulse rounded-2xl bg-[var(--ivory)]/80" />
+            <div className="h-44 animate-pulse rounded-3xl bg-white border border-black/[0.06] shadow-sm" />
           ) : followUp ? (
-            <div className="mt-5 rounded-2xl bg-white/60 p-5 ring-1 ring-black/[0.04]">
+            <div className="portal-glass-card p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="text-xl font-extrabold text-[var(--ink)]">
@@ -251,14 +242,14 @@ function PatientDashboardPage() {
               {followUp.status === "accepted" ? (
                 <Link
                   to="/patient/qr-ticket"
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[var(--sage-deep)]"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[var(--sage-deep)] hover:underline"
                 >
                   <QrCode className="h-4 w-4" /> Open QR ticket
                 </Link>
               ) : null}
             </div>
           ) : (
-            <div className="mt-5">
+            <div className="portal-glass-card p-6 flex flex-col items-center justify-center min-h-[12rem]">
               <EmptyState
                 icon={CalendarPlus}
                 title="No upcoming visits"
@@ -266,7 +257,7 @@ function PatientDashboardPage() {
                 action={
                   <Link
                     to="/patient/book"
-                    className="rounded-full bg-[var(--sage)] px-5 py-2.5 text-sm font-bold text-white"
+                    className="rounded-full bg-[var(--sage)] px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[var(--sage-deep)] transition-colors"
                   >
                     Book now
                   </Link>
@@ -274,16 +265,11 @@ function PatientDashboardPage() {
               />
             </div>
           )}
-        </motion.section>
+        </div>
 
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="portal-glass-card lg:col-span-2 rounded-3xl p-5 sm:p-6"
-        >
-          <h2 className="text-lg font-extrabold text-[var(--ink)]">Quick actions</h2>
-          <div className="mt-4 grid gap-2.5">
+        <div className="lg:col-span-2 flex flex-col gap-3">
+          <h2 className="text-lg font-extrabold text-[var(--ink)] px-1">Quick actions</h2>
+          <div className="grid gap-3">
             {[
               {
                 to: "/patient/book" as const,
@@ -313,10 +299,10 @@ function PatientDashboardPage() {
               <Link
                 key={to}
                 to={to}
-                className="flex items-center gap-3 rounded-2xl bg-white/55 px-3.5 py-3 ring-1 ring-black/[0.03] transition-colors hover:bg-white/80"
+                className="portal-glass-card flex items-center gap-3.5 p-4 transition-transform hover:-translate-y-0.5"
               >
                 <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--sage)]/10 text-[var(--sage-deep)]">
-                  <Icon className="h-[18px] w-[18px]" />
+                  <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-bold text-[var(--ink)]">{label}</div>
@@ -326,37 +312,37 @@ function PatientDashboardPage() {
               </Link>
             ))}
           </div>
-        </motion.section>
+        </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <section className="portal-glass-card rounded-3xl p-5 sm:p-6">
-          <h2 className="text-lg font-extrabold text-[var(--ink)]">Recent visits</h2>
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-extrabold text-[var(--ink)] px-1">Recent visits</h2>
           {loading ? (
-            <div className="mt-4 space-y-3">
+            <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-16 animate-pulse rounded-2xl bg-white/50" />
+                <div key={i} className="h-16 animate-pulse rounded-2xl bg-white border border-black/[0.04]" />
               ))}
             </div>
           ) : recentVisits.length === 0 ? (
-            <div className="mt-4 flex h-32 flex-col items-center justify-center text-center">
-              <p className="text-sm font-medium text-[var(--ink)]">No recent visits</p>
-              <p className="mt-1.5 text-sm text-[var(--ink-soft)]">
+            <div className="portal-glass-card flex h-32 flex-col items-center justify-center text-center p-5">
+              <p className="text-sm font-bold text-[var(--ink)]">No recent visits</p>
+              <p className="mt-1 text-xs text-[var(--ink-soft)]">
                 Completed visits will appear here after your sessions.
               </p>
             </div>
           ) : (
-            <ul className="mt-4 space-y-3">
+            <ul className="space-y-3">
               {recentVisits.map((a) => (
                 <li
                   key={a.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl bg-white/55 px-4 py-3 ring-1 ring-black/[0.03]"
+                  className="portal-glass-card flex items-center justify-between gap-3 p-4"
                 >
                   <div>
-                    <div className="font-semibold text-[var(--ink)]">
+                    <div className="font-bold text-[var(--ink)] text-sm sm:text-base">
                       {a.clinics?.name} · {a.physiotherapy_categories?.name}
                     </div>
-                    <div className="text-xs text-[var(--ink-soft)]">
+                    <div className="text-xs text-[var(--ink-soft)] mt-0.5">
                       {formatDateLabel(a.scheduled_date || a.preferred_date)}
                     </div>
                   </div>
@@ -367,24 +353,26 @@ function PatientDashboardPage() {
           )}
         </section>
 
-        <section className="portal-glass-card rounded-3xl p-5 sm:p-6">
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-[var(--bronze)]" />
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center gap-2 px-1">
+            <Bell className="h-4 w-4 text-[var(--bronze)]" />
             <h2 className="text-lg font-extrabold text-[var(--ink)]">Notifications</h2>
           </div>
           {notifications.length === 0 ? (
-            <p className="mt-4 text-sm text-[var(--ink-soft)]">
-              You’ll see appointment confirmations and reminders here.
-            </p>
+            <div className="portal-glass-card flex h-32 flex-col items-center justify-center text-center p-5">
+              <p className="text-sm font-semibold text-[var(--ink-soft)]">
+                You’ll see appointment confirmations and reminders here.
+              </p>
+            </div>
           ) : (
-            <ul className="mt-4 space-y-3">
+            <ul className="space-y-3">
               {notifications.map((n) => (
                 <li
                   key={n.id}
-                  className="rounded-2xl bg-white/55 px-4 py-3 ring-1 ring-black/[0.03]"
+                  className="portal-glass-card p-4"
                 >
-                  <div className="font-semibold text-[var(--ink)]">{n.title}</div>
-                  <p className="mt-0.5 line-clamp-2 text-sm text-[var(--ink-soft)]">{n.body}</p>
+                  <div className="font-bold text-[var(--ink)] text-sm sm:text-base">{n.title}</div>
+                  <p className="mt-1 text-xs sm:text-sm text-[var(--ink-soft)] leading-relaxed">{n.body}</p>
                 </li>
               ))}
             </ul>

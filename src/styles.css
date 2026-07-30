@@ -808,16 +808,7 @@ main > section:not(.hero-fit) h4 {
   opacity: 0.9;
 }
 
-.portal-shell .portal-glass,
-.portal-shell .portal-glass-header,
-.portal-shell .portal-glass-sidebar,
-.portal-shell .portal-glass-card,
-.portal-shell .portal-glass-chip,
-.portal-shell .card,
-.portal-shell [class*="rounded-[28px]"],
-.portal-shell [class*="rounded-[24px]"],
-.portal-shell [class*="rounded-2xl"],
-.portal-shell [class*="rounded-3xl"] {
+.portal-shell .portal-glass {
   border: 1.5px solid rgba(6, 38, 30, 0.35) !important;
   box-shadow:
     0 4px 20px rgba(6, 38, 30, 0.08),
@@ -825,19 +816,24 @@ main > section:not(.hero-fit) h4 {
 }
 
 .portal-glass-header {
-  background: rgba(255, 255, 255, 0.95);
-  border-bottom: 2px solid rgba(6, 38, 30, 0.35) !important;
+  background: #06261E !important;
+  border-bottom: 1.5px solid rgba(255, 255, 255, 0.15) !important;
   border-left: 0 !important;
   border-right: 0 !important;
   border-top: 0 !important;
   border-radius: 0 !important;
+  color: #FFFFFF !important;
 }
 
 .portal-glass-sidebar {
-  background: rgba(255, 255, 255, 0.96);
-  border-right: 2px solid rgba(6, 38, 30, 0.35) !important;
+  background: #06261E !important;
+  border-right: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  border-left: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
   border-radius: 0 !important;
-  box-shadow: 4px 0 16px rgba(6, 38, 30, 0.06);
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15) !important;
+  color: #FFFFFF !important;
 }
 
 .portal-glass-dock {
@@ -851,12 +847,14 @@ main > section:not(.hero-fit) h4 {
 }
 
 .portal-glass-card {
-  border: 1.5px solid rgba(6, 38, 30, 0.35) !important;
-  box-shadow: var(--shadow-soft);
+  background: #ffffff !important;
+  border: 1px solid rgba(6, 38, 30, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(6, 38, 30, 0.03), 0 1px 3px rgba(6, 38, 30, 0.02) !important;
+  backdrop-filter: none !important;
 }
 
 .portal-glass-chip {
-  border: 1.5px solid rgba(6, 38, 30, 0.35) !important;
+  border: 1px solid rgba(6, 38, 30, 0.15) !important;
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 4px 14px rgba(6, 38, 30, 0.06);
 }
 
