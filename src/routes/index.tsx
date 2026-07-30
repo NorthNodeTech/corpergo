@@ -396,7 +396,7 @@ function Hero({ onLoginClick }: { onLoginClick: () => void }) {
 
 function About() {
   return (
-    <section id="about" className="about-fit relative bg-slate-950/10 backdrop-blur-sm">
+    <section id="about" className="about-fit relative">
       <div className="about-fit__shell mx-auto max-w-7xl px-4 sm:px-6">
         <div className="about-fit__grid grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <motion.div
@@ -416,10 +416,10 @@ function About() {
               viewport={{ once: true }}
               transition={{ delay: 0.35, duration: 0.6, ease: easeOut }}
             >
-              <div className="about-fit__years-n font-extrabold text-white">
+              <div className="about-fit__years-n font-extrabold text-[var(--ink)]">
                 <Counter to={12} />+
               </div>
-              <div className="about-fit__years-l text-slate-200">Years of hands-on physiotherapy expertise</div>
+              <div className="about-fit__years-l text-[var(--ink-soft)]">Years of hands-on physiotherapy expertise</div>
             </motion.div>
           </motion.div>
 
@@ -433,10 +433,10 @@ function About() {
             <div className="about-fit__eyebrow uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
               About CorpErgo
             </div>
-            <h2 className="about-fit__title font-extrabold tracking-tight text-white text-balance">
+            <h2 className="about-fit__title font-extrabold tracking-tight text-[var(--ink)] text-balance">
               Recovery, reimagined for how you live and move.
             </h2>
-            <p className="about-fit__body text-slate-200">
+            <p className="about-fit__body text-[var(--ink-soft)]">
               CorpErgo is a physiotherapy-first clinic chain built on evidence,
               empathy and outcomes. From posture correction to post-surgery
               rehabilitation, our team designs a plan for your body, your goals
@@ -471,8 +471,8 @@ function About() {
                 [<Counter to={98} suffix="%" />, "Satisfaction"],
               ].map(([v, l], i) => (
                 <div key={i}>
-                  <div className="about-fit__stat-n font-extrabold text-white">{v}</div>
-                  <div className="about-fit__stat-l uppercase tracking-widest text-slate-300">
+                  <div className="about-fit__stat-n font-extrabold text-[var(--ink)]">{v}</div>
+                  <div className="about-fit__stat-l uppercase tracking-widest text-[var(--ink-soft)]/80">
                     {l}
                   </div>
                 </div>
@@ -500,7 +500,7 @@ const TREATMENTS = [
 
 function Treatments() {
   return (
-    <section id="treatments" className="py-24 sm:py-32 relative bg-slate-950/10 backdrop-blur-sm">
+    <section id="treatments" className="py-24 sm:py-32 relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <motion.div
           variants={fadeUp}
@@ -512,10 +512,10 @@ function Treatments() {
           <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
             Treatments
           </div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-white text-balance">
+          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
             Specialized programs, delivered with precision.
           </h2>
-          <p className="mt-4 text-lg text-slate-200">
+          <p className="mt-4 text-lg text-[var(--ink-soft)]">
             Every plan is built around your assessment, your goals and evidence-based
             protocols — not a template.
           </p>
@@ -565,7 +565,7 @@ function WhyChoose() {
           <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
             Why choose CorpErgo
           </div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-white text-balance">
+          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
             A different kind of physiotherapy clinic.
           </h2>
         </div>
@@ -577,15 +577,15 @@ function WhyChoose() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="relative min-w-[17.5rem] max-w-[17.5rem] shrink-0 snap-start rounded-3xl p-7 bg-white/10 backdrop-blur-xl ring-1 ring-white/20 border border-white/10 transition-all shadow-[var(--shadow-soft)] overflow-hidden sm:min-w-[19rem] sm:max-w-[19rem] sm:p-8 md:min-w-0 md:max-w-none"
+              className="relative min-w-[17.5rem] max-w-[17.5rem] shrink-0 snap-start rounded-3xl p-7 bg-white/90 ring-1 ring-black/[0.04] border border-black/[0.04] transition-all shadow-[var(--shadow-soft)] overflow-hidden sm:min-w-[19rem] sm:max-w-[19rem] sm:p-8 md:min-w-0 md:max-w-none"
             >
-              <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[var(--sage)]/10 transition-transform duration-700" />
+              <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[var(--sage)]/5 transition-transform duration-700" />
               <div className="relative">
-                <div className="text-5xl font-extrabold text-[var(--sage)]/40 transition-colors">
+                <div className="text-5xl font-extrabold text-[var(--sage)]/25 transition-colors">
                   0{i + 1}
                 </div>
-                <div className="mt-4 text-xl font-bold text-white">{x.t}</div>
-                <div className="mt-2 text-sm text-slate-200 leading-relaxed">{x.d}</div>
+                <div className="mt-4 text-xl font-bold text-[var(--ink)]">{x.t}</div>
+                <div className="mt-2 text-sm text-[var(--ink-soft)] leading-relaxed">{x.d}</div>
               </div>
             </motion.div>
           ))}
@@ -662,7 +662,7 @@ function VideoStories() {
   }, [activeReel]);
 
   return (
-    <section id="videos" className="py-24 relative overflow-hidden bg-slate-950/10 backdrop-blur-sm">
+    <section id="videos" className="py-24 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-40">
         <div className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-[var(--sage)]/20 blur-3xl" />
         <div className="absolute bottom-0 left-10 h-64 w-64 rounded-full bg-[var(--bronze)]/15 blur-3xl" />
@@ -674,10 +674,10 @@ function VideoStories() {
             <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--bronze)]">
               Watch & Learn
             </div>
-            <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-tight sm:text-5xl text-white">
+            <h2 className="mt-3 text-balance text-4xl font-extrabold tracking-tight sm:text-5xl text-[var(--ink)]">
               Real recoveries. Real people.
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/75 sm:text-base">
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--ink-soft)] sm:text-base">
               Clinic stories from CorpErgo — treatment moments, rehab progress, and care you can trust.
             </p>
           </div>
@@ -685,7 +685,7 @@ function VideoStories() {
             href={INSTAGRAM_PROFILE}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden items-center gap-1.5 text-sm font-semibold text-white/80 hover:text-white sm:inline-flex"
+            className="hidden items-center gap-1.5 text-sm font-semibold text-[var(--ink)]/80 hover:text-[var(--ink)] sm:inline-flex"
           >
             <Instagram className="h-4 w-4" /> Follow us
           </a>
@@ -786,7 +786,7 @@ function Physios({ onLoginClick }: { onLoginClick: () => void }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl mb-10 sm:mb-14">
           <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">Our Team</div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-white text-balance">
+          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
             Meet the hands behind your recovery.
           </h2>
         </div>
@@ -798,9 +798,9 @@ function Physios({ onLoginClick }: { onLoginClick: () => void }) {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="group min-w-[16.5rem] max-w-[16.5rem] shrink-0 snap-start rounded-3xl bg-white/10 backdrop-blur-xl border border-white/10 p-5 shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] sm:min-w-[18rem] sm:max-w-[18rem] sm:p-6 lg:min-w-0 lg:max-w-none landing-card-hover"
+              className="group min-w-[16.5rem] max-w-[16.5rem] shrink-0 snap-start rounded-3xl bg-white/90 border border-black/[0.04] p-5 shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] sm:min-w-[18rem] sm:max-w-[18rem] sm:p-6 lg:min-w-0 lg:max-w-none landing-card-hover"
             >
-              <div className="relative aspect-square rounded-2xl overflow-hidden mb-5 bg-white/10">
+              <div className="relative aspect-square rounded-2xl overflow-hidden mb-5 bg-[var(--ivory)]">
                 <img
                   src={p.img}
                   alt={p.name}
@@ -812,9 +812,9 @@ function Physios({ onLoginClick }: { onLoginClick: () => void }) {
                   {p.exp}
                 </div>
               </div>
-              <div className="text-base font-bold text-white group-hover:text-[var(--ink)] transition-colors duration-300">{p.name}</div>
-              <div className="text-sm text-slate-200 group-hover:text-[var(--ink-soft)] font-semibold mt-0.5 transition-colors duration-300">{p.spec}</div>
-              <div className="text-xs text-slate-300 group-hover:text-[var(--ink-soft)] mt-1 flex items-center gap-1 transition-colors duration-300">
+              <div className="text-base font-bold text-[var(--ink)] transition-colors duration-300">{p.name}</div>
+              <div className="text-sm text-[var(--ink-soft)] font-semibold mt-0.5 transition-colors duration-300">{p.spec}</div>
+              <div className="text-xs text-[var(--ink-soft)]/80 mt-1 flex items-center gap-1 transition-colors duration-300">
                 <MapPin className="h-3 w-3" /> {p.clinic} Clinic
               </div>
               <button
@@ -880,11 +880,11 @@ function Clinics({ onLoginClick }: { onLoginClick: () => void }) {
   };
 
   return (
-    <section id="clinics" className="py-24 sm:py-32 relative bg-slate-950/10 backdrop-blur-sm">
+    <section id="clinics" className="py-24 sm:py-32 relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="mb-10 max-w-2xl sm:mb-14">
           <div className="text-xs uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">Locations</div>
-          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-white text-balance">
+          <h2 className="mt-3 text-4xl sm:text-5xl font-extrabold tracking-tight text-[var(--ink)] text-balance">
             Five clinics. One standard of care.
           </h2>
         </div>
@@ -994,7 +994,7 @@ function Clinics({ onLoginClick }: { onLoginClick: () => void }) {
 
 function Founder() {
   return (
-    <section id="founder" className="founder-fit relative bg-slate-950/10 backdrop-blur-sm">
+    <section id="founder" className="founder-fit relative">
       <div className="founder-fit__shell mx-auto max-w-7xl px-4 sm:px-6">
         <div className="founder-fit__grid grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-10 lg:gap-16 items-center">
           <motion.div
@@ -1035,16 +1035,16 @@ function Founder() {
             <div className="founder-fit__eyebrow uppercase tracking-[0.22em] text-[var(--bronze)] font-semibold">
               Leadership
             </div>
-            <h2 className="founder-fit__title font-extrabold tracking-tight text-white text-balance">
+            <h2 className="founder-fit__title font-extrabold tracking-tight text-[var(--ink)] text-balance">
               Care that starts with clinical conviction.
             </h2>
 
             <div className="founder-fit__quote relative pl-1">
               <Quote
-                className="founder-fit__quote-mark absolute -left-1 -top-1 text-[var(--sage)]/20"
+                className="founder-fit__quote-mark absolute -left-1 -top-1 text-[var(--sage)]/15"
                 aria-hidden
               />
-              <blockquote className="founder-fit__quote-text relative font-medium text-white text-balance pl-8">
+              <blockquote className="founder-fit__quote-text relative font-medium text-[var(--ink)] text-balance pl-8">
                 “Pain is only the beginning of the story. At CorpErgo, we restore
                 movement, rebuild confidence, and walk with every patient until
                 they feel strong in their own body again.”
@@ -1053,13 +1053,13 @@ function Founder() {
 
             <div className="founder-fit__meta flex flex-col sm:flex-row sm:items-end">
               <div>
-                <div className="founder-fit__name font-extrabold tracking-tight text-white">
+                <div className="founder-fit__name font-extrabold tracking-tight text-[var(--ink)]">
                   Dr. Pinky Dutta PT
                 </div>
-                <div className="founder-fit__role font-semibold text-slate-200">
+                <div className="founder-fit__role font-semibold text-[var(--ink-soft)]">
                   Head of the Department
                 </div>
-                <div className="founder-fit__specialty text-slate-300">
+                <div className="founder-fit__specialty text-[var(--ink-soft)]/80">
                   Musculoskeletal &amp; Sports Physiotherapist
                 </div>
               </div>
@@ -1258,8 +1258,8 @@ function FloatingBackgroundLayout({ children }: { children: React.ReactNode }) {
           backgroundImage: `url(${mobileBgImg})`,
         }}
       />
-      <div className="absolute inset-0 bg-slate-950/80" />
-      <div className="relative z-10 text-white">{children}</div>
+      <div className="absolute inset-0 bg-[var(--ivory)]/50" />
+      <div className="relative z-10 text-[var(--ink)]">{children}</div>
     </section>
   );
 }
