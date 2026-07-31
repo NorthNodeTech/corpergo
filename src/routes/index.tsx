@@ -196,7 +196,7 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
               <a
                 key={label}
                 href={href}
-                className="rounded-full bg-[#06261E] px-3 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105"
+                className="rounded-full bg-[var(--sage)] px-3 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[var(--sage-deep)] transition-all hover:scale-105"
               >
                 {label}
               </a>
@@ -206,7 +206,7 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
           <div className="flex items-center gap-2">
             <button
               onClick={onLoginClick}
-              className="inline-flex items-center rounded-full bg-[#06261E] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[#0F6B58] transition-all hover:scale-105 cursor-pointer focus:outline-none"
+              className="inline-flex items-center rounded-full bg-[var(--sage)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[var(--sage-deep)] transition-all hover:scale-105 cursor-pointer focus:outline-none"
             >
               Login
             </button>

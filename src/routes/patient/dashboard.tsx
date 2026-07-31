@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -43,16 +44,11 @@ function CareSnapshot({
   confirmed: number;
   alerts: number;
 }) {
-  const metrics: {
-    label: string;
-    value: string;
-    icon: ComponentType<{ className?: string }>;
-    tone: string;
-  }[] = [
-    { label: "Upcoming", value: String(upcoming), icon: Calendar, tone: "text-[#0F6B58] bg-[#0F6B58]/10" },
-    { label: "Pending", value: String(pending), icon: Clock, tone: "text-[#E05A8D] bg-[#E05A8D]/10" },
-    { label: "Confirmed", value: String(confirmed), icon: CheckCircle2, tone: "text-[#00A896] bg-[#00A896]/10" },
-    { label: "Alerts", value: String(alerts), icon: Bell, tone: "text-[#06261E] bg-[#06261E]/10" },
+  const metrics = [
+    { label: "Upcoming", value: String(upcoming), icon: Calendar, text: "text-[#E11D48]", iconBg: "bg-[#FFE4E6]" },
+    { label: "Pending", value: String(pending), icon: Clock, text: "text-[#E65100]", iconBg: "bg-[#FFE0B2]" },
+    { label: "Confirmed", value: String(confirmed), icon: CheckCircle2, text: "text-[#6D28D9]", iconBg: "bg-[#F3E8FF]" },
+    { label: "Alerts", value: String(alerts), icon: Bell, text: "text-[#C94B7C]", iconBg: "bg-[#FDE8EF]" },
   ];
 
   return (
@@ -75,17 +71,17 @@ function CareSnapshot({
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {metrics.map(({ label, value, icon: Icon, tone }) => (
+        {metrics.map(({ label, value, icon: Icon, text, iconBg }) => (
           <motion.div
             key={label}
             whileHover={{ y: -3 }}
             transition={{ type: "spring", stiffness: 360, damping: 24 }}
-            className="portal-glass-card flex flex-col items-center justify-center p-5 text-center"
+            className="flex flex-col items-center justify-center p-4 text-center transition-transform hover:-translate-y-0.5"
           >
-            <div className={`mb-3 grid h-11 w-11 place-items-center rounded-2xl ${tone}`}>
+            <div className={`mb-3 grid h-11 w-11 place-items-center rounded-2xl shadow-sm ${iconBg} ${text}`}>
               <Icon className="h-5 w-5" />
             </div>
-            <div className="text-2xl font-extrabold tracking-tight text-[var(--ink)] sm:text-3xl">
+            <div className={`text-2xl font-extrabold tracking-tight sm:text-3xl ${text}`}>
               {loading ? "…" : value}
             </div>
             <div className="mt-1 text-xs font-semibold uppercase tracking-wider text-[var(--ink-soft)]">
@@ -203,11 +199,11 @@ function PatientDashboardPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-3 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-3 px-1">
+          <div className="flex h-8 items-center justify-between gap-3 px-1">
             <h2 className="text-lg font-extrabold text-[var(--ink)]">Upcoming appointment</h2>
             <Link
               to="/patient/appointments"
-              className="text-sm font-semibold text-[var(--sage-deep)] hover:underline"
+              className="text-sm font-semibold text-[var(--sage-deep)] hover:underline self-end"
             >
               View all
             </Link>
@@ -254,10 +250,11 @@ function PatientDashboardPage() {
                 icon={CalendarPlus}
                 title="No upcoming visits"
                 description="Book a session at any of our five Bengaluru clinics in under two minutes."
+                className="bg-transparent border-0 ring-0 shadow-none py-4 px-0"
                 action={
                   <Link
                     to="/patient/book"
-                    className="rounded-full bg-[var(--sage)] px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[var(--sage-deep)] transition-colors"
+                    className="rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors"
                   >
                     Book now
                   </Link>
@@ -268,7 +265,9 @@ function PatientDashboardPage() {
         </div>
 
         <div className="lg:col-span-2 flex flex-col gap-3">
-          <h2 className="text-lg font-extrabold text-[var(--ink)] px-1">Quick actions</h2>
+          <div className="flex h-8 items-center gap-2 px-1">
+            <h2 className="text-lg font-extrabold text-[var(--ink)]">Quick actions</h2>
+          </div>
           <div className="grid gap-3">
             {[
               {
@@ -276,32 +275,40 @@ function PatientDashboardPage() {
                 label: "Book appointment",
                 desc: "Choose clinic & time",
                 icon: CalendarPlus,
+                iconBg: "bg-[#FFE4E6]",
+                iconColor: "text-[#E11D48]",
               },
               {
                 to: "/patient/appointments" as const,
                 label: "My appointments",
                 desc: "Track every visit",
                 icon: Calendar,
+                iconBg: "bg-[#FFE0B2]",
+                iconColor: "text-[#E65100]",
               },
               {
                 to: "/patient/qr-ticket" as const,
                 label: "QR check-in",
                 desc: "Show at reception",
                 icon: QrCode,
+                iconBg: "bg-[#FFFDE6]",
+                iconColor: "text-[#B58900]",
               },
               {
                 to: "/patient/reports" as const,
                 label: "Medical reports",
                 desc: "Assessments & notes",
                 icon: FileText,
+                iconBg: "bg-[#F3E8FF]",
+                iconColor: "text-[#6D28D9]",
               },
-            ].map(({ to, label, desc, icon: Icon }) => (
+            ].map(({ to, label, desc, icon: Icon, iconBg, iconColor }) => (
               <Link
                 key={to}
                 to={to}
                 className="portal-glass-card flex items-center gap-3.5 p-4 transition-transform hover:-translate-y-0.5"
               >
-                <div className="grid h-10 w-10 place-items-center rounded-xl bg-[var(--sage)]/10 text-[var(--sage-deep)]">
+                <div className={cn("grid h-10 w-10 place-items-center rounded-xl shadow-sm", iconBg, iconColor)}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -317,7 +324,9 @@ function PatientDashboardPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-extrabold text-[var(--ink)] px-1">Recent visits</h2>
+          <div className="flex h-8 items-center gap-2 px-1">
+            <h2 className="text-lg font-extrabold text-[var(--ink)]">Recent visits</h2>
+          </div>
           {loading ? (
             <div className="space-y-3">
               {[1, 2].map((i) => (
@@ -354,7 +363,7 @@ function PatientDashboardPage() {
         </section>
 
         <section className="flex flex-col gap-3">
-          <div className="flex items-center gap-2 px-1">
+          <div className="flex h-8 items-center gap-2 px-1">
             <Bell className="h-4 w-4 text-[var(--bronze)]" />
             <h2 className="text-lg font-extrabold text-[var(--ink)]">Notifications</h2>
           </div>

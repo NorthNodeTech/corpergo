@@ -84,16 +84,16 @@ function AccountMenu({
         aria-controls={menuId}
         whileTap={{ scale: 0.96 }}
         onClick={() => setOpen((v) => !v)}
-        className="group flex max-w-[12rem] items-center gap-2 rounded-full border border-white/15 bg-white/10 text-white py-1.5 pl-1.5 pr-2.5 shadow-sm sm:max-w-[16rem] hover:bg-white/20 transition-colors"
+        className="group flex max-w-[12rem] items-center gap-2 rounded-full border border-black/15 bg-black/5 text-[var(--ink)] py-1.5 pl-1.5 pr-2.5 shadow-sm sm:max-w-[16rem] hover:bg-black/10 transition-colors"
       >
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--sage)] text-xs font-bold text-white shadow-sm">
           {initialsFromName(userName)}
         </span>
-        <span className="hidden min-w-0 truncate text-sm font-semibold text-white sm:block">
+        <span className="hidden min-w-0 truncate text-sm font-semibold text-[var(--ink)] sm:block">
           {label}
         </span>
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-white/80 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          className={`h-4 w-4 shrink-0 text-[var(--ink-soft)] transition-transform duration-300 ${open ? "rotate-180" : ""}`}
         />
       </motion.button>
 
@@ -336,6 +336,7 @@ export function PortalShell({
   footerNav,
   centerAction,
   settingsPath,
+  contentClassName,
 }: {
   title: string;
   subtitle: string;
@@ -347,6 +348,7 @@ export function PortalShell({
   /** PhonePe/GPay-style center action (e.g. Scan). */
   centerAction?: PortalCenterAction;
   settingsPath?: string;
+  contentClassName?: string;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -355,6 +357,8 @@ export function PortalShell({
     nav.find((item) => /settings/i.test(item.label) || item.to.includes("/settings"))?.to;
   const hasFooter = Boolean(footerNav?.length);
   const layoutKey = title.replace(/\s+/g, "-").toLowerCase();
+
+  const isDashboard = pathname.endsWith("/dashboard") || pathname.endsWith("/dashboard/");
 
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
     <nav className="flex flex-col gap-1.5 px-3">
@@ -372,10 +376,10 @@ export function PortalShell({
                 document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
               });
             }}
-            className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+            className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold text-[var(--ink-soft)] transition-colors hover:bg-black/5 hover:text-[var(--ink)] border border-transparent"
             activeProps={{
               className:
-                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold bg-[var(--sage)] text-white hover:bg-[var(--sage)] hover:text-white",
+                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-[var(--sage)] text-white hover:bg-[var(--sage-deep)] shadow-md border border-[var(--sage)]",
             }}
             activeOptions={{ exact: to.endsWith("/dashboard") && !hash }}
           >
@@ -406,21 +410,21 @@ export function PortalShell({
               animate={{ width: hasFooter ? 240 : 260, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="portal-glass-sidebar sticky top-0 z-30 hidden h-screen max-h-screen shrink-0 lg:flex lg:flex-col border-r border-white/10 overflow-hidden whitespace-nowrap"
+              className="portal-glass-sidebar sticky top-0 z-30 hidden h-screen max-h-screen shrink-0 lg:flex lg:flex-col border-r border-black/10 overflow-hidden whitespace-nowrap"
             >
               <div className="px-5 py-6 flex items-start justify-between">
                 <div>
                   <Link to="/" className="flex items-center gap-3">
-                    <img src={logoImg} alt="CorpErgo" className="h-18 sm:h-20 w-auto object-contain drop-shadow-sm invert opacity-90 brightness-200" />
+                    <img src={logoImg} alt="CorpErgo" className="h-18 sm:h-20 w-auto object-contain drop-shadow-sm brightness-100" />
                   </Link>
                   <div className="mt-4">
-                    <div className="text-sm font-extrabold text-white">{title}</div>
-                    <div className="mt-0.5 text-xs text-white/60">{subtitle}</div>
+                    <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
+                    <div className="mt-0.5 text-xs text-[var(--ink-soft)]">{subtitle}</div>
                   </div>
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="rounded-full p-1.5 hover:bg-white/10 text-white/80 transition-colors"
+                  className="rounded-full p-1.5 hover:bg-black/5 text-[var(--ink-soft)] transition-colors"
                   aria-label="Close sidebar"
                 >
                   <PanelLeftClose className="h-5 w-5" />
@@ -439,18 +443,18 @@ export function PortalShell({
               {!sidebarOpen && (
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className="hidden lg:block rounded-full p-2 hover:bg-white/10 text-white/85 transition-colors -ml-2"
+                  className="hidden lg:block rounded-full p-2 hover:bg-black/5 text-[var(--ink-soft)] transition-colors -ml-2"
                   aria-label="Open sidebar"
                 >
                   <PanelLeftOpen className="h-5 w-5" />
                 </button>
               )}
-              <img src={logoImg} alt="CorpErgo" className="h-16 sm:h-18 w-auto object-contain lg:hidden drop-shadow-sm invert opacity-90 brightness-200" />
+              <img src={logoImg} alt="CorpErgo" className="h-16 sm:h-18 w-auto object-contain lg:hidden drop-shadow-sm brightness-100" />
               <div className="min-w-0">
-                <div className="truncate text-sm font-bold text-white lg:text-[15px]">
+                <div className="truncate text-sm font-bold text-[var(--ink)] lg:text-[15px]">
                   {title}
                 </div>
-                <div className="truncate text-[10px] uppercase tracking-[0.16em] text-white/60">
+                <div className="truncate text-[10px] uppercase tracking-[0.16em] text-[var(--ink-soft)]">
                   {userName?.trim() || subtitle}
                 </div>
               </div>
@@ -461,7 +465,7 @@ export function PortalShell({
           <main
             className={`min-w-0 w-full max-w-full flex-1 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8 lg:py-8 ${
               hasFooter ? "pb-[7.25rem] lg:pb-8" : "pb-8"
-            }`}
+            } dashboard-bg-container ${contentClassName || ""}`}
           >
             <AnimatePresence mode="wait">
               <motion.div

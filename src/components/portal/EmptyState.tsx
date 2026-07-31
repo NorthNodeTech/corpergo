@@ -21,7 +21,7 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sage)]/10 text-[var(--sage-deep)]">
+      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--pink-main)]/10 text-[var(--pink-main)]">
         <Icon className="h-7 w-7" />
       </div>
       <h3 className="mt-5 text-lg font-bold text-[var(--ink)]">{title}</h3>

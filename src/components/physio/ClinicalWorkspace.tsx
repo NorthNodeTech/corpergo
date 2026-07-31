@@ -68,8 +68,8 @@ function Skeleton({ className }: { className?: string }) {
 
 function EmptyCalm({ title, body }: { title: string; body: string }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-[24px] border-2 border-[#06261E]/20 bg-gradient-to-br from-[#FDE8EF]/40 via-white to-[#E8F3EF]/60 px-6 py-12 text-center">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[var(--sage)] text-white shadow-md">
+    <div className="flex flex-col items-center justify-center rounded-[24px] border border-white/40 bg-white/45 backdrop-blur-md px-6 py-12 text-center shadow-sm">
+      <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[var(--pink-main)] text-white shadow-md">
         <CheckCircle2 className="h-6 w-6" />
       </div>
       <div className="mt-4 text-lg font-extrabold text-[var(--ink)]">{title}</div>
@@ -179,7 +179,7 @@ export function ClinicalWorkspace() {
       <motion.section
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="portal-glass-card overflow-hidden p-5 sm:p-7"
+        className="p-1 sm:p-2 mb-6"
       >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -221,14 +221,14 @@ export function ClinicalWorkspace() {
             { label: "Waiting / QR", value: data?.counts.waiting ?? 0, bg: "bg-[#E0F4F1]", border: "border-[#00A896]/20", text: "text-[#007A6D]" },
             { label: "Follow-ups", value: data?.counts.followUps ?? 0, bg: "bg-[#E3EFEA]", border: "border-[#0F6B58]/20", text: "text-[#0F6B58]" },
             { label: "Pending requests", value: data?.counts.pending ?? 0, bg: "bg-[#FDE8EF]", border: "border-[#E05A8D]/20", text: "text-[#C94B7C]" },
-          ].map((c) => (
+          ].map((item) => (
             <div
-              key={c.label}
-              className={`min-w-[9.5rem] shrink-0 rounded-2xl ${c.bg} border ${c.border} px-4 py-3 shadow-sm sm:min-w-0 transition-transform hover:-translate-y-0.5`}
+              key={item.label}
+              className={`min-w-[9.5rem] shrink-0 rounded-2xl ${item.bg} border ${item.border} px-4 py-3 shadow-sm sm:min-w-0 transition-transform hover:-translate-y-0.5`}
             >
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">{c.label}</div>
-              <div className={`mt-1 text-2xl font-extrabold ${c.text}`}>
-                {loading ? "—" : c.value}
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">{item.label}</div>
+              <div className={`mt-1 text-2xl font-extrabold ${item.text}`}>
+                {loading ? "—" : item.value}
               </div>
             </div>
           ))}
@@ -237,8 +237,8 @@ export function ClinicalWorkspace() {
 
       {/* Hero workspace */}
       <section className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[1.15fr_0.95fr]">
-        <div className="min-w-0 portal-glass-card p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0 p-1 sm:p-2">
+          <div className="flex h-14 items-center justify-between gap-3">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--pink-main)]">
                 Today&apos;s queue
@@ -247,7 +247,7 @@ export function ClinicalWorkspace() {
             </div>
             <Link
               to="/physio/queue"
-              className="text-xs font-bold text-[#0F6B58] hover:underline"
+              className="text-xs font-bold text-[#0F6B58] hover:underline self-end pb-1"
             >
               Full queue
             </Link>
@@ -281,96 +281,106 @@ export function ClinicalWorkspace() {
         </div>
 
         {/* Current patient */}
-        <div className="portal-glass-card flex min-w-0 flex-col p-5 lg:self-start bg-gradient-to-br from-white via-white to-[#E8F3EF]">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--pink-main)]">
-            Current focus
-          </div>
-          {loading ? (
-            <Skeleton className="mt-4 h-64" />
-          ) : selected ? (
-            <>
-              <div className="mt-3 flex items-start gap-3">
-                <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--sage)] text-sm font-bold text-white">
-                  {initials(patientName(selected))}
-                </div>
-                <div className="min-w-0">
-                  <h3 className="truncate text-2xl font-extrabold text-[var(--ink)]">
-                    {patientName(selected)}
-                  </h3>
-                  <div className="mt-1 text-sm text-[var(--ink-soft)]">
-                    {patientAge(selected) != null ? `${patientAge(selected)} yrs` : "Age —"} ·{" "}
-                    {visitTimeLabel(selected)}
-                  </div>
-                  <div className="mt-2">
-                    <span
-                      className={cn(
-                        "inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ring-1",
-                        clinicalTone(selected.status),
-                      )}
-                    >
-                      {clinicalLabel(selected.status)}
-                    </span>
-                  </div>
-                </div>
+        <div className="flex min-w-0 flex-col p-1 sm:p-2 lg:self-start">
+          <div className="flex h-14 items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--pink-main)]">
+                Current focus
               </div>
+              <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">
+                {selected ? "Active session" : "No active session"}
+              </h2>
+            </div>
+          </div>
 
-              <div className="mt-5 rounded-2xl bg-white/80 p-4 ring-1 ring-black/[0.04]">
-                <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
-                  Presenting problem
-                </div>
-                <p className="mt-1 text-sm font-semibold leading-relaxed text-[var(--ink)]">
-                  {selected.symptoms || selected.physiotherapy_categories?.name || "Not specified"}
-                </p>
-                <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <div className="text-[11px] font-semibold text-[var(--ink-soft)]">Category</div>
-                    <div className="font-bold text-[var(--ink)]">
-                      {selected.physiotherapy_categories?.name || "—"}
+          <div className="mt-4 flex-1 flex flex-col">
+            {loading ? (
+              <Skeleton className="h-64" />
+            ) : selected ? (
+              <>
+                <div className="mt-3 flex items-start gap-3">
+                  <div className="grid h-14 w-14 place-items-center rounded-full bg-[var(--sage)] text-sm font-bold text-white">
+                    {initials(patientName(selected))}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-2xl font-extrabold text-[var(--ink)]">
+                      {patientName(selected)}
+                    </h3>
+                    <div className="mt-1 text-sm text-[var(--ink-soft)]">
+                      {patientAge(selected) != null ? `${patientAge(selected)} yrs` : "Age —"} ·{" "}
+                      {visitTimeLabel(selected)}
+                    </div>
+                    <div className="mt-2">
+                      <span
+                        className={cn(
+                          "inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ring-1",
+                          clinicalTone(selected.status),
+                        )}
+                      >
+                        {clinicalLabel(selected.status)}
+                      </span>
                     </div>
                   </div>
-                  <div>
-                    <div className="text-[11px] font-semibold text-[var(--ink-soft)]">Code</div>
-                    <div className="font-bold text-[var(--ink)]">{selected.appointment_code}</div>
+                </div>
+
+                <div className="mt-5 portal-glass-card rounded-2xl p-4">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                    Presenting problem
+                  </div>
+                  <p className="mt-1 text-sm font-semibold leading-relaxed text-[var(--ink)]">
+                    {selected.symptoms || selected.physiotherapy_categories?.name || "Not specified"}
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <div className="text-[11px] font-semibold text-[var(--ink-soft)]">Category</div>
+                      <div className="font-bold text-[var(--ink)]">
+                        {selected.physiotherapy_categories?.name || "—"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-semibold text-[var(--ink-soft)]">Code</div>
+                      <div className="font-bold text-[var(--ink)]">{selected.appointment_code}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <Link
-                  to="/physio/assessments/$appointmentId"
-                  params={{ appointmentId: selected.id }}
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[var(--sage)] px-3 text-sm font-bold text-white"
-                >
-                  Start assessment
-                </Link>
-                <Link
-                  to="/physio/scan"
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[var(--ivory)] px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
-                >
-                  Scan / chart
-                </Link>
-                <Link
-                  to="/physio/assessments/$appointmentId"
-                  params={{ appointmentId: selected.id }}
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
-                >
-                  <FileText className="h-4 w-4" /> Timeline
-                </Link>
-                <Link
-                  to="/physio/assessments/$appointmentId"
-                  params={{ appointmentId: selected.id }}
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
-                >
-                  <CalendarPlus className="h-4 w-4" /> Follow-up
-                </Link>
-              </div>
-            </>
-          ) : (
-            <EmptyCalm
-              title="No patient in focus"
-              body="When someone checks in or your next confirmed visit arrives, they’ll appear here."
-            />
-          )}
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <Link
+                    to="/physio/assessments/$appointmentId"
+                    params={{ appointmentId: selected.id }}
+                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[var(--sage)] px-3 text-sm font-bold text-white"
+                  >
+                    Start assessment
+                  </Link>
+                  <Link
+                    to="/physio/scan"
+                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-[var(--ivory)] px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
+                  >
+                    Scan / chart
+                  </Link>
+                  <Link
+                    to="/physio/assessments/$appointmentId"
+                    params={{ appointmentId: selected.id }}
+                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
+                  >
+                    <FileText className="h-4 w-4" /> Timeline
+                  </Link>
+                  <Link
+                    to="/physio/assessments/$appointmentId"
+                    params={{ appointmentId: selected.id }}
+                    className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-white px-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
+                  >
+                    <CalendarPlus className="h-4 w-4" /> Follow-up
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <EmptyCalm
+                title="No patient in focus"
+                body="When someone checks in or your next confirmed visit arrives, they’ll appear here."
+              />
+            )}
+          </div>
         </div>
       </section>
 
@@ -415,10 +425,10 @@ export function ClinicalWorkspace() {
           {(loading ? [] : data?.pending || []).slice(0, 8).map((a) => (
             <div
               key={a.id}
-              className="min-w-[15.5rem] shrink-0 rounded-[22px] border-2 border-[#06261E]/30 bg-white p-4 shadow-md"
+              className="min-w-[15.5rem] shrink-0 rounded-[22px] border border-white/40 bg-white/60 p-4 shadow-sm backdrop-blur-md transition hover:-translate-y-0.5"
             >
               <div className="flex items-center gap-2">
-                <div className="grid h-9 w-9 place-items-center rounded-full bg-sky-100 text-[10px] font-bold text-sky-900">
+                <div className="grid h-9 w-9 place-items-center rounded-full bg-[var(--pink-main)]/10 text-[10px] font-bold text-[var(--pink-main)]">
                   {initials(patientName(a))}
                 </div>
                 <div className="min-w-0">
@@ -437,7 +447,7 @@ export function ClinicalWorkspace() {
               </div>
               <Link
                 to="/physio/requests"
-                className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] py-2.5 text-xs font-bold text-white border border-[#06261E]/30 transition-colors"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] py-2.5 text-xs font-bold text-white transition-colors shadow-sm"
               >
                 Review & accept
               </Link>
@@ -475,12 +485,12 @@ export function ClinicalWorkspace() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 className={cn(
-                  "rounded-[20px] border-2 p-4",
+                  "rounded-[20px] border p-4 transition-all duration-200",
                   ins.tone === "warn"
-                    ? "bg-amber-50 border-amber-400"
+                    ? "bg-[#FFF9F2] border-[#FFA726]/40"
                     : ins.tone === "good"
-                      ? "bg-emerald-50 border-emerald-500"
-                      : "bg-white border-[#06261E]/25",
+                      ? "bg-[#F3FAF7] border-[#00A896]/30"
+                      : "bg-white/60 border-black/10 shadow-sm",
                 )}
               >
                 <div className="text-sm font-extrabold text-[var(--ink)]">{ins.title}</div>
@@ -499,10 +509,10 @@ export function ClinicalWorkspace() {
             {(data?.categories || []).map((c) => (
               <div
                 key={c.name}
-                className="min-w-[9.5rem] shrink-0 rounded-[20px] border-2 border-[#0F6B58]/40 bg-white px-4 py-3 shadow-sm sm:min-w-0"
+                className="min-w-[9.5rem] shrink-0 rounded-[20px] border border-white/40 bg-white/60 px-4 py-3 shadow-sm sm:min-w-0"
               >
                 <div className="text-xs font-semibold text-[var(--ink-soft)]">{c.name}</div>
-                <div className="mt-1 text-2xl font-extrabold text-[var(--sage-deep)]">{c.count}</div>
+                <div className="mt-1 text-2xl font-extrabold text-[#D4AF37]">{c.count}</div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
                   patients
                 </div>
@@ -516,86 +526,94 @@ export function ClinicalWorkspace() {
       </section>
 
       {/* Assessments + calendar strip */}
-      <section className="mt-8 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[28px] border-2 border-[#06261E] bg-white p-5 shadow-md">
-          <div className="flex items-center justify-between">
+      <section className="mt-8 grid gap-6 lg:grid-cols-2">
+        <div className="min-w-0 p-1 sm:p-2">
+          <div className="flex h-14 items-center justify-between gap-3">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
                 Assessments
               </div>
               <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Ready to document</h3>
             </div>
-            <Link to="/physio/assessments" className="text-xs font-bold text-[var(--sage-deep)]">
+            <Link to="/physio/assessments" className="text-xs font-bold text-[var(--sage-deep)] self-end pb-1 hover:underline">
               View all
             </Link>
           </div>
-          <ul className="mt-4 space-y-2.5">
-            {(data?.assessable || []).slice(0, 5).map((a) => (
-              <li key={a.id}>
-                <Link
-                  to="/physio/assessments/$appointmentId"
-                  params={{ appointmentId: a.id }}
-                  className="flex items-center gap-3 rounded-2xl bg-[var(--ivory)]/80 px-3 py-3 transition hover:bg-[var(--ivory)]"
-                >
-                  <div className="grid h-9 w-9 place-items-center rounded-full bg-white text-[10px] font-bold text-[var(--sage-deep)] ring-1 ring-black/[0.04]">
-                    {initials(patientName(a))}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate font-bold text-[var(--ink)]">{patientName(a)}</div>
-                    <div className="truncate text-[11px] text-[var(--ink-soft)]">
-                      {a.physiotherapy_categories?.name || "Visit"} · {clinicalLabel(a.status)}
+          <div className="mt-4 flex-1">
+            <ul className="mt-0 space-y-2.5">
+              {(data?.assessable || []).slice(0, 5).map((a) => (
+                <li key={a.id}>
+                  <Link
+                    to="/physio/assessments/$appointmentId"
+                    params={{ appointmentId: a.id }}
+                    className="flex items-center gap-3 rounded-2xl bg-white/80 border border-black/[0.04] shadow-sm px-3 py-3 transition hover:bg-white"
+                  >
+                    <div className="grid h-9 w-9 place-items-center rounded-full bg-[var(--pink-main)]/10 text-[10px] font-bold text-[var(--pink-main)]">
+                      {initials(patientName(a))}
                     </div>
-                  </div>
-                  <StatusBadge status={a.status} />
-                </Link>
-              </li>
-            ))}
-            {!loading && !(data?.assessable || []).length ? (
-              <EmptyCalm
-                title="No assessments pending"
-                body="Checked-in and accepted visits will show here for notes."
-              />
-            ) : null}
-          </ul>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-bold text-[var(--ink)]">{patientName(a)}</div>
+                      <div className="truncate text-[11px] text-[var(--ink-soft)]">
+                        {a.physiotherapy_categories?.name || "Visit"} · {clinicalLabel(a.status)}
+                      </div>
+                    </div>
+                    <StatusBadge status={a.status} />
+                  </Link>
+                </li>
+              ))}
+              {!loading && !(data?.assessable || []).length ? (
+                <EmptyCalm
+                  title="No assessments pending"
+                  body="Checked-in and accepted visits will show here for notes."
+                />
+              ) : null}
+            </ul>
+          </div>
         </div>
 
-        <div className="rounded-[28px] border-2 border-[#06261E] bg-white p-5 shadow-md">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
-            Today&apos;s timeline
+        <div className="min-w-0 p-1 sm:p-2">
+          <div className="flex h-14 items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+                Today&apos;s timeline
+              </div>
+              <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Schedule strip</h3>
+            </div>
           </div>
-          <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Schedule strip</h3>
-          <div className="mt-4 space-y-2">
-            {(data?.todayQueue || []).map((a) => {
-              const past = a.status === "completed";
-              const current = selected?.id === a.id;
-              return (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => setSelectedId(a.id)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition",
-                    current
-                      ? "bg-[var(--sage)] text-white"
-                      : past
-                        ? "bg-[var(--ivory)]/60 text-[var(--ink-soft)]"
-                        : "bg-[var(--ivory)] text-[var(--ink)] hover:bg-[var(--ivory)]",
-                  )}
-                >
-                  <div className="w-12 text-sm font-extrabold">{visitTimeLabel(a)}</div>
-                  <div className="min-w-0 flex-1 truncate text-sm font-semibold">
-                    {patientName(a)}
-                  </div>
-                  <UserRound className="h-4 w-4 shrink-0 opacity-70" />
-                </button>
-              );
-            })}
-            {!loading && !(data?.todayQueue || []).length ? (
-              <EmptyCalm
-                title="Open calendar"
-                body="Accepted and checked-in visits will line up here by time."
-              />
-            ) : null}
+          <div className="mt-4 flex-1">
+            <div className="space-y-2">
+              {(data?.todayQueue || []).map((a) => {
+                const past = a.status === "completed";
+                const current = selected?.id === a.id;
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => setSelectedId(a.id)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left border transition shadow-sm",
+                      current
+                        ? "bg-[var(--sage)] text-white border-[var(--sage)]"
+                        : past
+                          ? "bg-white/45 text-[var(--ink-soft)] border-black/[0.03]"
+                          : "bg-white/80 text-[var(--ink)] border-black/[0.04] hover:bg-white",
+                    )}
+                  >
+                    <div className="w-12 text-sm font-extrabold">{visitTimeLabel(a)}</div>
+                    <div className="min-w-0 flex-1 truncate text-sm font-semibold">
+                      {patientName(a)}
+                    </div>
+                    <UserRound className="h-4 w-4 shrink-0 opacity-70" />
+                  </button>
+                );
+              })}
+              {!loading && !(data?.todayQueue || []).length ? (
+                <EmptyCalm
+                  title="Open calendar"
+                  body="Accepted and checked-in visits will line up here by time."
+                />
+              ) : null}
+            </div>
           </div>
         </div>
       </section>
@@ -603,16 +621,51 @@ export function ClinicalWorkspace() {
       {/* Quick links */}
       <section className="mt-8 grid gap-3 sm:grid-cols-3">
         {[
-          { to: "/physio/requests" as const, label: "Requests inbox", icon: ClipboardList, hint: "Accept & schedule" },
-          { to: "/physio/queue" as const, label: "Floor queue", icon: Clock3, hint: "Waiting patients" },
-          { to: "/physio/assessments" as const, label: "Assessments", icon: FileText, hint: "Clinical notes" },
-        ].map(({ to, label, icon: Icon, hint }) => (
+          { 
+            to: "/physio/requests" as const, 
+            label: "Requests inbox", 
+            icon: ClipboardList, 
+            hint: "Accept & schedule",
+            bg: "bg-gradient-to-br from-[#FFFBF7] to-[#FFF3E6]",
+            border: "border-[#FFB74D]/40",
+            hoverBorder: "hover:border-[#FF9800]/60",
+            iconBg: "bg-[#FFE0B2]",
+            iconColor: "text-[#E65100]"
+          },
+          { 
+            to: "/physio/queue" as const, 
+            label: "Floor queue", 
+            icon: Clock3, 
+            hint: "Waiting patients",
+            bg: "bg-gradient-to-br from-[#FFF5F7] to-[#FFE4E6]",
+            border: "border-[#FDA4AF]/40",
+            hoverBorder: "hover:border-[#F43F5E]/60",
+            iconBg: "bg-[#FFE4E6]",
+            iconColor: "text-[#E11D48]"
+          },
+          { 
+            to: "/physio/assessments" as const, 
+            label: "Assessments", 
+            icon: FileText, 
+            hint: "Clinical notes",
+            bg: "bg-gradient-to-br from-[#FDFBFF] to-[#F3E8FF]",
+            border: "border-[#D8B4FE]/40",
+            hoverBorder: "hover:border-[#8B5CF6]/60",
+            iconBg: "bg-[#F3E8FF]",
+            iconColor: "text-[#6D28D9]"
+          },
+        ].map(({ to, label, icon: Icon, hint, bg, border, hoverBorder, iconBg, iconColor }) => (
           <Link
             key={to}
             to={to}
-            className="flex items-center gap-3 rounded-[22px] border-2 border-[#06261E]/30 bg-white p-4 shadow-md transition hover:-translate-y-0.5 hover:border-[#06261E] hover:shadow-lg"
+            className={cn(
+              "flex items-center gap-3 rounded-[22px] border p-4 transition-all hover:-translate-y-0.5 duration-200 shadow-sm",
+              bg,
+              border,
+              hoverBorder,
+            )}
           >
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--sage)]/12 text-[var(--sage-deep)]">
+            <span className={cn("grid h-11 w-11 place-items-center rounded-2xl shadow-sm", iconBg, iconColor)}>
               <Icon className="h-5 w-5" />
             </span>
             <span>
