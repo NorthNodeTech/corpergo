@@ -36,7 +36,6 @@ const NAV: PortalNavItem[] = [
   { to: "/patient/appointments", label: "My Appointments", icon: ClipboardList },
   { to: "/patient/reports", label: "Medical Reports", icon: FileText },
   { to: "/patient/qr-ticket", label: "QR Ticket", icon: QrCode },
-  { to: "/patient/profile", label: "Health Profile", icon: UserRound },
   { to: "/patient/settings", label: "Settings", icon: Settings },
 ];
 

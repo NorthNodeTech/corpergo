@@ -1,7 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, LogOut, Settings, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ChevronDown, LogOut, Settings, PanelLeftClose, PanelLeftOpen, UserRound } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import logoImg from "@/assets/LOGO.webp";
 import { clearSession } from "@/lib/auth";
@@ -86,7 +86,7 @@ function AccountMenu({
         onClick={() => setOpen((v) => !v)}
         className="group flex max-w-[12rem] items-center gap-2 rounded-full border border-black/15 bg-black/5 text-[var(--ink)] py-1.5 pl-1.5 pr-2.5 shadow-sm sm:max-w-[16rem] hover:bg-black/10 transition-colors"
       >
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--sage)] text-xs font-bold text-white shadow-sm">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-800 text-xs font-bold text-white shadow-sm">
           {initialsFromName(userName)}
         </span>
         <span className="hidden min-w-0 truncate text-sm font-semibold text-[var(--ink)] sm:block">
@@ -217,14 +217,14 @@ function GlassFooterNav({
             {active ? (
               <motion.span
                 layoutId={`portal-tab-pill-${layoutKey}`}
-                className="absolute inset-x-1 inset-y-0 rounded-2xl bg-[var(--sage)]/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
-                transition={{ type: "spring", stiffness: 350, damping: 30, mass: 0.8 }}
+                className="absolute inset-x-1 inset-y-0 rounded-2xl bg-blue-900/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
+                transition={{ type: "spring", stiffness: 450, damping: 30, mass: 0.8 }}
               />
             ) : null}
             <motion.div
               animate={{ 
                 scale: active ? 1.05 : 1,
-                color: active ? "var(--sage-deep)" : "var(--ink-soft)"
+                color: active ? "#1e3a8a" : "var(--ink-soft)"
               }}
               transition={{ type: "spring", stiffness: 400, damping: 28 }}
               className="relative z-[1] flex items-center justify-center"
@@ -234,7 +234,7 @@ function GlassFooterNav({
           </div>
           <motion.span
             animate={{
-              color: active ? "var(--sage-deep)" : "var(--ink-soft)"
+              color: active ? "#1e3a8a" : "var(--ink-soft)"
             }}
             transition={{ duration: 0.2 }}
             className={`relative z-[1] max-w-full truncate text-[10px] tracking-wide ${active ? "font-bold" : "font-semibold"}`}
@@ -272,8 +272,8 @@ function GlassFooterNav({
                     transition={{ type: "spring", stiffness: 450, damping: 25 }}
                     className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_12px_32px_rgba(71,86,63,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md ${
                       centerActive
-                        ? "bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)]"
-                        : "bg-gradient-to-br from-[var(--sage)] via-[var(--sage-deep)] to-[#3d4a38]"
+                        ? "bg-gradient-to-br from-blue-950 via-blue-900 to-blue-700"
+                        : "bg-gradient-to-br from-blue-900 via-blue-800 to-slate-800"
                     }`}
                   >
                     <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
@@ -296,8 +296,8 @@ function GlassFooterNav({
                     transition={{ type: "spring", stiffness: 450, damping: 25 }}
                     className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_12px_32px_rgba(71,86,63,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md ${
                       centerActive
-                        ? "bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[var(--teal)]"
-                        : "bg-gradient-to-br from-[var(--sage)] via-[var(--sage-deep)] to-[#3d4a38]"
+                        ? "bg-gradient-to-br from-blue-950 via-blue-900 to-blue-700"
+                        : "bg-gradient-to-br from-blue-900 via-blue-800 to-slate-800"
                     }`}
                   >
                     <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
@@ -310,7 +310,7 @@ function GlassFooterNav({
               )}
               <span
                 className={`text-[10px] font-semibold tracking-wide ${
-                  centerActive ? "text-[var(--sage-deep)]" : "text-[var(--ink-soft)]"
+                  centerActive ? "text-blue-900" : "text-[var(--ink-soft)]"
                 }`}
               >
                 {centerAction.label}
@@ -379,7 +379,7 @@ export function PortalShell({
             className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold text-[var(--ink-soft)] transition-colors hover:bg-black/5 hover:text-[var(--ink)] border border-transparent"
             activeProps={{
               className:
-                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-[var(--sage)] text-white hover:bg-[var(--sage-deep)] shadow-md border border-[var(--sage)]",
+                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-md border border-blue-800",
             }}
             activeOptions={{ exact: to.endsWith("/dashboard") && !hash }}
           >
@@ -459,7 +459,19 @@ export function PortalShell({
                 </div>
               </div>
             </div>
-            <AccountMenu userName={userName} settingsTo={settingsTo} />
+            <div className="flex items-center gap-3">
+              {/* Show Health Profile only in Patient portal */}
+              {pathname.includes("/patient") && (
+                <Link
+                  to="/patient/profile"
+                  className="hidden sm:flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--ink-soft)] hover:bg-black/5 hover:text-blue-900 transition-colors"
+                >
+                  <UserRound className="h-4 w-4" />
+                  Health Profile
+                </Link>
+              )}
+              <AccountMenu userName={userName} settingsTo={settingsTo} />
+            </div>
           </header>
 
           <main
@@ -507,7 +519,7 @@ export function StatCard({
       transition={{ type: "spring", stiffness: 360, damping: 24 }}
       className="portal-glass-card rounded-3xl p-5"
     >
-      <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--sage)]/12 text-[var(--sage-deep)]">
+      <div className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-900/12 text-blue-950">
         <Icon className="h-5 w-5" />
       </div>
       <div className="mt-4 text-2xl font-extrabold text-[var(--ink)]">{value}</div>

@@ -99,8 +99,8 @@ function QueueCard({
       className={cn(
         "flex w-full min-w-0 gap-3 rounded-[22px] border bg-white p-3.5 text-left transition outline-none shadow-sm",
         active
-          ? "border-[var(--sage)] bg-[#EAF3F0] ring-2 ring-[#0F6B58]/20"
-          : "border-black/[0.06] bg-white hover:border-[var(--sage)] hover:bg-[#EAF3F0]/40 hover:-translate-y-0.5",
+          ? "border-[var(--sage)] bg-blue-50 ring-2 ring-blue-800/20"
+          : "border-black/[0.06] bg-white hover:border-[var(--sage)] hover:bg-blue-50/40 hover:-translate-y-0.5",
       )}
     >
       <div className="w-12 shrink-0 pt-0.5 text-center">
@@ -190,8 +190,8 @@ export function ClinicalWorkspace() {
               {loading ? "…" : displayName}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0F6B58]/15 border border-[#06261E]/15 px-3.5 py-1 text-xs font-bold text-[#06261E]">
-                <Stethoscope className="h-3.5 w-3.5 text-[#0F6B58]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-900/15 border border-blue-900/15 px-3.5 py-1 text-xs font-bold text-blue-900">
+                <Stethoscope className="h-3.5 w-3.5 text-blue-800" />
                 {loading ? "Clinic" : data?.clinicName}
               </span>
               <span className="text-sm font-medium text-[var(--ink-soft)]">
@@ -217,9 +217,9 @@ export function ClinicalWorkspace() {
 
         <div className="mt-5 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-4 sm:overflow-visible">
           {[
-            { label: "Patients today", value: data?.counts.today ?? 0, bg: "bg-[#EAF3F0]", border: "border-[#06261E]/15", text: "text-[#06261E]" },
-            { label: "Waiting / QR", value: data?.counts.waiting ?? 0, bg: "bg-[#E0F4F1]", border: "border-[#00A896]/20", text: "text-[#007A6D]" },
-            { label: "Follow-ups", value: data?.counts.followUps ?? 0, bg: "bg-[#E3EFEA]", border: "border-[#0F6B58]/20", text: "text-[#0F6B58]" },
+            { label: "Patients today", value: data?.counts.today ?? 0, bg: "bg-blue-50", border: "border-blue-900/15", text: "text-blue-900" },
+            { label: "Waiting / QR", value: data?.counts.waiting ?? 0, bg: "bg-sky-50", border: "border-sky-600/20", text: "text-sky-700" },
+            { label: "Follow-ups", value: data?.counts.followUps ?? 0, bg: "bg-blue-50", border: "border-blue-800/20", text: "text-blue-800" },
             { label: "Pending requests", value: data?.counts.pending ?? 0, bg: "bg-[#FDE8EF]", border: "border-[#E05A8D]/20", text: "text-[#C94B7C]" },
           ].map((item) => (
             <div
@@ -247,7 +247,7 @@ export function ClinicalWorkspace() {
             </div>
             <Link
               to="/physio/queue"
-              className="text-xs font-bold text-[#0F6B58] hover:underline self-end pb-1"
+              className="text-xs font-bold text-blue-800 hover:underline self-end pb-1"
             >
               Full queue
             </Link>
@@ -388,7 +388,7 @@ export function ClinicalWorkspace() {
       <section className="mt-6">
         <Link
           to="/physio/scan"
-          className="group relative flex flex-col items-center justify-center overflow-hidden rounded-[28px] border-2 border-[#06261E] bg-gradient-to-br from-[#06261E] via-[#0F6B58] to-[#00A896] px-6 py-8 text-center text-white shadow-lg sm:py-10"
+          className="group relative flex flex-col items-center justify-center overflow-hidden rounded-[28px] border-2 border-blue-900 bg-gradient-to-br from-[#0F172A] via-[#1E3A8A] to-[#3B82F6] px-6 py-8 text-center text-white shadow-lg sm:py-10"
         >
           <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.18),transparent_55%)]" />
           <motion.span
@@ -512,7 +512,7 @@ export function ClinicalWorkspace() {
                 className="min-w-[9.5rem] shrink-0 rounded-[20px] border border-white/40 bg-white/60 px-4 py-3 shadow-sm sm:min-w-0"
               >
                 <div className="text-xs font-semibold text-[var(--ink-soft)]">{c.name}</div>
-                <div className="mt-1 text-2xl font-extrabold text-[#D4AF37]">{c.count}</div>
+                <div className="mt-1 text-2xl font-extrabold text-blue-800">{c.count}</div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
                   patients
                 </div>

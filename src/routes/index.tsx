@@ -123,12 +123,12 @@ function MotionMarquee() {
   ];
   const loop = [...items, ...items];
   return (
-    <div className="relative overflow-hidden border-y border-black/[0.05] bg-white/10 py-4 backdrop-blur-sm">
+    <div className="relative overflow-hidden border-y border-black/10 bg-black/5 py-4 backdrop-blur-sm">
       <div className="alive-marquee flex w-max gap-10 whitespace-nowrap">
         {loop.map((label, i) => (
           <span
             key={`${label}-${i}`}
-            className="inline-flex items-center gap-3 text-sm font-semibold tracking-wide text-white/70"
+            className="inline-flex items-center gap-3 text-sm font-bold tracking-wide text-black"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--sage)]" />
             {label}
@@ -206,13 +206,13 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
           <div className="flex items-center gap-2">
             <button
               onClick={onLoginClick}
-              className="inline-flex items-center rounded-full bg-[var(--sage)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[var(--sage-deep)] transition-all hover:scale-105 cursor-pointer focus:outline-none"
+              className="inline-flex items-center rounded-full bg-[#06261E] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[#0a382c] transition-all hover:scale-105 cursor-pointer focus:outline-none"
             >
               Login
             </button>
             <button
               onClick={onLoginClick}
-              className="group inline-flex items-center gap-1 rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 cursor-pointer focus:outline-none"
+              className="group inline-flex items-center gap-1 rounded-full bg-[#06261E] hover:bg-[#0a382c] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 cursor-pointer focus:outline-none"
             >
               <span>
                 Book<span className="hidden sm:inline"> Appointment</span>

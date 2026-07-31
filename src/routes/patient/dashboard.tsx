@@ -159,7 +159,7 @@ function PatientDashboardPage() {
         actions={
           <Link
             to="/patient/book"
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--sage)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-soft)] hover:bg-[var(--sage-deep)] transition-colors"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-900 to-blue-700 px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-soft)] hover:from-blue-950 hover:to-blue-800 transition-all"
           >
             Book appointment <ArrowRight className="h-4 w-4" />
           </Link>
@@ -212,19 +212,19 @@ function PatientDashboardPage() {
           {loading ? (
             <div className="h-44 animate-pulse rounded-3xl bg-white border border-black/[0.06] shadow-sm" />
           ) : followUp ? (
-            <div className="portal-glass-card p-5 sm:p-6">
+            <div className="rounded-3xl bg-gradient-to-br from-[#0a192f] to-[#112240] text-white p-5 sm:p-6 shadow-xl border border-blue-900/50">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-xl font-extrabold text-[var(--ink)]">
+                  <div className="text-xl font-extrabold text-white">
                     {followUp.clinics?.name || "Clinic"}
                   </div>
-                  <div className="mt-1 text-sm text-[var(--ink-soft)]">
+                  <div className="mt-1 text-sm text-blue-200">
                     {followUp.physiotherapy_categories?.name || "Physiotherapy"}
                   </div>
                 </div>
                 <StatusBadge status={followUp.status} />
               </div>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-[var(--ink)]">
+              <div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-white">
                 <span className="inline-flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-[var(--bronze)]" />
                   {formatDateLabel(followUp.scheduled_date || followUp.preferred_date)}
@@ -234,18 +234,18 @@ function PatientDashboardPage() {
                   {formatTimeLabel(followUp.scheduled_time || followUp.preferred_time)}
                 </span>
               </div>
-              <p className="mt-3 line-clamp-2 text-sm text-[var(--ink-soft)]">{followUp.symptoms}</p>
+              <p className="mt-3 line-clamp-2 text-sm text-blue-200">{followUp.symptoms}</p>
               {followUp.status === "accepted" ? (
                 <Link
                   to="/patient/qr-ticket"
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[var(--sage-deep)] hover:underline"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-blue-300 hover:text-white hover:underline"
                 >
                   <QrCode className="h-4 w-4" /> Open QR ticket
                 </Link>
               ) : null}
             </div>
           ) : (
-            <div className="portal-glass-card p-6 flex flex-col items-center justify-center min-h-[12rem]">
+            <div className="rounded-3xl bg-gradient-to-br from-slate-900 to-blue-900 text-white p-6 flex flex-col items-center justify-center min-h-[12rem] shadow-xl border border-blue-800/50">
               <EmptyState
                 icon={CalendarPlus}
                 title="No upcoming visits"
@@ -306,16 +306,16 @@ function PatientDashboardPage() {
               <Link
                 key={to}
                 to={to}
-                className="portal-glass-card flex items-center gap-3.5 p-4 transition-transform hover:-translate-y-0.5"
+                className="rounded-2xl bg-gradient-to-r from-[#0F172A] to-[#1E3A8A] border border-blue-800/40 text-white flex items-center gap-3.5 p-4 transition-transform hover:-translate-y-1 hover:shadow-lg shadow-md"
               >
                 <div className={cn("grid h-10 w-10 place-items-center rounded-xl shadow-sm", iconBg, iconColor)}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-[var(--ink)]">{label}</div>
-                  <div className="text-xs text-[var(--ink-soft)]">{desc}</div>
+                  <div className="text-sm font-bold text-white">{label}</div>
+                  <div className="text-xs text-blue-200">{desc}</div>
                 </div>
-                <ArrowRight className="h-4 w-4 text-[var(--ink-soft)]" />
+                <ArrowRight className="h-4 w-4 text-blue-300" />
               </Link>
             ))}
           </div>
@@ -334,9 +334,9 @@ function PatientDashboardPage() {
               ))}
             </div>
           ) : recentVisits.length === 0 ? (
-            <div className="portal-glass-card flex h-32 flex-col items-center justify-center text-center p-5">
-              <p className="text-sm font-bold text-[var(--ink)]">No recent visits</p>
-              <p className="mt-1 text-xs text-[var(--ink-soft)]">
+            <div className="rounded-2xl bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] border border-blue-900/50 flex h-32 flex-col items-center justify-center text-center p-5 text-white shadow-md">
+              <p className="text-sm font-bold">No recent visits</p>
+              <p className="mt-1 text-xs text-blue-200">
                 Completed visits will appear here after your sessions.
               </p>
             </div>
@@ -345,13 +345,13 @@ function PatientDashboardPage() {
               {recentVisits.map((a) => (
                 <li
                   key={a.id}
-                  className="portal-glass-card flex items-center justify-between gap-3 p-4"
+                  className="rounded-2xl bg-gradient-to-br from-[#172554] to-[#1e1b4b] border border-blue-900/50 flex items-center justify-between gap-3 p-4 shadow-md"
                 >
                   <div>
-                    <div className="font-bold text-[var(--ink)] text-sm sm:text-base">
+                    <div className="font-bold text-white text-sm sm:text-base">
                       {a.clinics?.name} · {a.physiotherapy_categories?.name}
                     </div>
-                    <div className="text-xs text-[var(--ink-soft)] mt-0.5">
+                    <div className="text-xs text-blue-200 mt-0.5">
                       {formatDateLabel(a.scheduled_date || a.preferred_date)}
                     </div>
                   </div>
@@ -368,8 +368,8 @@ function PatientDashboardPage() {
             <h2 className="text-lg font-extrabold text-[var(--ink)]">Notifications</h2>
           </div>
           {notifications.length === 0 ? (
-            <div className="portal-glass-card flex h-32 flex-col items-center justify-center text-center p-5">
-              <p className="text-sm font-semibold text-[var(--ink-soft)]">
+            <div className="rounded-2xl bg-gradient-to-l from-[#1e1b4b] to-[#0F172A] border border-blue-800/30 flex h-32 flex-col items-center justify-center text-center p-5 text-white shadow-md">
+              <p className="text-sm font-semibold text-blue-200">
                 You’ll see appointment confirmations and reminders here.
               </p>
             </div>
@@ -378,10 +378,10 @@ function PatientDashboardPage() {
               {notifications.map((n) => (
                 <li
                   key={n.id}
-                  className="portal-glass-card p-4"
+                  className="rounded-2xl bg-gradient-to-l from-[#172554] to-[#0F172A] border border-blue-800/30 p-4 shadow-md"
                 >
-                  <div className="font-bold text-[var(--ink)] text-sm sm:text-base">{n.title}</div>
-                  <p className="mt-1 text-xs sm:text-sm text-[var(--ink-soft)] leading-relaxed">{n.body}</p>
+                  <div className="font-bold text-white text-sm sm:text-base">{n.title}</div>
+                  <p className="mt-1 text-xs sm:text-sm text-blue-200 leading-relaxed">{n.body}</p>
                 </li>
               ))}
             </ul>

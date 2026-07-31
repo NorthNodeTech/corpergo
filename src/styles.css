@@ -48,26 +48,26 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
 
-  --shadow-soft: 0 4px 20px rgba(15, 107, 88, 0.08), 0 1px 3px rgba(224, 90, 141, 0.06);
-  --shadow-elev: 0 12px 36px rgba(15, 107, 88, 0.14), 0 4px 16px rgba(224, 90, 141, 0.12);
+  --shadow-soft: 0 4px 20px rgba(15, 107, 88, 0.08), 0 1px 3px rgba(30, 58, 138, 0.06);
+  --shadow-elev: 0 12px 36px rgba(15, 107, 88, 0.14), 0 4px 16px rgba(30, 58, 138, 0.12);
   --hover-lift: -4px;
   --hover-scale: 1.02;
   --hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --gradient-sage: linear-gradient(135deg, #0F6B58 0%, #00A896 100%);
-  --gradient-pink: linear-gradient(135deg, #E05A8D 0%, #F58DB2 100%);
-  --gradient-warm: linear-gradient(135deg, #FCF6F8 0%, #FCE8EF 100%);
-  --page-background: radial-gradient(circle at top, rgba(15, 107, 88, 0.95) 0%, rgba(9, 84, 58, 0.92) 24%, rgba(7, 58, 39, 0.88) 55%, rgba(5, 26, 15, 1) 100%), linear-gradient(180deg, rgba(224, 90, 141, 0.05), transparent 35%, transparent 100%);
+  --gradient-pink: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+  --gradient-warm: linear-gradient(135deg, #FCF6F8 0%, #EFF6FF 100%);
+  --page-background: radial-gradient(circle at top, rgba(15, 107, 88, 0.95) 0%, rgba(9, 84, 58, 0.92) 24%, rgba(7, 58, 39, 0.88) 55%, rgba(5, 26, 15, 1) 100%), linear-gradient(180deg, rgba(30, 58, 138, 0.05), transparent 35%, transparent 100%);
 }
 
 :root {
   --sage: #0F6B58;
   --sage-deep: #06261E;
   --teal: #00A896;
-  --bronze: #E05A8D;
-  --pink-main: #E05A8D;
-  --pink-hover: #C94B7C;
-  --pink-light: #FAD6DE;
-  --pink-subtle: #FCE8EF;
+  --bronze: #1E3A8A;
+  --pink-main: #1E3A8A;
+  --pink-hover: #1E40AF;
+  --pink-light: #DBEAFE;
+  --pink-subtle: #EFF6FF;
   --ivory: #E8F3EF;
   --ink: #06261E;
   --ink-soft: #1D4A3E;
@@ -79,10 +79,10 @@
   --card-foreground: #06261E;
   --popover: #FFFFFF;
   --popover-foreground: #06261E;
-  --primary: #E05A8D;
+  --primary: #1E3A8A;
   --primary-foreground: #FFFFFF;
-  --secondary: #FCE8EF;
-  --secondary-foreground: #C94B7C;
+  --secondary: #EFF6FF;
+  --secondary-foreground: #1E40AF;
   --muted: #D5ECE4;
   --muted-foreground: #1D4A3E;
   --accent: #00A896;
@@ -91,7 +91,7 @@
   --destructive-foreground: #FFFFFF;
   --border: #06261E;
   --input: #06261E;
-  --ring: #E05A8D;
+  --ring: #1E3A8A;
 }
 
 .dark {
@@ -101,17 +101,17 @@
   --card-foreground: #FCF6F8;
   --popover: #0E2922;
   --popover-foreground: #FCF6F8;
-  --primary: #E05A8D;
+  --primary: #3B82F6;
   --primary-foreground: #FFFFFF;
   --secondary: #1B3D34;
-  --secondary-foreground: #FAD6DE;
+  --secondary-foreground: #DBEAFE;
   --muted: #12332B;
   --muted-foreground: #A3C7BD;
   --accent: #00A896;
   --accent-foreground: #FFFFFF;
   --border: rgba(255, 255, 255, 0.12);
   --input: rgba(255, 255, 255, 0.16);
-  --ring: #E05A8D;
+  --ring: #3B82F6;
 }
 
 @layer base {
@@ -348,7 +348,8 @@ main > section:not(.hero-fit) h4 {
   gap: clamp(0.5rem, 0.9vh, 0.75rem);
 }
 
-.hero-fit__actions a {
+.hero-fit__actions a,
+.hero-fit__actions button {
   padding-top: clamp(0.8rem, 1.4vh, 1rem);
   padding-bottom: clamp(0.8rem, 1.4vh, 1rem);
   padding-left: clamp(1.25rem, 1.6vw, 1.6rem);
@@ -788,11 +789,15 @@ main > section:not(.hero-fit) h4 {
 
 /* ---- Portal glass UI (iOS-like) ---- */
 .portal-shell {
-  background:
-    radial-gradient(ellipse 80% 50% at 10% -10%, color-mix(in oklab, var(--sage) 16%, transparent), transparent 55%),
-    radial-gradient(ellipse 70% 45% at 100% 0%, color-mix(in oklab, var(--teal) 14%, transparent), transparent 50%),
-    radial-gradient(ellipse 60% 40% at 50% 100%, color-mix(in oklab, var(--bronze) 10%, transparent), transparent 55%),
-    var(--ivory);
+  /* Override palette for dashboards: navy blue theme on white */
+  --sage: #1E3A8A;
+  --sage-deep: #172554;
+  --teal: #3B82F6;
+  --ink: #1E293B;
+  --ink-soft: #475569;
+  --ivory: #FFFFFF;
+
+  background: #FFFFFF;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -809,10 +814,10 @@ main > section:not(.hero-fit) h4 {
 }
 
 .portal-shell .portal-glass {
-  border: 1.5px solid rgba(6, 38, 30, 0.35) !important;
+  border: 1.5px solid rgba(30, 58, 138, 0.2) !important;
   box-shadow:
-    0 4px 20px rgba(6, 38, 30, 0.08),
-    0 1px 3px rgba(15, 107, 88, 0.12);
+    0 4px 20px rgba(30, 41, 59, 0.08),
+    0 1px 3px rgba(30, 58, 138, 0.1);
 }
 
 .portal-glass-header {
@@ -822,7 +827,7 @@ main > section:not(.hero-fit) h4 {
   border-right: 0 !important;
   border-top: 0 !important;
   border-radius: 0 !important;
-  color: #06261E !important;
+  color: #1E293B !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
 }
 
@@ -834,14 +839,14 @@ main > section:not(.hero-fit) h4 {
   border-bottom: 0 !important;
   border-radius: 0 !important;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08) !important;
-  color: #06261E !important;
+  color: #1E293B !important;
 }
 
 .portal-glass-dock {
   background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(226, 232, 240, 0.95) 100%) !important;
   backdrop-filter: blur(40px) saturate(200%);
   border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
-  border-top: 2.5px solid #0F6B58 !important;
+  border-top: 2.5px solid #1E3A8A !important;
   box-shadow:
     0 24px 48px rgba(0, 0, 0, 0.12),
     0 8px 20px rgba(0, 0, 0, 0.06);
@@ -851,7 +856,7 @@ main > section:not(.hero-fit) h4 {
   background: rgba(255, 255, 255, 0.8) !important;
   backdrop-filter: blur(16px) saturate(140%) !important;
   border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  border-radius: 75px !important;
+  border-radius: 24px !important;
   box-shadow: 0 8px 32px rgba(6, 38, 30, 0.05), 0 1px 3px rgba(6, 38, 30, 0.02) !important;
 }
 
@@ -859,24 +864,16 @@ main > section:not(.hero-fit) h4 {
   background: rgba(14, 41, 34, 0.75) !important;
   backdrop-filter: blur(16px) saturate(140%) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 75px !important;
+  border-radius: 24px !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
 .dashboard-bg-container {
-  background-image: linear-gradient(rgba(232, 243, 239, 0.85), rgba(232, 243, 239, 0.85)), url("/dashboard-bg.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: local;
+  background-color: #FFFFFF !important;
 }
 
 .dark .dashboard-bg-container {
-  background-image: linear-gradient(rgba(7, 25, 20, 0.88), rgba(7, 25, 20, 0.88)), url("/dashboard-bg.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: local;
+  background-color: #000000 !important;
 }
 
 .portal-glass-chip {
@@ -940,7 +937,7 @@ main > section:not(.hero-fit) h4 {
 }
 
 .landing-card-hover:hover {
-  background-color: #FCE8EF !important;
-  border-color: #E05A8D !important;
-  box-shadow: 0 12px 32px rgba(224, 90, 141, 0.18) !important;
+  background-color: #EFF6FF !important;
+  border-color: #1E3A8A !important;
+  box-shadow: 0 12px 32px rgba(30, 58, 138, 0.18) !important;
 }
