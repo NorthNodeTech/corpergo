@@ -317,22 +317,14 @@
 
 .hero-fit__title {
   margin-top: clamp(0.5rem, 1.3vh, 1rem);
-  font-family: var(--font-cursive);
   font-size: clamp(2.75rem, 4.2vh + 1.35rem, 5.5rem);
-  font-weight: 400;
-  line-height: 1.12;
-  letter-spacing: 0.01em;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
   text-shadow: 0 1px 0 rgba(250, 248, 245, 0.85), 0 0 24px rgba(250, 248, 245, 0.55);
 }
 
-/* Section headings should use the same hero-style font family */
-main > section:not(.hero-fit) h1,
-main > section:not(.hero-fit) h2,
-main > section:not(.hero-fit) h3,
-main > section:not(.hero-fit) h4 {
-  font-family: var(--font-cursive);
-  letter-spacing: 0.01em;
-}
+
 
 .hero-fit__body {
   margin-top: clamp(0.5rem, 1.2vh, 1rem);
@@ -789,12 +781,11 @@ main > section:not(.hero-fit) h4 {
 
 /* ---- Portal glass UI (iOS-like) ---- */
 .portal-shell {
-  /* Override palette for dashboards: navy blue theme on white */
-  --sage: #1E3A8A;
-  --sage-deep: #172554;
-  --teal: #3B82F6;
-  --ink: #1E293B;
-  --ink-soft: #475569;
+  --sage: #000000;
+  --sage-deep: #000000;
+  --teal: #000000;
+  --ink: #000000;
+  --ink-soft: #333333;
   --ivory: #FFFFFF;
 
   background: #FFFFFF;
@@ -821,32 +812,32 @@ main > section:not(.hero-fit) h4 {
 }
 
 .portal-glass-header {
-  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 45%, #CBD5E1 90%, #94A3B8 100%) !important;
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  background: #FFFFFF !important;
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.1) !important;
   border-left: 0 !important;
   border-right: 0 !important;
   border-top: 0 !important;
   border-radius: 0 !important;
-  color: #1E293B !important;
+  color: #000000 !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
 }
 
 .portal-glass-sidebar {
-  background: linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 45%, #CBD5E1 90%, #94A3B8 100%) !important;
-  border-right: 1.5px solid rgba(255, 255, 255, 0.4) !important;
+  background: #FFFFFF !important;
+  border-right: 1.5px solid rgba(0, 0, 0, 0.1) !important;
   border-left: 0 !important;
   border-top: 0 !important;
   border-bottom: 0 !important;
   border-radius: 0 !important;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08) !important;
-  color: #1E293B !important;
+  color: #000000 !important;
 }
 
 .portal-glass-dock {
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(226, 232, 240, 0.95) 100%) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(40px) saturate(200%);
   border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
-  border-top: 2.5px solid #1E3A8A !important;
+  border-top: 2.5px solid #000000 !important;
   box-shadow:
     0 24px 48px rgba(0, 0, 0, 0.12),
     0 8px 20px rgba(0, 0, 0, 0.06);
@@ -940,4 +931,14 @@ main > section:not(.hero-fit) h4 {
   background-color: #EFF6FF !important;
   border-color: #1E3A8A !important;
   box-shadow: 0 12px 32px rgba(30, 58, 138, 0.18) !important;
+}
+
+/* Home page headings in cursive */
+.home-page-main h1,
+.home-page-main h2,
+.home-page-main h3,
+.home-page-main h4 {
+  font-family: var(--font-cursive) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.01em;
 }

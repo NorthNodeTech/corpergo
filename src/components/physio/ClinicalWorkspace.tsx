@@ -99,8 +99,8 @@ function QueueCard({
       className={cn(
         "flex w-full min-w-0 gap-3 rounded-[22px] border bg-white p-3.5 text-left transition outline-none shadow-sm",
         active
-          ? "border-[var(--sage)] bg-blue-50 ring-2 ring-blue-800/20"
-          : "border-black/[0.06] bg-white hover:border-[var(--sage)] hover:bg-blue-50/40 hover:-translate-y-0.5",
+          ? "border-black bg-black/5 ring-2 ring-black/20"
+          : "border-black/[0.06] bg-white hover:border-black hover:bg-black/5 hover:-translate-y-0.5",
       )}
     >
       <div className="w-12 shrink-0 pt-0.5 text-center">
@@ -190,8 +190,8 @@ export function ClinicalWorkspace() {
               {loading ? "…" : displayName}
             </h1>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-900/15 border border-blue-900/15 px-3.5 py-1 text-xs font-bold text-blue-900">
-                <Stethoscope className="h-3.5 w-3.5 text-blue-800" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-black/10 border border-black/10 px-3.5 py-1 text-xs font-bold text-black">
+                <Stethoscope className="h-3.5 w-3.5 text-black" />
                 {loading ? "Clinic" : data?.clinicName}
               </span>
               <span className="text-sm font-medium text-[var(--ink-soft)]">
@@ -215,20 +215,20 @@ export function ClinicalWorkspace() {
           </Link>
         </div>
 
-        <div className="mt-5 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-4 sm:overflow-visible">
+        <div className="mt-5 grid grid-cols-4 gap-1.5 sm:gap-3 sm:overflow-visible">
           {[
-            { label: "Patients today", value: data?.counts.today ?? 0, bg: "bg-blue-50", border: "border-blue-900/15", text: "text-blue-900" },
+            { label: "Patients today", value: data?.counts.today ?? 0, bg: "bg-black/5", border: "border-black/10", text: "text-black" },
             { label: "Waiting / QR", value: data?.counts.waiting ?? 0, bg: "bg-sky-50", border: "border-sky-600/20", text: "text-sky-700" },
-            { label: "Follow-ups", value: data?.counts.followUps ?? 0, bg: "bg-blue-50", border: "border-blue-800/20", text: "text-blue-800" },
+            { label: "Follow-ups", value: data?.counts.followUps ?? 0, bg: "bg-black/5", border: "border-black/20", text: "text-black" },
             { label: "Pending requests", value: data?.counts.pending ?? 0, bg: "bg-[#FDE8EF]", border: "border-[#E05A8D]/20", text: "text-[#C94B7C]" },
           ].map((item) => (
             <div
               key={item.label}
-              className={`min-w-[9.5rem] shrink-0 rounded-2xl ${item.bg} border ${item.border} px-4 py-3 shadow-sm sm:min-w-0 transition-transform hover:-translate-y-0.5`}
+              className={`rounded-xl sm:rounded-2xl ${item.bg} border ${item.border} px-1.5 py-2 sm:px-4 sm:py-3 shadow-sm transition-transform hover:-translate-y-0.5 flex flex-col items-center sm:items-start text-center sm:text-left`}
             >
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">{item.label}</div>
-              <div className={`mt-1 text-2xl font-extrabold ${item.text}`}>
-                {loading ? "—" : item.value}
+              <div className="text-[8px] sm:text-[11px] leading-[1.1] sm:leading-normal font-bold uppercase tracking-normal sm:tracking-wider text-[var(--ink-soft)] break-words w-full">{item.label.replace(" requests", "").replace(" today", "")}</div>
+              <div className={`mt-0.5 sm:mt-1 text-lg sm:text-2xl font-extrabold ${item.text}`}>
+                {loading ? "-" : item.value}
               </div>
             </div>
           ))}
@@ -247,7 +247,7 @@ export function ClinicalWorkspace() {
             </div>
             <Link
               to="/physio/queue"
-              className="text-xs font-bold text-blue-800 hover:underline self-end pb-1"
+              className="text-xs font-bold text-black hover:underline self-end pb-1"
             >
               Full queue
             </Link>
@@ -388,7 +388,7 @@ export function ClinicalWorkspace() {
       <section className="mt-6">
         <Link
           to="/physio/scan"
-          className="group relative flex flex-col items-center justify-center overflow-hidden rounded-[28px] border-2 border-blue-900 bg-gradient-to-br from-[#0F172A] via-[#1E3A8A] to-[#3B82F6] px-6 py-8 text-center text-white shadow-lg sm:py-10"
+          className="group relative flex flex-col items-center justify-center overflow-hidden rounded-[28px] border-2 border-black bg-black px-6 py-8 text-center text-white shadow-lg sm:py-10"
         >
           <span className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.18),transparent_55%)]" />
           <motion.span
@@ -512,7 +512,7 @@ export function ClinicalWorkspace() {
                 className="min-w-[9.5rem] shrink-0 rounded-[20px] border border-white/40 bg-white/60 px-4 py-3 shadow-sm sm:min-w-0"
               >
                 <div className="text-xs font-semibold text-[var(--ink-soft)]">{c.name}</div>
-                <div className="mt-1 text-2xl font-extrabold text-blue-800">{c.count}</div>
+                <div className="mt-1 text-2xl font-extrabold text-black">{c.count}</div>
                 <div className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
                   patients
                 </div>

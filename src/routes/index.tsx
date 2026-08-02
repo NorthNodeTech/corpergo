@@ -29,7 +29,7 @@ import {
   Quote,
 } from "lucide-react";
 import logoImg from "@/assets/LOGO.webp";
-import heroImg from "@/assets/hero.webp";
+
 import bgImg from "@/assets/corpergo-background.png";
 import mobileBgImg from "@/assets/corpergo mobile background.png";
 import aboutImg from "@/assets/abt.webp";
@@ -196,7 +196,7 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
               <a
                 key={label}
                 href={href}
-                className="rounded-full bg-[var(--sage)] px-3 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[var(--sage-deep)] transition-all hover:scale-105"
+                className="rounded-full bg-[#06261E] px-3 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[#0a382c] transition-all hover:scale-105"
               >
                 {label}
               </a>
@@ -277,7 +277,6 @@ function Hero({ onLoginClick }: { onLoginClick: () => void }) {
         {/* Desktop Hero Video */}
         <video
           src="/hero_corpergo.mp4"
-          poster={heroImg}
           autoPlay
           loop
           muted
@@ -287,7 +286,6 @@ function Hero({ onLoginClick }: { onLoginClick: () => void }) {
         {/* Mobile Hero Video */}
         <video
           src="/hero_corpergo_mobile.mp4"
-          poster={heroImg}
           autoPlay
           loop
           muted
@@ -662,14 +660,14 @@ function VideoStories() {
   }, [activeReel]);
 
   return (
-    <section id="videos" className="py-24 relative overflow-hidden">
+    <section id="videos" className="py-16 sm:py-24 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-40">
         <div className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-[var(--sage)]/20 blur-3xl" />
         <div className="absolute bottom-0 left-10 h-64 w-64 rounded-full bg-[var(--bronze)]/15 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-10 flex items-end justify-between gap-4">
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6 sm:gap-4">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--bronze)]">
               Watch & Learn
@@ -685,7 +683,7 @@ function VideoStories() {
             href={INSTAGRAM_PROFILE}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden items-center gap-1.5 text-sm font-semibold text-[var(--ink)]/80 hover:text-[var(--ink)] sm:inline-flex"
+            className="inline-flex self-start sm:self-auto items-center gap-1.5 text-sm font-semibold text-[var(--ink)]/80 hover:text-[var(--ink)]"
           >
             <Instagram className="h-4 w-4" /> Follow us
           </a>
@@ -725,7 +723,7 @@ function VideoStories() {
                 <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-white/75">
                   <Instagram className="h-3.5 w-3.5" /> {reel.tag}
                 </div>
-                <div className="mt-1 text-xl font-bold tracking-tight">{reel.title}</div>
+                <div className="mt-1 text-xl font-bold tracking-tight text-white">{reel.title}</div>
               </div>
             </motion.button>
           ))}
@@ -1281,7 +1279,7 @@ function LandingPage() {
   };
 
   return (
-    <main className="relative overflow-x-clip">
+    <main className="relative overflow-x-clip home-page-main">
       <AmbientOrbs />
       <Nav onLoginClick={handleLoginClick} />
       <Hero onLoginClick={handleLoginClick} />

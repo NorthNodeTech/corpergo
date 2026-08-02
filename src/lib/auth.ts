@@ -148,6 +148,7 @@ export async function signInWithPassword(email: string, password: string) {
       user_metadata: {
         full_name: formattedName,
         role: mockUserRole,
+        clinic_id: mockUserRole === "physiotherapist" ? "clinic-" + (cleanEmail.includes("chansandra") ? "1" : cleanEmail.includes("balagere") ? "2" : cleanEmail.includes("muthsandra") ? "3" : cleanEmail.includes("kannamangala") ? "4" : cleanEmail.includes("manduru") ? "5" : "1") : undefined,
       },
     },
   };
@@ -222,6 +223,33 @@ export async function supabaseRest<T>(
     
     if (cleanPath === "qr_tickets") {
       return { data: [] as unknown as T, error: null };
+    }
+    
+    if (cleanPath === "clinics") {
+      return { 
+        data: [
+          { id: "clinic-1", name: "Chansandra", slug: "chansandra", is_active: true },
+          { id: "clinic-2", name: "Balagere", slug: "balagere", is_active: true },
+          { id: "clinic-3", name: "Muthsandra", slug: "muthsandra", is_active: true },
+          { id: "clinic-4", name: "Kannamangala", slug: "kannamangala", is_active: true },
+          { id: "clinic-5", name: "Manduru", slug: "manduru", is_active: true }
+        ] as unknown as T, 
+        error: null 
+      };
+    }
+    
+    if (cleanPath === "physiotherapy_categories") {
+      return { 
+        data: [
+          { id: "cat-1", name: "Sports Rehabilitation", slug: "sports-rehab", is_active: true, description: "Recovery from sports injuries" },
+          { id: "cat-2", name: "Post-Surgery Care", slug: "post-surgery", is_active: true, description: "Rehabilitation after surgery" },
+          { id: "cat-3", name: "Chronic Pain Management", slug: "chronic-pain", is_active: true, description: "Long term pain relief" },
+          { id: "cat-4", name: "Geriatric Physiotherapy", slug: "geriatric", is_active: true, description: "Care for older adults" },
+          { id: "cat-5", name: "Neurological Rehab", slug: "neuro", is_active: true, description: "Recovery from nerve conditions" },
+          { id: "cat-6", name: "Other", slug: "other", is_active: true, description: "Other physiotherapy needs" }
+        ] as unknown as T, 
+        error: null 
+      };
     }
   }
 
