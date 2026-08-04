@@ -63,7 +63,7 @@ function BookAppointmentPage() {
   const [symptoms, setSymptoms] = useState("");
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState<string | null>(null);
-  const [slots, setSlots] = useState<{ start_time: string; end_time: string; available: boolean }[]>(
+  const [slots, setSlots] = useState<{ start_time: string; end_time: string; available: boolean; remaining_slots?: number }[]>(
     [],
   );
   const [slotsLoading, setSlotsLoading] = useState(false);
@@ -170,8 +170,8 @@ function BookAppointmentPage() {
           </div>
           <h1 className="mt-6 text-3xl font-extrabold text-[var(--ink)]">Request submitted</h1>
           <p className="mt-3 text-[var(--ink-soft)] leading-relaxed">
-            Your appointment is <strong>pending</strong>. Our clinic team will confirm your slot
-            shortly. You’ll get a notification and QR ticket once accepted.
+            Your booking request has been sent to <strong>{selectedClinic?.name || "the clinic"}</strong>.
+            Once the {selectedClinic?.name || "clinic"} portal reviews and accepts your request, your booking will be <strong>confirmed</strong> and your QR boarding pass will be ready.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
@@ -406,24 +406,41 @@ function BookAppointmentPage() {
                   </p>
                 ) : (
                   <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {slots.map((s) => (
-                      <button
-                        key={s.start_time}
-                        type="button"
-                        disabled={!s.available}
-                        onClick={() => setTime(s.start_time)}
-                        className={cn(
-                          "rounded-2xl px-3 py-3 text-sm font-bold transition-all ring-1",
-                          !s.available
-                            ? "cursor-not-allowed bg-slate-100 text-slate-400 ring-transparent line-through"
-                            : time === s.start_time
-                              ? "bg-[var(--sage)] text-white ring-[var(--sage)]"
-                              : "bg-[var(--ivory)] text-[var(--ink)] ring-black/5 hover:ring-[var(--sage)]/40",
-                        )}
-                      >
-                        {formatTimeLabel(s.start_time)}
-                      </button>
-                    ))}
+                    {slots.map((s) => {
+                      const rem = s.remaining_slots !== undefined ? s.remaining_slots : (s.available ? 2 : 0);
+                      return (
+                        <button
+                          key={s.start_time}
+                          type="button"
+                          disabled={!s.available}
+                          onClick={() => setTime(s.start_time)}
+                          className={cn(
+                            "flex flex-col items-center justify-center rounded-2xl px-3 py-2.5 transition-all ring-1 text-center cursor-pointer",
+                            !s.available
+                              ? "cursor-not-allowed bg-slate-100 text-slate-400 ring-transparent opacity-60"
+                              : time === s.start_time
+                                ? "bg-[var(--sage)] text-white ring-[var(--sage)] shadow-sm"
+                                : "bg-[var(--ivory)] text-[var(--ink)] ring-black/5 hover:ring-[var(--sage)]/40",
+                          )}
+                        >
+                          <span className="text-sm font-extrabold">{formatTimeLabel(s.start_time)}</span>
+                          <span
+                            className={cn(
+                              "text-[10px] font-semibold mt-0.5",
+                              !s.available
+                                ? "text-red-500 font-bold"
+                                : time === s.start_time
+                                  ? "text-emerald-100"
+                                  : rem === 1
+                                    ? "text-amber-600 font-bold"
+                                    : "text-emerald-600",
+                            )}
+                          >
+                            {rem > 0 ? `${rem} ${rem === 1 ? "slot left" : "slots available"}` : "Full (0 slots)"}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

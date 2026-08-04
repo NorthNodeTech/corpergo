@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
 import { supabaseRest } from "@/lib/auth";
-import { formatDateLabel } from "@/lib/clinic-data";
+import { formatDateLabel, fetchMyPatient } from "@/lib/clinic-data";
 
 export const Route = createFileRoute("/patient/reports")({
   component: MedicalReportsPage,
@@ -32,13 +32,24 @@ function MedicalReportsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    void supabaseRest<ReportRow[]>(
-      "assessments?deleted_at=is.null&select=id,diagnosis,treatment_given,home_exercise,notes,pain_score,created_at,appointments(appointment_code,preferred_date,scheduled_date,clinics(name))&order=created_at.desc",
-    ).then((res) => {
+    async function load() {
+      const pat = await fetchMyPatient();
+      const patientId = pat.data?.[0]?.id;
+      if (!patientId) {
+        if (!cancelled) {
+          setRows([]);
+          setLoading(false);
+        }
+        return;
+      }
+      const res = await supabaseRest<ReportRow[]>(
+        `assessments?deleted_at=is.null&select=id,diagnosis,treatment_given,home_exercise,notes,pain_score,created_at,appointments!inner(patient_id,appointment_code,preferred_date,scheduled_date,clinics(name))&appointments.patient_id=eq.${patientId}&order=created_at.desc`,
+      );
       if (cancelled) return;
       setRows(res.data || []);
       setLoading(false);
-    });
+    }
+    void load();
     return () => {
       cancelled = true;
     };

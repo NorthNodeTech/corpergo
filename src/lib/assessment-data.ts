@@ -246,7 +246,61 @@ export async function scheduleFollowUp(input: {
 }
 
 export async function fetchAssessableAppointments() {
-  return supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null&status=in.(checked_in,completed,accepted)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,medical_history,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc&limit=80`,
+  const { fetchMyProfile } = await import("@/lib/auth");
+  const { fetchMyPhysioId } = await import("@/lib/physio-data");
+  type PhysioAppointment = import("@/lib/physio-data").PhysioAppointment;
+  const { matchesClinicId } = await import("@/lib/clinic-data");
+
+  const { data: profile } = await fetchMyProfile();
+  const isStaff =
+    profile?.role === "physiotherapist" ||
+    profile?.role === "clinic_manager" ||
+    profile?.role === "receptionist";
+  let clinicId = isStaff ? profile?.clinic_id : undefined;
+
+  if (isStaff && !clinicId) {
+    const emailOrName = `${profile?.email || ""} ${profile?.full_name || ""}`.toLowerCase();
+    if (emailOrName.includes("chansandra")) clinicId = "0e490158-e027-4948-940c-8881c3e74585";
+    else if (emailOrName.includes("balagere")) clinicId = "f4d23f3d-24bb-489a-a51f-66bc61cb2fc9";
+    else if (emailOrName.includes("muthsandra")) clinicId = "bcaefc83-ae18-48c2-9d55-29d0fb178735";
+    else if (emailOrName.includes("kannamangala")) clinicId = "7080109b-d6e4-43d7-860b-05284b216eea";
+    else if (emailOrName.includes("manduru")) clinicId = "50a0aabb-db21-46d6-b218-c8b19f67990e";
+    else {
+      const me = await fetchMyPhysioId();
+      clinicId = me.data?.[0]?.clinic_id;
+    }
+  }
+
+  const clinicFilter = clinicId ? `&clinic_id=eq.${clinicId}` : "";
+  const res = await supabaseRest<PhysioAppointment[]>(
+    `appointments?deleted_at=is.null${clinicFilter}&status=in.(checked_in,completed,accepted)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,medical_history,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc&limit=80`,
   );
+
+  let list = res.data || [];
+
+  if (clinicId) {
+    list = list.filter((item) => matchesClinicId(clinicId, item.clinic_id));
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      const raw = window.localStorage.getItem("corpergo.demo.appointments");
+      if (raw) {
+        const demoList = JSON.parse(raw) as PhysioAppointment[];
+        for (const item of demoList) {
+          const isAssessable = ["checked_in", "completed", "accepted"].includes(item.status);
+          const matchesClinic = !clinicId || matchesClinicId(clinicId, item.clinic_id);
+          if (
+            isAssessable &&
+            matchesClinic &&
+            !list.some((a) => a.id === item.id || a.appointment_code === item.appointment_code)
+          ) {
+            list.unshift(item);
+          }
+        }
+      }
+    } catch {}
+  }
+
+  return { data: list, error: res.error };
 }

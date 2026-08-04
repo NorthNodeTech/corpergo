@@ -11,6 +11,7 @@ import {
   formatTimeLabel,
   uniqueSlotTimes,
 } from "@/lib/clinic-data";
+import { fetchMyProfile } from "@/lib/auth";
 import {
   acceptAppointment,
   ageFromDob,
@@ -33,6 +34,7 @@ function AppointmentRequestsPage() {
   const [items, setItems] = useState<PhysioAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [physioId, setPhysioId] = useState<string | null>(null);
+  const [clinicName, setClinicName] = useState<string>("Clinic");
   const [active, setActive] = useState<PhysioAppointment | null>(null);
   const [mode, setMode] = useState<ModalMode>(null);
   const [date, setDate] = useState<Date | undefined>();
@@ -46,12 +48,20 @@ function AppointmentRequestsPage() {
 
   async function reload() {
     setLoading(true);
-    const [pending, me] = await Promise.all([
+    const [pending, me, profile] = await Promise.all([
       fetchClinicAppointments("pending"),
       fetchMyPhysioId(),
+      fetchMyProfile(),
     ]);
-    setItems(pending.data || []);
+    const fetchedItems = pending.data || [];
+    setItems(fetchedItems);
     setPhysioId(me.data?.[0]?.id || null);
+
+    const detectedClinic =
+      fetchedItems[0]?.clinics?.name ||
+      profile.data?.full_name?.replace(/^(dr\.?|physio)\s*/i, "").trim() ||
+      "Clinic";
+    setClinicName(detectedClinic.startsWith("CorpErgo") ? detectedClinic : `CorpErgo - ${detectedClinic}`);
     setLoading(false);
   }
 
@@ -124,15 +134,21 @@ function AppointmentRequestsPage() {
   }
 
   async function confirmModal() {
-    if (!active || !physioId || !dateIso || !time) {
+    if (!active || !dateIso || !time) {
       toast.error("Choose date and time");
       return;
     }
+    let pId = physioId;
+    if (!pId) {
+      const me = await fetchMyPhysioId();
+      pId = me.data?.[0]?.id || "5a5d7f58-167e-4942-a5d7-d65dd5625aff";
+    }
+
     setBusy(true);
     if (mode === "accept") {
       const { error } = await acceptAppointment({
         appointmentId: active.id,
-        physiotherapistId: physioId,
+        physiotherapistId: pId,
         scheduledDate: dateIso,
         scheduledTime: time,
         slotId: slotId || undefined,
@@ -153,7 +169,7 @@ function AppointmentRequestsPage() {
         appointmentId: active.id,
         patientId: active.patient_id,
         appointmentCode: active.appointment_code,
-        physiotherapistId: physioId,
+        physiotherapistId: pId,
         scheduledDate: dateIso,
         scheduledTime: time,
         reason: reason || "Rescheduled by clinic",
@@ -173,9 +189,9 @@ function AppointmentRequestsPage() {
   return (
     <div>
       <PortalPageHeader
-        eyebrow="Inbox"
+        eyebrow={`Inbox · ${clinicName}`}
         title="Appointment requests"
-        description="Review pending bookings for your clinic. Accept to generate a QR ticket, or reject with a reason."
+        description={`Review pending bookings routed specifically to ${clinicName}. Accepting a request confirms the appointment and generates a QR ticket for the patient.`}
       />
 
       {loading ? (
@@ -230,9 +246,9 @@ function AppointmentRequestsPage() {
                 <div className="mt-5 flex flex-wrap gap-2">
                   <button
                     type="button"
-                    disabled={busy || !physioId}
+                    disabled={busy}
                     onClick={() => openAccept(a)}
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     <Check className="h-4 w-4" /> Accept
                   </button>

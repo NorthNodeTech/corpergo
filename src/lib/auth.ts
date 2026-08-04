@@ -165,7 +165,7 @@ export async function signInWithPassword(identifier: string, password: string, f
       user_metadata: {
         full_name: formattedName,
         role: mockUserRole,
-        clinic_id: mockUserRole === "physiotherapist" ? "clinic-" + (cleanId.includes("chansandra") ? "1" : cleanId.includes("balagere") ? "2" : cleanId.includes("muthsandra") ? "3" : cleanId.includes("kannamangala") ? "4" : cleanId.includes("manduru") ? "5" : "1") : undefined,
+        clinic_id: mockUserRole === "physiotherapist" ? (cleanId.includes("chansandra") ? "0e490158-e027-4948-940c-8881c3e74585" : cleanId.includes("balagere") ? "f4d23f3d-24bb-489a-a51f-66bc61cb2fc9" : cleanId.includes("muthsandra") ? "bcaefc83-ae18-48c2-9d55-29d0fb178735" : cleanId.includes("kannamangala") ? "7080109b-d6e4-43d7-860b-05284b216eea" : cleanId.includes("manduru") ? "50a0aabb-db21-46d6-b218-c8b19f67990e" : "0e490158-e027-4948-940c-8881c3e74585") : undefined,
       },
     },
   };
@@ -292,11 +292,11 @@ export async function supabaseRest<T>(
       if (method === "POST") {
         const body = JSON.parse((init.body as string) || "{}");
         const clinicNames: Record<string, string> = {
-          "clinic-1": "Chansandra Clinic",
-          "clinic-2": "Balagere Clinic",
-          "clinic-3": "Muthsandra Clinic",
-          "clinic-4": "Kannamangala Clinic",
-          "clinic-5": "Manduru Clinic",
+          "0e490158-e027-4948-940c-8881c3e74585": "Chansandra Clinic",
+          "f4d23f3d-24bb-489a-a51f-66bc61cb2fc9": "Balagere Clinic",
+          "bcaefc83-ae18-48c2-9d55-29d0fb178735": "Muthsandra Clinic",
+          "7080109b-d6e4-43d7-860b-05284b216eea": "Kannamangala Clinic",
+          "50a0aabb-db21-46d6-b218-c8b19f67990e": "Manduru Clinic",
         };
         const catNames: Record<string, string> = {
           "cat-1": "Sports Rehabilitation",
@@ -353,7 +353,27 @@ export async function supabaseRest<T>(
 
       const clinicIdMatch = path.match(/clinic_id=eq\.([^&]+)/)?.[1];
       if (clinicIdMatch) {
-        result = result.filter((a) => a.clinic_id === clinicIdMatch || a.clinic_id?.endsWith(clinicIdMatch));
+        result = result.filter((a) => {
+          if (a.clinic_id === clinicIdMatch || a.clinic_id?.endsWith(clinicIdMatch)) return true;
+          const c1 = (a.clinic_id || "").toLowerCase();
+          const c2 = clinicIdMatch.toLowerCase();
+          if (c1.includes("chansandra") || c2.includes("chansandra") || c1.includes("0e490158") || c2.includes("0e490158") || c1 === "clinic-1" || c2 === "clinic-1") {
+            return (c1.includes("chansandra") || c1.includes("0e490158") || c1 === "clinic-1") && (c2.includes("chansandra") || c2.includes("0e490158") || c2 === "clinic-1");
+          }
+          if (c1.includes("balagere") || c2.includes("balagere") || c1.includes("f4d23f3d") || c2.includes("f4d23f3d") || c1 === "clinic-2" || c2 === "clinic-2") {
+            return (c1.includes("balagere") || c1.includes("f4d23f3d") || c1 === "clinic-2") && (c2.includes("balagere") || c2.includes("f4d23f3d") || c2 === "clinic-2");
+          }
+          if (c1.includes("muthsandra") || c2.includes("muthsandra") || c1.includes("bcaefc83") || c2.includes("bcaefc83") || c1 === "clinic-3" || c2 === "clinic-3") {
+            return (c1.includes("muthsandra") || c1.includes("bcaefc83") || c1 === "clinic-3") && (c2.includes("muthsandra") || c2.includes("bcaefc83") || c2 === "clinic-3");
+          }
+          if (c1.includes("kannamangala") || c2.includes("kannamangala") || c1.includes("7080109b") || c2.includes("7080109b") || c1 === "clinic-4" || c2 === "clinic-4") {
+            return (c1.includes("kannamangala") || c1.includes("7080109b") || c1 === "clinic-4") && (c2.includes("kannamangala") || c2.includes("7080109b") || c2 === "clinic-4");
+          }
+          if (c1.includes("manduru") || c2.includes("manduru") || c1.includes("50a0aabb") || c2.includes("50a0aabb") || c1 === "clinic-5" || c2 === "clinic-5") {
+            return (c1.includes("manduru") || c1.includes("50a0aabb") || c1 === "clinic-5") && (c2.includes("manduru") || c2.includes("50a0aabb") || c2 === "clinic-5");
+          }
+          return false;
+        });
       }
 
       const statusMatch = path.match(/status=eq\.([^&]+)/)?.[1];
@@ -380,7 +400,22 @@ export async function supabaseRest<T>(
     }
     
     if (cleanPath === "qr_tickets") {
-      return { data: [] as unknown as T, error: null };
+      try {
+        const rawAppts = window.localStorage.getItem("corpergo.demo.appointments");
+        const appts = rawAppts ? JSON.parse(rawAppts) : [];
+        const accepted = appts.filter((a: any) => a.status === "accepted" || a.status === "checked_in");
+        const tickets = accepted.map((a: any) => ({
+          id: `ticket-${a.id}`,
+          token: `CE-TICKET-${a.appointment_code || a.id}`,
+          scan_status: "active",
+          expires_at: `${a.scheduled_date || a.preferred_date}T23:59:59Z`,
+          appointment_id: a.id,
+          appointments: a,
+        }));
+        return { data: tickets as unknown as T, error: null };
+      } catch {
+        return { data: [] as unknown as T, error: null };
+      }
     }
     
     if (cleanPath === "clinic_slots") {
@@ -413,11 +448,11 @@ export async function supabaseRest<T>(
     if (cleanPath === "clinics") {
       return { 
         data: [
-          { id: "clinic-1", name: "Chansandra", slug: "chansandra", is_active: true },
-          { id: "clinic-2", name: "Balagere", slug: "balagere", is_active: true },
-          { id: "clinic-3", name: "Muthsandra", slug: "muthsandra", is_active: true },
-          { id: "clinic-4", name: "Kannamangala", slug: "kannamangala", is_active: true },
-          { id: "clinic-5", name: "Manduru", slug: "manduru", is_active: true }
+          { id: "0e490158-e027-4948-940c-8881c3e74585", name: "Chansandra", slug: "chansandra", is_active: true, address: "Chansandra Main Rd, Whitefield, Bengaluru", city: "Bengaluru", phone: "+91 98765 00001", working_hours: {}, slot_duration_minutes: 30 },
+          { id: "f4d23f3d-24bb-489a-a51f-66bc61cb2fc9", name: "Balagere", slug: "balagere", is_active: true, address: "Balagere Rd, Varthur, Bengaluru", city: "Bengaluru", phone: "+91 98765 00002", working_hours: {}, slot_duration_minutes: 30 },
+          { id: "bcaefc83-ae18-48c2-9d55-29d0fb178735", name: "Muthsandra", slug: "muthsandra", is_active: true, address: "Muthsandra Cross, Varadapura Rd, Bengaluru", city: "Bengaluru", phone: "+91 98765 00003", working_hours: {}, slot_duration_minutes: 30 },
+          { id: "7080109b-d6e4-43d7-860b-05284b216eea", name: "Kannamangala", slug: "kannamangala", is_active: true, address: "Kannamangala Main Rd, Kadugodi, Bengaluru", city: "Bengaluru", phone: "+91 98765 00004", working_hours: {}, slot_duration_minutes: 30 },
+          { id: "50a0aabb-db21-46d6-b218-c8b19f67990e", name: "Manduru", slug: "manduru", is_active: true, address: "Manduru Main Rd, Budigere Cross, Bengaluru", city: "Bengaluru", phone: "+91 98765 00005", working_hours: {}, slot_duration_minutes: 30 }
         ] as unknown as T, 
         error: null 
       };

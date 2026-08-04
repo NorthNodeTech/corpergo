@@ -62,7 +62,16 @@ function AssessmentEditorPage() {
         fetchMyPhysioId(),
       ]);
       if (cancelled) return;
-      const a = apptRes.data?.[0] || null;
+      let a = apptRes.data?.[0] || null;
+      if (!a && typeof window !== "undefined") {
+        try {
+          const raw = window.localStorage.getItem("corpergo.demo.appointments");
+          if (raw) {
+            const list = JSON.parse(raw);
+            a = list.find((item: any) => item.id === appointmentId || item.appointment_code === appointmentId) || null;
+          }
+        } catch {}
+      }
       setAppt(a);
       const pid = me.data?.[0]?.id || null;
       setPhysioId(pid);
