@@ -415,7 +415,9 @@ export function PortalShell({
               <div className="px-5 py-6 flex items-start justify-between bg-gradient-to-br from-[var(--structure-maroon)] to-[#A64B29] rounded-br-[2.5rem] shadow-md mb-2">
                 <div>
                   <Link to="/" className="flex items-center gap-3">
-                    <img src={logoImg} alt="CorpErgo" className="h-18 sm:h-20 w-auto object-contain drop-shadow-sm brightness-0 invert" />
+                    <div className="flex items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/10 shrink-0">
+                      <img src={logoImg} alt="CorpErgo" className="h-12 w-auto object-contain" />
+                    </div>
                   </Link>
                   <div className="mt-4">
                     <div className="text-sm font-extrabold text-white">{title}</div>
@@ -449,7 +451,9 @@ export function PortalShell({
                   <PanelLeftOpen className="h-5 w-5" />
                 </button>
               )}
-              <img src={logoImg} alt="CorpErgo" className="h-16 sm:h-18 w-auto object-contain lg:hidden drop-shadow-sm brightness-100" />
+              <div className="flex items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-black/10 lg:hidden shrink-0">
+                <img src={logoImg} alt="CorpErgo" className="h-9 sm:h-10 w-auto object-contain" />
+              </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold text-[var(--ink)] lg:text-[15px]">
                   {title}

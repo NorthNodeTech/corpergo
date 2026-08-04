@@ -103,14 +103,16 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
           >
             {/* Brand logo header */}
             <div className="flex flex-col items-center mb-3 text-center">
-              <img
-                src={logoImg}
-                alt="CorpErgo"
-                className="w-auto h-12 object-contain"
-                width={120}
-                height={64}
-                decoding="async"
-              />
+              <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/10">
+                <img
+                  src={logoImg}
+                  alt="CorpErgo"
+                  className="w-auto h-11 object-contain"
+                  width={120}
+                  height={64}
+                  decoding="async"
+                />
+              </div>
               <div className="mt-2 font-black text-[var(--ink)] text-sm sm:text-base leading-none tracking-wide">
                 CORPERGO
                 <div className="text-[9px] sm:text-[10px] font-bold text-[var(--ink-soft)] tracking-widest mt-0.5">

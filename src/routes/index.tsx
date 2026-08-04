@@ -29,9 +29,6 @@ import {
   Quote,
 } from "lucide-react";
 import logoImg from "@/assets/LOGO.webp";
-
-import bgImg from "@/assets/corpergo-background.png";
-import mobileBgImg from "@/assets/corpergo mobile background.png";
 import aboutImg from "@/assets/abt.webp";
 import pinkyImg from "@/assets/Pinkyce.webp";
 import physioAarav from "@/assets/team/physio-aarav-menon.webp";
@@ -181,12 +178,14 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
             className="group flex items-center gap-3 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/40 focus-visible:ring-offset-2 rounded-lg"
             aria-label="CorpErgo Physiotherapy — Home"
           >
-            <img
-              src={logoImg}
-              alt="CorpErgo"
-              className="h-12 w-auto sm:h-14 lg:h-16 object-contain object-left transition-all duration-300 group-hover:opacity-100 drop-shadow-[0_0_12px_rgba(255,255,255,0.85)] brightness-110"
-              decoding="async"
-            />
+            <div className="flex items-center justify-center rounded-2xl bg-white p-1.5 sm:p-2 shadow-sm ring-1 ring-black/10 shrink-0 transition-transform duration-300 group-hover:scale-105">
+              <img
+                src={logoImg}
+                alt="CorpErgo"
+                className="h-9 w-auto sm:h-11 lg:h-13 object-contain"
+                decoding="async"
+              />
+            </div>
             <div className="font-black text-[var(--ink)] text-base sm:text-lg lg:text-2xl leading-none tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]">
               CORPERGO
               <div className="text-[10px] lg:text-[11px] font-extrabold text-[var(--structure-maroon)] tracking-[0.18em] mt-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]">
@@ -1136,15 +1135,17 @@ function Footer({ onLoginClick }: { onLoginClick: () => void }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>
-            <img
-              src={logoImg}
-              alt="CorpErgo"
-              className="h-20 w-auto sm:h-24 object-contain object-left brightness-110 drop-shadow-md"
-              width={96}
-              height={96}
-              decoding="async"
-            />
-            <p className="mt-5 text-[10px] uppercase tracking-[0.2em] text-white/50 font-semibold">
+            <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2.5 shadow-md ring-1 ring-white/20">
+              <img
+                src={logoImg}
+                alt="CorpErgo"
+                className="h-14 w-auto sm:h-16 object-contain"
+                width={96}
+                height={96}
+                decoding="async"
+              />
+            </div>
+            <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-white/50 font-semibold">
               Physiotherapy · Bengaluru
             </p>
             <p className="mt-3 text-sm leading-relaxed text-white/60 max-w-xs">
@@ -1243,23 +1244,7 @@ function Footer({ onLoginClick }: { onLoginClick: () => void }) {
 
 function FloatingBackgroundLayout({ children }: { children: React.ReactNode }) {
   return (
-    <section className="relative overflow-hidden">
-      {/* Desktop/Laptop Background */}
-      <div
-        className="hidden lg:block absolute inset-0 bg-cover bg-center bg-fixed"
-        style={{
-          backgroundImage: `url(${bgImg})`,
-          backgroundAttachment: "fixed",
-        }}
-      />
-      {/* Mobile Background */}
-      <div
-        className="block lg:hidden absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${mobileBgImg})`,
-        }}
-      />
-      <div className="absolute inset-0 bg-[var(--ivory)]/50" />
+    <section className="relative overflow-hidden bg-[var(--canvas-bg)]">
       <div className="relative z-10 text-[var(--ink)]">{children}</div>
     </section>
   );

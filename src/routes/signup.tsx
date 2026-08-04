@@ -113,14 +113,16 @@ function SignupPage() {
             </p>
           </div>
 
-          <img
-            src={logoImg}
-            alt="CorpErgo"
-            className="h-20 w-auto object-contain object-left drop-shadow-md sm:h-24"
-            width={96}
-            height={96}
-            decoding="async"
-          />
+          <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2.5 shadow-md ring-1 ring-white/20">
+            <img
+              src={logoImg}
+              alt="CorpErgo"
+              className="h-16 w-auto object-contain sm:h-20"
+              width={96}
+              height={96}
+              decoding="async"
+            />
+          </div>
         </div>
       </div>
 
@@ -137,14 +139,16 @@ function SignupPage() {
             >
               <ArrowLeft className="h-4 w-4" /> Back to login
             </Link>
-            <img
-              src={logoImg}
-              alt="CorpErgo"
-              className="h-16 w-auto object-contain object-left sm:h-20"
-              width={72}
-              height={72}
-              decoding="async"
-            />
+            <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/10">
+              <img
+                src={logoImg}
+                alt="CorpErgo"
+                className="h-12 w-auto object-contain sm:h-14"
+                width={72}
+                height={72}
+                decoding="async"
+              />
+            </div>
           </div>
 
           <h2 className="text-3xl font-extrabold tracking-tight text-[var(--ink)]">
