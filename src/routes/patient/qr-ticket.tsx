@@ -68,7 +68,7 @@ function QrTicketPage() {
             return (
               <article
                 key={t.id}
-                className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[#6F9E9C] text-white shadow-[var(--shadow-soft)]"
+                className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-[var(--structure-maroon)] via-[#8B3439] to-[var(--accent-orange)] text-white shadow-md"
               >
                 <div className="flex items-center justify-between px-6 py-4 border-b border-white/15">
                   <div>

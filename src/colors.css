@@ -1,0 +1,89 @@
+:root {
+  /* === Color Palette === */
+  /* Background surfaces and pages */
+  --canvas-bg: #FAF5F0;
+  
+  /* Text color, headers */
+  --structure-dark: #5C1D24;
+  --structure-maroon: #5C1D24;
+  
+  /* Primary brand colors for call-to-actions, buttons */
+  --accent-orange: #F07D00;
+
+  /* === Core Theme Mapping === */
+  --background: var(--canvas-bg);
+  --foreground: var(--structure-dark);
+  
+  --card: #FFFFFF;
+  --card-foreground: var(--structure-dark);
+  
+  --popover: #FFFFFF;
+  --popover-foreground: var(--structure-dark);
+  
+  --primary: var(--accent-orange);
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: var(--structure-maroon);
+  --secondary-foreground: #FFFFFF;
+  
+  --muted: #FDEFE5; /* Light orange tint for active states */
+  --muted-foreground: var(--structure-dark);
+  
+  --accent: var(--accent-orange);
+  --accent-foreground: #FFFFFF;
+  
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  
+  --border: #E8D3C8; /* Soft warm border */
+  --input: #E8D3C8;
+  --ring: var(--accent-orange);
+
+  --radius: 16px;
+
+  /* === Backwards Compatibility for custom brand colors === */
+  --sage: var(--accent-orange);
+  --sage-deep: #D96900;
+  --teal: var(--accent-orange);
+  --bronze: var(--structure-maroon);
+  --pink-main: var(--structure-maroon);
+  --pink-hover: #7b2730;
+  --pink-light: #fbebed;
+  --pink-subtle: #fbebed;
+  --ivory: var(--canvas-bg);
+  --ink: var(--structure-dark);
+  --ink-soft: #8A5A55; /* Lighter maroon for secondary text */
+}
+
+.dark {
+  /* === Dark Mode Mapping (Warm Dark) === */
+  --canvas-bg: #2B1618;
+  --structure-dark: #FAF5F0;
+  --structure-maroon: #F07D00;
+  --accent-orange: #F07D00;
+
+  --background: var(--canvas-bg);
+  --foreground: var(--structure-dark);
+  
+  --card: #3A2022;
+  --card-foreground: var(--structure-dark);
+  
+  --popover: #3A2022;
+  --popover-foreground: var(--structure-dark);
+  
+  --primary: var(--accent-orange);
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: var(--structure-maroon);
+  --secondary-foreground: #FFFFFF;
+  
+  --muted: #4A2B2D;
+  --muted-foreground: #D4A3A6;
+  
+  --accent: var(--accent-orange);
+  --accent-foreground: #FFFFFF;
+  
+  --border: #4A2B2D;
+  --input: #4A2B2D;
+  --ring: var(--accent-orange);
+}

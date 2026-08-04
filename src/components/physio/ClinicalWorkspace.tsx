@@ -24,6 +24,7 @@ import {
 } from "@/lib/physio-workspace-data";
 import type { PhysioAppointment } from "@/lib/physio-data";
 import { cn } from "@/lib/utils";
+import { ClinicPaymentsTracker } from "@/components/physio/ClinicPaymentsTracker";
 
 function greeting(h: number) {
   if (h < 12) return "Good morning";
@@ -167,11 +168,28 @@ export function ClinicalWorkspace() {
     );
   }, [data, selectedId]);
 
-  const displayName = data?.profileName?.startsWith("Dr")
-    ? data.profileName
-    : data?.profileName
-      ? `Dr. ${data.profileName}`
-      : "Doctor";
+  const rawName = data?.profileName || "";
+  const displayName = (() => {
+    if (!rawName) return "CorpErgo Clinic";
+    if (rawName.startsWith("CorpErgo")) return rawName;
+    const lower = rawName.toLowerCase();
+    if (lower.includes("chansandra")) return "CorpErgo - Chansandra";
+    if (lower.includes("balagere")) return "CorpErgo - Balagere";
+    if (lower.includes("muthsandra")) return "CorpErgo - Muthsandra";
+    if (lower.includes("kannamangala")) return "CorpErgo - Kannamangala";
+    if (lower.includes("manduru")) return "CorpErgo - Manduru";
+    
+    // Clean up "Physio " or "Dr. " prefix
+    const clean = rawName.replace(/^(dr\.?|physio)\s*/i, "").trim();
+    if (!clean) return data?.clinicName ? `CorpErgo - ${data.clinicName.replace(" Clinic", "")}` : "CorpErgo Clinic";
+    if (clean.toLowerCase().includes("chansandra")) return "CorpErgo - Chansandra";
+    if (clean.toLowerCase().includes("balagere")) return "CorpErgo - Balagere";
+    if (clean.toLowerCase().includes("muthsandra")) return "CorpErgo - Muthsandra";
+    if (clean.toLowerCase().includes("kannamangala")) return "CorpErgo - Kannamangala";
+    if (clean.toLowerCase().includes("manduru")) return "CorpErgo - Manduru";
+
+    return clean;
+  })();
 
   return (
     <div className="relative pb-8">
@@ -675,6 +693,26 @@ export function ClinicalWorkspace() {
           </Link>
         ))}
       </section>
+
+      {/* Manual Clinic Payments & Collections Tracker */}
+      <ClinicPaymentsTracker
+        clinicId={
+          data?.todayQueue[0]?.clinic_id ||
+          data?.pending[0]?.clinic_id ||
+          (displayName.toLowerCase().includes("chansandra")
+            ? "clinic-1"
+            : displayName.toLowerCase().includes("balagere")
+              ? "clinic-2"
+              : displayName.toLowerCase().includes("muthsandra")
+                ? "clinic-3"
+                : displayName.toLowerCase().includes("kannamangala")
+                  ? "clinic-4"
+                  : displayName.toLowerCase().includes("manduru")
+                    ? "clinic-5"
+                    : "clinic-1")
+        }
+        clinicName={data?.clinicName || displayName}
+      />
     </div>
   );
 }

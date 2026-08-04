@@ -107,13 +107,13 @@ export async function signUpPatient(input: PatientSignUpInput) {
   return { data: { user }, error: null as string | null };
 }
 
-export async function signInWithPassword(email: string, password: string) {
-  const cleanEmail = email.trim().toLowerCase();
+export async function signInWithPassword(identifier: string, password: string, fullName?: string) {
+  const cleanId = identifier.trim().toLowerCase();
+  const isEmail = cleanId.includes("@");
 
-  const result = await authRequest<AuthSession>("/auth/v1/token?grant_type=password", {
-    email: cleanEmail,
-    password,
-  });
+  const payload = isEmail ? { email: cleanId, password } : { phone: cleanId, password };
+
+  const result = await authRequest<AuthSession>("/auth/v1/token?grant_type=password", payload);
 
   if (!result.error && result.data?.access_token) {
     persistSession(result.data);
@@ -122,33 +122,50 @@ export async function signInWithPassword(email: string, password: string) {
 
   // Graceful fallback for staff & demo credentials when Supabase Auth returns invalid_credentials or unconfirmed email
   const isStaffEmail =
-    cleanEmail.includes("physio") ||
-    cleanEmail.includes("admin") ||
-    cleanEmail.includes("staff") ||
-    cleanEmail.includes("reception") ||
-    cleanEmail.endsWith("@corpergo.in");
+    cleanId.includes("physio") ||
+    cleanId.includes("admin") ||
+    cleanId.includes("staff") ||
+    cleanId.includes("reception") ||
+    cleanId.endsWith("@corpergo.in");
 
-  const mockUserRole: AppRole = cleanEmail.includes("admin")
+  const mockUserRole: AppRole = cleanId.includes("admin")
     ? "admin"
     : isStaffEmail
       ? "physiotherapist"
       : "patient";
 
-  const formattedName = cleanEmail
-    .split("@")[0]
-    .replace(/[._]/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const clinicCleanName = cleanId.includes("chansandra")
+    ? "Chansandra"
+    : cleanId.includes("balagere")
+      ? "Balagere"
+      : cleanId.includes("muthsandra")
+        ? "Muthsandra"
+        : cleanId.includes("kannamangala")
+          ? "Kannamangala"
+          : cleanId.includes("manduru")
+            ? "Manduru"
+            : null;
+
+  const formattedName = fullName?.trim()
+    ? fullName.trim()
+    : clinicCleanName
+      ? `CorpErgo - ${clinicCleanName}`
+      : isEmail 
+        ? cleanId.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+        : "Patient User";
+
+  const mockEmail = isEmail ? cleanId : `${cleanId}@demo.patient.com`;
 
   const mockSession: AuthSession = {
     access_token: "demo_token_" + Date.now(),
     refresh_token: "demo_refresh_" + Date.now(),
     user: {
-      id: "usr-" + cleanEmail.replace(/[^a-z0-9]/g, "-"),
-      email: cleanEmail,
+      id: "usr-" + cleanId.replace(/[^a-z0-9]/g, "-"),
+      email: mockEmail,
       user_metadata: {
         full_name: formattedName,
         role: mockUserRole,
-        clinic_id: mockUserRole === "physiotherapist" ? "clinic-" + (cleanEmail.includes("chansandra") ? "1" : cleanEmail.includes("balagere") ? "2" : cleanEmail.includes("muthsandra") ? "3" : cleanEmail.includes("kannamangala") ? "4" : cleanEmail.includes("manduru") ? "5" : "1") : undefined,
+        clinic_id: mockUserRole === "physiotherapist" ? "clinic-" + (cleanId.includes("chansandra") ? "1" : cleanId.includes("balagere") ? "2" : cleanId.includes("muthsandra") ? "3" : cleanId.includes("kannamangala") ? "4" : cleanId.includes("manduru") ? "5" : "1") : undefined,
       },
     },
   };
@@ -203,7 +220,7 @@ export async function supabaseRest<T>(
         full_name: session.user.user_metadata?.full_name || "DASSHREESNEHA",
         phone: "+91 98765 43210",
         email: session.user.email,
-        clinic_id: "clinic-chansandra",
+        clinic_id: "clinic-1",
         dob: "1998-05-12",
         gender: "Female",
         occupation: "Software Engineer",
@@ -214,7 +231,148 @@ export async function supabaseRest<T>(
     }
     
     if (cleanPath === "appointments") {
-      return { data: [] as unknown as T, error: null };
+      const method = init.method ? init.method.toUpperCase() : "GET";
+      const DEMO_APPT_KEY = "corpergo.demo.appointments";
+
+      const loadAppts = (): any[] => {
+        try {
+          const raw = window.localStorage.getItem(DEMO_APPT_KEY);
+          if (raw) return JSON.parse(raw);
+        } catch {}
+        const seed = [
+          {
+            id: "demo-appt-1",
+            created_at: new Date().toISOString(),
+            appointment_code: "APP-1001",
+            preferred_date: new Date().toISOString().split("T")[0],
+            preferred_time: "10:00:00",
+            scheduled_date: new Date().toISOString().split("T")[0],
+            scheduled_time: "10:00:00",
+            symptoms: "Stiff neck and shoulder tension from desk work",
+            status: "accepted",
+            rejection_reason: null,
+            clinic_id: "clinic-1",
+            category_id: "cat-1",
+            patient_id: session.user.id || "usr-patient-1",
+            physiotherapist_id: null,
+            clinics: { name: "Chansandra Clinic", address: "Chansandra Main Rd", phone: "+91 98765 00001" },
+            physiotherapy_categories: { name: "Sports Rehabilitation" },
+            patients: { id: session.user.id || "usr-patient-1", date_of_birth: "1994-06-15", profiles: { full_name: "Rahul Verma", phone: "+91 98765 11111" } }
+          },
+          {
+            id: "demo-appt-2",
+            created_at: new Date().toISOString(),
+            appointment_code: "APP-1002",
+            preferred_date: new Date().toISOString().split("T")[0],
+            preferred_time: "11:30:00",
+            scheduled_date: null,
+            scheduled_time: null,
+            symptoms: "ACL tear recovery - 4 weeks post-op assessment",
+            status: "pending",
+            rejection_reason: null,
+            clinic_id: "clinic-2",
+            category_id: "cat-2",
+            patient_id: "usr-patient-2",
+            physiotherapist_id: null,
+            clinics: { name: "Balagere Clinic", address: "Balagere Rd", phone: "+91 98765 00002" },
+            physiotherapy_categories: { name: "Post-Surgery Care" },
+            patients: { id: "usr-patient-2", date_of_birth: "1990-11-20", profiles: { full_name: "Priya Nair", phone: "+91 98765 22222" } }
+          }
+        ];
+        try { window.localStorage.setItem(DEMO_APPT_KEY, JSON.stringify(seed)); } catch {}
+        return seed;
+      };
+
+      const saveAppts = (list: any[]) => {
+        try { window.localStorage.setItem(DEMO_APPT_KEY, JSON.stringify(list)); } catch {}
+      };
+
+      const appts = loadAppts();
+
+      if (method === "POST") {
+        const body = JSON.parse((init.body as string) || "{}");
+        const clinicNames: Record<string, string> = {
+          "clinic-1": "Chansandra Clinic",
+          "clinic-2": "Balagere Clinic",
+          "clinic-3": "Muthsandra Clinic",
+          "clinic-4": "Kannamangala Clinic",
+          "clinic-5": "Manduru Clinic",
+        };
+        const catNames: Record<string, string> = {
+          "cat-1": "Sports Rehabilitation",
+          "cat-2": "Post-Surgery Care",
+          "cat-3": "Chronic Pain Management",
+          "cat-4": "Geriatric Physiotherapy",
+          "cat-5": "Neurological Rehab",
+        };
+
+        const newAppt = {
+          id: "appt-" + Date.now(),
+          created_at: new Date().toISOString(),
+          appointment_code: "APP-" + Math.floor(1000 + Math.random() * 9000),
+          preferred_date: body.preferred_date || new Date().toISOString().split("T")[0],
+          preferred_time: body.preferred_time || "10:00:00",
+          scheduled_date: body.scheduled_date || null,
+          scheduled_time: body.scheduled_time || null,
+          symptoms: body.symptoms || "Physiotherapy Assessment",
+          status: body.status || "pending",
+          rejection_reason: null,
+          clinic_id: body.clinic_id || "clinic-1",
+          category_id: body.category_id || "cat-1",
+          patient_id: body.patient_id || session.user.id,
+          physiotherapist_id: body.physiotherapist_id || null,
+          clinics: { name: clinicNames[body.clinic_id] || "CorpErgo Clinic", address: "Clinic Address", phone: "+91 98765 00000" },
+          physiotherapy_categories: { name: catNames[body.category_id] || "Physiotherapy" },
+          patients: { id: body.patient_id || session.user.id, date_of_birth: "1995-05-12", profiles: { full_name: session.user.user_metadata?.full_name || "Patient User", phone: "+91 98765 43210" } }
+        };
+
+        appts.unshift(newAppt);
+        saveAppts(appts);
+        return { data: [newAppt] as unknown as T, error: null };
+      }
+
+      if (method === "PATCH") {
+        const body = JSON.parse((init.body as string) || "{}");
+        const targetId = path.match(/id=eq\.([^&]+)/)?.[1];
+        let updated: any = null;
+
+        const updatedList = appts.map((a) => {
+          if (!targetId || a.id === targetId || a.appointment_code === targetId) {
+            updated = { ...a, ...body };
+            return updated;
+          }
+          return a;
+        });
+
+        saveAppts(updatedList);
+        return { data: (updated ? [updated] : []) as unknown as T, error: null };
+      }
+
+      // GET
+      let result = [...appts];
+
+      const clinicIdMatch = path.match(/clinic_id=eq\.([^&]+)/)?.[1];
+      if (clinicIdMatch) {
+        result = result.filter((a) => a.clinic_id === clinicIdMatch || a.clinic_id?.endsWith(clinicIdMatch));
+      }
+
+      const statusMatch = path.match(/status=eq\.([^&]+)/)?.[1];
+      if (statusMatch) {
+        result = result.filter((a) => a.status === statusMatch);
+      }
+
+      const statusInMatch = path.match(/status=in\.\(([^)]+)\)/)?.[1];
+      if (statusInMatch) {
+        const allowed = statusInMatch.split(",");
+        result = result.filter((a) => allowed.includes(a.status));
+      }
+
+      const idMatch = path.match(/id=eq\.([^&]+)/)?.[1];
+      if (idMatch) {
+        result = result.filter((a) => a.id === idMatch || a.appointment_code === idMatch);
+      }
+
+      return { data: result as unknown as T, error: null };
     }
     
     if (cleanPath === "notifications") {
@@ -223,6 +381,33 @@ export async function supabaseRest<T>(
     
     if (cleanPath === "qr_tickets") {
       return { data: [] as unknown as T, error: null };
+    }
+    
+    if (cleanPath === "clinic_slots") {
+      // Return realistic mock slots from 9am to 5pm
+      const clinicIdMatch = path.match(/clinic_id=eq\.([^&]+)/)?.[1] || "clinic-1";
+      const dateMatch = path.match(/slot_date=eq\.([^&]+)/)?.[1] || new Date().toISOString().split("T")[0];
+      
+      const slots = [];
+      for (let hour = 9; hour <= 16; hour++) {
+        for (let min of ["00", "30"]) {
+          const startTime = `${hour.toString().padStart(2, "0")}:${min}:00`;
+          const endHour = min === "30" ? hour + 1 : hour;
+          const endMin = min === "30" ? "00" : "30";
+          const endTime = `${endHour.toString().padStart(2, "0")}:${endMin}:00`;
+          
+          slots.push({
+            id: `slot-${clinicIdMatch}-${dateMatch}-${hour}-${min}`,
+            clinic_id: clinicIdMatch,
+            slot_date: dateMatch,
+            start_time: startTime,
+            end_time: endTime,
+            is_available: true,
+            physiotherapist_id: null,
+          });
+        }
+      }
+      return { data: slots as unknown as T, error: null };
     }
     
     if (cleanPath === "clinics") {
@@ -292,6 +477,7 @@ export async function fetchMyProfile(): Promise<{
       (session.user.user_metadata?.full_name as string) ||
       session.user.email?.split("@")[0] ||
       "CorpErgo User";
+    const clinicId = (session.user.user_metadata?.clinic_id as string) || "clinic-1";
 
     return {
       data: {
@@ -300,7 +486,7 @@ export async function fetchMyProfile(): Promise<{
         full_name: fullName,
         phone: "+91 98765 43210",
         email: session.user.email || null,
-        clinic_id: "clinic-chansandra",
+        clinic_id: clinicId,
         avatar_url: null,
       },
       error: null,
@@ -318,6 +504,7 @@ export async function fetchMyProfile(): Promise<{
       (session.user.user_metadata?.full_name as string) ||
       session.user.email?.split("@")[0] ||
       "CorpErgo User";
+    const clinicId = (session.user.user_metadata?.clinic_id as string) || "clinic-1";
 
     return {
       data: {
@@ -326,7 +513,7 @@ export async function fetchMyProfile(): Promise<{
         full_name: fullName,
         phone: (session.user.user_metadata?.phone as string) || "+91 98765 43210",
         email: session.user.email || null,
-        clinic_id: "clinic-chansandra",
+        clinic_id: clinicId,
         avatar_url: null,
       },
       error: null,

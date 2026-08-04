@@ -118,7 +118,7 @@ function TodayQueuePage() {
 
       <Link
         to="/physio/scan"
-        className="mb-6 flex items-center gap-4 rounded-[2rem] bg-gradient-to-br from-[var(--sage-deep)] via-[var(--sage)] to-[#6F9E9C] p-5 text-white shadow-[var(--shadow-soft)]"
+        className="mb-6 flex items-center gap-4 rounded-[2rem] bg-gradient-to-br from-[var(--structure-maroon)] via-[#8B3439] to-[var(--accent-orange)] p-5 text-white shadow-md"
       >
         <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/15">
           <ScanLine className="h-7 w-7" />

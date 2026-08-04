@@ -159,7 +159,7 @@ function PatientDashboardPage() {
         actions={
           <Link
             to="/patient/book"
-            className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-soft)] hover:bg-black/90 transition-all"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--accent-orange)] px-5 py-3 text-sm font-bold text-white shadow-sm hover:brightness-110 transition-all"
           >
             Book appointment <ArrowRight className="h-4 w-4" />
           </Link>
@@ -210,51 +210,51 @@ function PatientDashboardPage() {
           </div>
 
           {loading ? (
-            <div className="h-44 animate-pulse rounded-3xl bg-white border border-black/[0.06] shadow-sm" />
+            <div className="h-44 animate-pulse rounded-3xl bg-[var(--card)] border border-[var(--border)] shadow-sm" />
           ) : followUp ? (
-            <div className="rounded-3xl bg-black text-white p-5 sm:p-6 shadow-xl border border-white/20">
+            <div className="rounded-3xl bg-[var(--card)] p-5 sm:p-6 shadow-sm border border-[var(--border)]">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="text-xl font-extrabold text-white">
+                  <div className="text-xl font-extrabold text-[var(--ink)]">
                     {followUp.clinics?.name || "Clinic"}
                   </div>
-                  <div className="mt-1 text-sm text-gray-300">
+                  <div className="mt-1 text-sm text-[var(--ink-soft)]">
                     {followUp.physiotherapy_categories?.name || "Physiotherapy"}
                   </div>
                 </div>
                 <StatusBadge status={followUp.status} />
               </div>
-              <div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-white">
+              <div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-[var(--ink)]">
                 <span className="inline-flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-[var(--bronze)]" />
+                  <Calendar className="h-4 w-4 text-[var(--accent-orange)]" />
                   {formatDateLabel(followUp.scheduled_date || followUp.preferred_date)}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-[var(--bronze)]" />
+                  <Clock className="h-4 w-4 text-[var(--accent-orange)]" />
                   {formatTimeLabel(followUp.scheduled_time || followUp.preferred_time)}
                 </span>
               </div>
-              <p className="mt-3 line-clamp-2 text-sm text-gray-300">{followUp.symptoms}</p>
+              <p className="mt-3 line-clamp-2 text-sm text-[var(--ink-soft)]">{followUp.symptoms}</p>
               {followUp.status === "accepted" ? (
                 <Link
                   to="/patient/qr-ticket"
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-gray-300 hover:text-white hover:underline"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[var(--ink-soft)] hover:text-[var(--ink)] hover:underline"
                 >
                   <QrCode className="h-4 w-4" /> Open QR ticket
                 </Link>
               ) : null}
             </div>
           ) : (
-            <div className="rounded-3xl bg-black text-white p-6 flex flex-col items-center justify-center min-h-[12rem] shadow-xl border border-white/20">
+            <div className="rounded-3xl bg-[var(--card)] p-6 flex flex-col items-center justify-center min-h-[12rem] shadow-sm border border-[var(--border)]">
               <EmptyState
                 icon={CalendarPlus}
                 title="No upcoming visits"
                 description="Book a session at any of our five Bengaluru clinics in under two minutes."
-                className="bg-transparent border-0 ring-0 shadow-none py-4 px-0 [&_h3]:!text-white [&_p]:!text-white/80"
+                className="bg-transparent border-0 ring-0 shadow-none py-4 px-0"
                 action={
                   <Link
                     to="/patient/book"
-                    className="rounded-full bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors"
+                    className="rounded-full bg-[var(--accent-orange)] hover:brightness-110 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors"
                   >
                     Book now
                   </Link>
@@ -306,16 +306,16 @@ function PatientDashboardPage() {
               <Link
                 key={to}
                 to={to}
-                className="rounded-2xl bg-black border border-white/20 text-white flex items-center gap-3.5 p-4 transition-transform hover:-translate-y-1 hover:shadow-lg shadow-md"
+                className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center gap-3.5 p-4 transition-transform hover:-translate-y-1 hover:shadow-md shadow-sm"
               >
                 <div className={cn("grid h-10 w-10 place-items-center rounded-xl shadow-sm", iconBg, iconColor)}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-bold text-white">{label}</div>
-                  <div className="text-xs text-gray-300">{desc}</div>
+                  <div className="text-sm font-bold text-[var(--ink)]">{label}</div>
+                  <div className="text-xs text-[var(--ink-soft)]">{desc}</div>
                 </div>
-                <ArrowRight className="h-4 w-4 text-gray-300" />
+                <ArrowRight className="h-4 w-4 text-[var(--ink-soft)]" />
               </Link>
             ))}
           </div>
@@ -330,13 +330,13 @@ function PatientDashboardPage() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2].map((i) => (
-                <div key={i} className="h-16 animate-pulse rounded-2xl bg-white border border-black/[0.04]" />
+                <div key={i} className="h-16 animate-pulse rounded-2xl bg-[var(--card)] border border-[var(--border)]" />
               ))}
             </div>
           ) : recentVisits.length === 0 ? (
-            <div className="rounded-2xl bg-black border border-white/20 flex h-32 flex-col items-center justify-center text-center p-5 text-white shadow-md">
-              <p className="text-sm font-bold">No recent visits</p>
-              <p className="mt-1 text-xs text-gray-300">
+            <div className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex h-32 flex-col items-center justify-center text-center p-5 shadow-sm">
+              <p className="text-sm font-bold text-[var(--ink)]">No recent visits</p>
+              <p className="mt-1 text-xs text-[var(--ink-soft)]">
                 Completed visits will appear here after your sessions.
               </p>
             </div>
@@ -345,13 +345,13 @@ function PatientDashboardPage() {
               {recentVisits.map((a) => (
                 <li
                   key={a.id}
-                  className="rounded-2xl bg-black border border-white/20 flex items-center justify-between gap-3 p-4 shadow-md"
+                  className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-between gap-3 p-4 shadow-sm"
                 >
                   <div>
-                    <div className="font-bold text-white text-sm sm:text-base">
+                    <div className="font-bold text-[var(--ink)] text-sm sm:text-base">
                       {a.clinics?.name} · {a.physiotherapy_categories?.name}
                     </div>
-                    <div className="text-xs text-gray-300 mt-0.5">
+                    <div className="text-xs text-[var(--ink-soft)] mt-0.5">
                       {formatDateLabel(a.scheduled_date || a.preferred_date)}
                     </div>
                   </div>
@@ -368,8 +368,8 @@ function PatientDashboardPage() {
             <h2 className="text-lg font-extrabold text-[var(--ink)]">Notifications</h2>
           </div>
           {notifications.length === 0 ? (
-            <div className="rounded-2xl bg-black border border-white/20 flex h-32 flex-col items-center justify-center text-center p-5 text-white shadow-md">
-              <p className="text-sm font-semibold text-gray-300">
+            <div className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex h-32 flex-col items-center justify-center text-center p-5 shadow-sm">
+              <p className="text-sm font-semibold text-[var(--ink-soft)]">
                 You’ll see appointment confirmations and reminders here.
               </p>
             </div>
@@ -378,10 +378,10 @@ function PatientDashboardPage() {
               {notifications.map((n) => (
                 <li
                   key={n.id}
-                  className="rounded-2xl bg-black border border-white/20 p-4 shadow-md"
+                  className="rounded-2xl bg-[var(--card)] border border-[var(--border)] p-4 shadow-sm"
                 >
-                  <div className="font-bold text-white text-sm sm:text-base">{n.title}</div>
-                  <p className="mt-1 text-xs sm:text-sm text-gray-300 leading-relaxed">{n.body}</p>
+                  <div className="font-bold text-[var(--ink)] text-sm sm:text-base">{n.title}</div>
+                  <p className="mt-1 text-xs sm:text-sm text-[var(--ink-soft)] leading-relaxed">{n.body}</p>
                 </li>
               ))}
             </ul>

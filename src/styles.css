@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @source "../src";
 @import "tw-animate-css";
+@import "./colors.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -53,65 +54,10 @@
   --hover-lift: -4px;
   --hover-scale: 1.02;
   --hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --gradient-sage: linear-gradient(135deg, #0F6B58 0%, #00A896 100%);
-  --gradient-pink: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
-  --gradient-warm: linear-gradient(135deg, #FCF6F8 0%, #EFF6FF 100%);
-  --page-background: radial-gradient(circle at top, rgba(15, 107, 88, 0.95) 0%, rgba(9, 84, 58, 0.92) 24%, rgba(7, 58, 39, 0.88) 55%, rgba(5, 26, 15, 1) 100%), linear-gradient(180deg, rgba(30, 58, 138, 0.05), transparent 35%, transparent 100%);
-}
-
-:root {
-  --sage: #0F6B58;
-  --sage-deep: #06261E;
-  --teal: #00A896;
-  --bronze: #1E3A8A;
-  --pink-main: #1E3A8A;
-  --pink-hover: #1E40AF;
-  --pink-light: #DBEAFE;
-  --pink-subtle: #EFF6FF;
-  --ivory: #E8F3EF;
-  --ink: #06261E;
-  --ink-soft: #1D4A3E;
-
-  --radius: 16px;
-  --background: #E8F3EF;
-  --foreground: #06261E;
-  --card: #FFFFFF;
-  --card-foreground: #06261E;
-  --popover: #FFFFFF;
-  --popover-foreground: #06261E;
-  --primary: #1E3A8A;
-  --primary-foreground: #FFFFFF;
-  --secondary: #EFF6FF;
-  --secondary-foreground: #1E40AF;
-  --muted: #D5ECE4;
-  --muted-foreground: #1D4A3E;
-  --accent: #00A896;
-  --accent-foreground: #FFFFFF;
-  --destructive: #E53935;
-  --destructive-foreground: #FFFFFF;
-  --border: #06261E;
-  --input: #06261E;
-  --ring: #1E3A8A;
-}
-
-.dark {
-  --background: #071914;
-  --foreground: #FCF6F8;
-  --card: #0E2922;
-  --card-foreground: #FCF6F8;
-  --popover: #0E2922;
-  --popover-foreground: #FCF6F8;
-  --primary: #3B82F6;
-  --primary-foreground: #FFFFFF;
-  --secondary: #1B3D34;
-  --secondary-foreground: #DBEAFE;
-  --muted: #12332B;
-  --muted-foreground: #A3C7BD;
-  --accent: #00A896;
-  --accent-foreground: #FFFFFF;
-  --border: rgba(255, 255, 255, 0.12);
-  --input: rgba(255, 255, 255, 0.16);
-  --ring: #3B82F6;
+  --gradient-sage: linear-gradient(135deg, var(--structure-dark) 0%, var(--accent-orange) 100%);
+  --gradient-pink: linear-gradient(135deg, var(--structure-maroon) 0%, var(--accent-orange) 100%);
+  --gradient-warm: linear-gradient(135deg, var(--canvas-bg) 0%, var(--muted) 100%);
+  --page-background: radial-gradient(circle at top, color-mix(in srgb, var(--structure-maroon) 15%, transparent) 0%, color-mix(in srgb, var(--structure-maroon) 5%, transparent) 55%, var(--canvas-bg) 100%);
 }
 
 @layer base {
@@ -781,14 +727,7 @@
 
 /* ---- Portal glass UI (iOS-like) ---- */
 .portal-shell {
-  --sage: #000000;
-  --sage-deep: #000000;
-  --teal: #000000;
-  --ink: #000000;
-  --ink-soft: #333333;
-  --ivory: #FFFFFF;
-
-  background: #FFFFFF;
+  background: var(--canvas-bg);
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -799,56 +738,55 @@
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 20% 20%, color-mix(in oklab, white 35%, transparent), transparent 40%),
-    radial-gradient(circle at 80% 10%, color-mix(in oklab, var(--sage) 8%, transparent), transparent 35%);
+    radial-gradient(circle at 20% 20%, color-mix(in oklab, var(--canvas-bg) 35%, transparent), transparent 40%),
+    radial-gradient(circle at 80% 10%, color-mix(in oklab, var(--accent-orange) 8%, transparent), transparent 35%);
   opacity: 0.9;
 }
 
 .portal-shell .portal-glass {
-  border: 1.5px solid rgba(30, 58, 138, 0.2) !important;
+  border: 1.5px solid var(--border) !important;
   box-shadow:
-    0 4px 20px rgba(30, 41, 59, 0.08),
-    0 1px 3px rgba(30, 58, 138, 0.1);
+    0 4px 20px rgba(92, 29, 36, 0.04),
+    0 1px 3px rgba(92, 29, 36, 0.05);
 }
 
 .portal-glass-header {
-  background: #FFFFFF !important;
-  border-bottom: 1.5px solid rgba(0, 0, 0, 0.1) !important;
+  background: transparent !important;
+  border-bottom: 1.5px solid var(--border) !important;
   border-left: 0 !important;
   border-right: 0 !important;
   border-top: 0 !important;
   border-radius: 0 !important;
-  color: #000000 !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06) !important;
+  color: var(--structure-dark) !important;
 }
 
 .portal-glass-sidebar {
-  background: #FFFFFF !important;
-  border-right: 1.5px solid rgba(0, 0, 0, 0.1) !important;
+  background: transparent !important;
+  border-right: 1.5px solid var(--border) !important;
   border-left: 0 !important;
   border-top: 0 !important;
   border-bottom: 0 !important;
   border-radius: 0 !important;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08) !important;
-  color: #000000 !important;
+  box-shadow: 4px 0 24px rgba(92, 29, 36, 0.04) !important;
+  color: var(--structure-dark) !important;
 }
 
 .portal-glass-dock {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: color-mix(in srgb, var(--canvas-bg) 95%, transparent) !important;
   backdrop-filter: blur(40px) saturate(200%);
-  border: 1.5px solid rgba(0, 0, 0, 0.1) !important;
-  border-top: 2.5px solid #000000 !important;
+  border: 1.5px solid var(--border) !important;
+  border-top: 2.5px solid var(--structure-dark) !important;
   box-shadow:
-    0 24px 48px rgba(0, 0, 0, 0.12),
-    0 8px 20px rgba(0, 0, 0, 0.06);
+    0 24px 48px rgba(92, 29, 36, 0.08),
+    0 8px 20px rgba(92, 29, 36, 0.04);
 }
 
 .portal-glass-card {
-  background: rgba(255, 255, 255, 0.8) !important;
+  background: var(--card) !important;
   backdrop-filter: blur(16px) saturate(140%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid var(--border) !important;
   border-radius: 24px !important;
-  box-shadow: 0 8px 32px rgba(6, 38, 30, 0.05), 0 1px 3px rgba(6, 38, 30, 0.02) !important;
+  box-shadow: 0 8px 32px rgba(92, 29, 36, 0.05), 0 1px 3px rgba(92, 29, 36, 0.02) !important;
 }
 
 .dark .portal-glass-card {

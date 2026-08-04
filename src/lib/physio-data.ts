@@ -1,4 +1,4 @@
-import { supabaseRest, getStoredSession } from "@/lib/auth";
+import { supabaseRest, getStoredSession, fetchMyProfile } from "@/lib/auth";
 import { getSupabaseConfig } from "@/lib/supabase-config";
 import type { Appointment, ClinicSlot } from "@/lib/clinic-data";
 
@@ -24,18 +24,29 @@ export function ageFromDob(dob: string | null | undefined): number | null {
   return age;
 }
 
+
 export async function fetchClinicAppointments(status?: string) {
+  const { data: profile } = await fetchMyProfile();
+  const isStaff = profile?.role === "physiotherapist" || profile?.role === "clinic_manager" || profile?.role === "receptionist";
+  const clinicId = isStaff ? profile?.clinic_id : undefined;
+
   const filter = status ? `&status=eq.${status}` : "";
+  const clinicFilter = clinicId ? `&clinic_id=eq.${clinicId}` : "";
   return supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null${filter}&select=${SELECT}&order=preferred_date.asc,preferred_time.asc&limit=200`,
+    `appointments?deleted_at=is.null${filter}${clinicFilter}&select=${SELECT}&order=preferred_date.asc,preferred_time.asc&limit=200`,
   );
 }
 
 export async function fetchTodayQueue() {
   const today = new Date();
   const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const { data: profile } = await fetchMyProfile();
+  const isStaff = profile?.role === "physiotherapist" || profile?.role === "clinic_manager" || profile?.role === "receptionist";
+  const clinicId = isStaff ? profile?.clinic_id : undefined;
+
+  const clinicFilter = clinicId ? `&clinic_id=eq.${clinicId}` : "";
   return supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null&or=(scheduled_date.eq.${iso},and(scheduled_date.is.null,preferred_date.eq.${iso}))&status=in.(accepted,checked_in,completed)&select=${SELECT}&order=scheduled_time.asc.nullsfirst,preferred_time.asc`,
+    `appointments?deleted_at=is.null${clinicFilter}&or=(scheduled_date.eq.${iso},and(scheduled_date.is.null,preferred_date.eq.${iso}))&status=in.(accepted,checked_in,completed)&select=${SELECT}&order=scheduled_time.asc.nullsfirst,preferred_time.asc`,
   );
 }
 

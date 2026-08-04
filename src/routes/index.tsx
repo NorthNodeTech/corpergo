@@ -178,17 +178,21 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
         >
           <Link
             to="/"
-            className="group flex items-center shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/40 focus-visible:ring-offset-2 rounded-lg"
+            className="group flex items-center gap-3 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/40 focus-visible:ring-offset-2 rounded-lg"
             aria-label="CorpErgo Physiotherapy — Home"
           >
             <img
               src={logoImg}
               alt="CorpErgo"
-              className="h-16 w-auto sm:h-20 lg:h-24 object-contain object-left transition-all duration-300 group-hover:opacity-90 drop-shadow-sm"
-              width={96}
-              height={96}
+              className="h-12 w-auto sm:h-14 lg:h-16 object-contain object-left transition-all duration-300 group-hover:opacity-100 drop-shadow-[0_0_12px_rgba(255,255,255,0.85)] brightness-110"
               decoding="async"
             />
+            <div className="font-black text-[var(--ink)] text-base sm:text-lg lg:text-2xl leading-none tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]">
+              CORPERGO
+              <div className="text-[10px] lg:text-[11px] font-extrabold text-[var(--structure-maroon)] tracking-[0.18em] mt-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]">
+                PHYSIOTHERAPY AND REHABILITATION
+              </div>
+            </div>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
@@ -196,7 +200,7 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
               <a
                 key={label}
                 href={href}
-                className="rounded-full bg-[#06261E] px-3 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[#0a382c] transition-all hover:scale-105"
+                className="rounded-full bg-[var(--structure-maroon)] px-3 py-1.5 text-sm font-semibold text-white shadow-md hover:bg-[var(--pink-hover)] transition-all hover:scale-105"
               >
                 {label}
               </a>
@@ -206,13 +210,13 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
           <div className="flex items-center gap-2">
             <button
               onClick={onLoginClick}
-              className="inline-flex items-center rounded-full bg-[#06261E] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[#0a382c] transition-all hover:scale-105 cursor-pointer focus:outline-none"
+              className="inline-flex items-center rounded-full bg-[var(--structure-maroon)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[var(--pink-hover)] transition-all hover:scale-105 cursor-pointer focus:outline-none"
             >
               Login
             </button>
             <button
               onClick={onLoginClick}
-              className="group inline-flex items-center gap-1 rounded-full bg-[#06261E] hover:bg-[#0a382c] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 cursor-pointer focus:outline-none"
+              className="group inline-flex items-center gap-1 rounded-full bg-[var(--structure-maroon)] hover:bg-[var(--pink-hover)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 cursor-pointer focus:outline-none"
             >
               <span>
                 Book<span className="hidden sm:inline"> Appointment</span>
@@ -276,7 +280,7 @@ function Hero({ onLoginClick }: { onLoginClick: () => void }) {
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         {/* Desktop Hero Video */}
         <video
-          src="/hero_corpergo.mp4"
+          src="/hero-section-video.mp4"
           autoPlay
           loop
           muted
@@ -285,7 +289,7 @@ function Hero({ onLoginClick }: { onLoginClick: () => void }) {
         />
         {/* Mobile Hero Video */}
         <video
-          src="/hero_corpergo_mobile.mp4"
+          src="/hero-section-video.mp4"
           autoPlay
           loop
           muted
@@ -308,7 +312,7 @@ function Hero({ onLoginClick }: { onLoginClick: () => void }) {
             <motion.h1 variants={fadeItem} className="hero-fit__title text-white text-balance drop-shadow-lg">
               Relieve pain.
               <br />
-              <span className="text-[#A8E6CF]">Restore</span>{" "}
+              <span className="text-[var(--accent-orange)]">Restore</span>{" "}
               <span className="relative inline-block">
                 movement.
                 <svg
@@ -1085,8 +1089,7 @@ function CTA({ onLoginClick }: { onLoginClick: () => void }) {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.75, ease: easeOut }}
-          className="relative overflow-hidden rounded-[36px] p-10 sm:p-16 lg:p-20 border-2 border-[#06261E] grain"
-          style={{ background: "#06261E" }}
+          className="relative overflow-hidden rounded-[36px] p-10 sm:p-16 lg:p-20 border-2 border-[var(--structure-maroon)] grain bg-[var(--structure-maroon)]"
         >
           <div className="alive-orb alive-orb--cta-a absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
           <div className="alive-orb alive-orb--cta-b absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-[#E05A8D]/20 blur-3xl" />
@@ -1108,7 +1111,7 @@ function CTA({ onLoginClick }: { onLoginClick: () => void }) {
               <motion.div variants={fadeItem} className="mt-8 flex flex-wrap gap-3">
                 <button
                   onClick={onLoginClick}
-                  className="group alive-cta inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[#053926] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl cursor-pointer focus:outline-none"
+                  className="group alive-cta inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[var(--structure-maroon)] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl cursor-pointer focus:outline-none"
                 >
                   Book Appointment
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -1129,7 +1132,7 @@ function CTA({ onLoginClick }: { onLoginClick: () => void }) {
 
 function Footer({ onLoginClick }: { onLoginClick: () => void }) {
   return (
-    <footer id="contact" className="bg-[#06261E] text-white/80">
+    <footer id="contact" className="bg-[var(--structure-maroon)] text-white/80">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div>

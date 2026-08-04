@@ -84,9 +84,9 @@ function AccountMenu({
         aria-controls={menuId}
         whileTap={{ scale: 0.96 }}
         onClick={() => setOpen((v) => !v)}
-        className="group flex max-w-[12rem] items-center gap-2 rounded-full border border-black/15 bg-black/5 text-[var(--ink)] py-1.5 pl-1.5 pr-2.5 shadow-sm sm:max-w-[16rem] hover:bg-black/10 transition-colors"
+        className="group flex max-w-[12rem] items-center gap-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] py-1.5 pl-1.5 pr-2.5 shadow-sm sm:max-w-[16rem] hover:bg-[var(--muted)] transition-colors"
       >
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black text-xs font-bold text-white shadow-sm">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--structure-maroon)] text-xs font-bold text-white shadow-sm">
           {initialsFromName(userName)}
         </span>
         <span className="hidden min-w-0 truncate text-sm font-semibold text-[var(--ink)] sm:block">
@@ -379,7 +379,7 @@ export function PortalShell({
             className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold text-[var(--ink-soft)] transition-colors hover:bg-black/5 hover:text-[var(--ink)] border border-transparent"
             activeProps={{
               className:
-                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-black text-white shadow-md border border-black",
+                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-[var(--muted)] text-[var(--foreground)] shadow-sm border border-[var(--border)]",
             }}
             activeOptions={{ exact: to.endsWith("/dashboard") && !hash }}
           >
@@ -412,19 +412,19 @@ export function PortalShell({
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="portal-glass-sidebar sticky top-0 z-30 hidden h-screen max-h-screen shrink-0 lg:flex lg:flex-col border-r border-black/10 overflow-hidden whitespace-nowrap"
             >
-              <div className="px-5 py-6 flex items-start justify-between">
+              <div className="px-5 py-6 flex items-start justify-between bg-gradient-to-br from-[var(--structure-maroon)] to-[#A64B29] rounded-br-[2.5rem] shadow-md mb-2">
                 <div>
                   <Link to="/" className="flex items-center gap-3">
-                    <img src={logoImg} alt="CorpErgo" className="h-18 sm:h-20 w-auto object-contain drop-shadow-sm brightness-100" />
+                    <img src={logoImg} alt="CorpErgo" className="h-18 sm:h-20 w-auto object-contain drop-shadow-sm brightness-0 invert" />
                   </Link>
                   <div className="mt-4">
-                    <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
-                    <div className="mt-0.5 text-xs text-[var(--ink-soft)]">{subtitle}</div>
+                    <div className="text-sm font-extrabold text-white">{title}</div>
+                    <div className="mt-0.5 text-xs text-white/80">{subtitle}</div>
                   </div>
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="rounded-full p-1.5 hover:bg-black/5 text-[var(--ink-soft)] transition-colors"
+                  className="rounded-full p-1.5 hover:bg-white/10 text-white/80 hover:text-white transition-colors"
                   aria-label="Close sidebar"
                 >
                   <PanelLeftClose className="h-5 w-5" />
