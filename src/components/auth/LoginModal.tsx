@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, User, Stethoscope, Eye, EyeOff } from "lucide-react";
 import logoImg from "@/assets/LOGO.webp";
 import { signInWithPassword, resolvePostLoginPath } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -23,7 +24,7 @@ const PORTALS = [
     id: "staff",
     label: "Physiotherapist",
     icon: Stethoscope,
-    desc: "Clinic staff login — physiotherapists and admins. Your dashboard opens by role.",
+    desc: "Clinic staff login — physiotherapists and admins.",
     buttonLabel: "Staff",
   },
 ] as const;
@@ -42,7 +43,6 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [error, setError] = useState<string | null>(null);
   const active = PORTALS.find((p) => p.id === portal)!;
 
-  // Clear inputs when modal opens/closes
   useEffect(() => {
     if (!isOpen) {
       setFullName("");
@@ -59,20 +59,32 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setError(null);
 
     const isPatient = portal === "patient";
-    const identifier = isPatient ? phone.trim() : email.trim();
 
-    if (isPatient && !fullName.trim()) {
-      setError("Enter your full name.");
+    if (isPatient) {
+      if (!fullName.trim()) {
+        setError("Enter your full name.");
+        return;
+      }
+      if (!phone.trim()) {
+        setError("Enter your mobile number.");
+        return;
+      }
+      if (!email.trim() || !email.includes("@")) {
+        setError("Enter a valid email address.");
+        return;
+      }
+    } else if (!email.trim()) {
+      setError("Enter your clinic staff email.");
       return;
     }
 
-    if (!identifier || !password) {
-      setError(isPatient ? "Enter your mobile number and password." : "Enter your email and password.");
+    if (!password) {
+      setError("Enter your password.");
       return;
     }
 
     setLoading(true);
-    const { data, error: signInError } = await signInWithPassword(identifier, password, isPatient ? fullName.trim() : undefined);
+    const { data, error: signInError } = await signInWithPassword(email.trim(), password);
 
     if (signInError || !data) {
       setLoading(false);
@@ -94,67 +106,74 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="p-0 overflow-hidden max-w-[calc(100vw-2rem)] sm:max-w-md border-none bg-transparent shadow-2xl">
-        <div className="flex flex-col justify-center overflow-y-auto overscroll-contain max-h-[85vh] px-5 py-6 sm:px-8 sm:py-8 bg-white rounded-3xl relative">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mx-auto flex w-full max-w-sm flex-col"
-          >
-            {/* Brand logo header */}
-            <div className="flex flex-col items-center mb-3 text-center">
-              <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2.5 shadow-sm ring-1 ring-black/10">
-                <img
-                  src={logoImg}
-                  alt="CorpErgo"
-                  className="w-auto h-11 object-contain"
-                  width={120}
-                  height={64}
-                  decoding="async"
-                />
-              </div>
-              <div className="mt-2 font-black text-[var(--ink)] text-sm sm:text-base leading-none tracking-wide">
-                CORPERGO
-                <div className="text-[9px] sm:text-[10px] font-bold text-[var(--ink-soft)] tracking-widest mt-0.5">
-                  PHYSIOTHERAPY AND REHABILITATION
+      <DialogContent
+        className={cn(
+          "fixed left-1/2 top-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col",
+          "max-h-[min(92dvh,720px)] overflow-hidden border-none bg-transparent p-0 shadow-2xl",
+          "sm:w-full sm:max-w-md",
+        )}
+      >
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-black/[0.06]">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 pr-10 sm:px-7 sm:py-7 sm:pr-12">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-auto flex w-full max-w-sm flex-col"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/10">
+                  <img
+                    src={logoImg}
+                    alt="CorpErgo"
+                    className="h-10 w-auto object-contain sm:h-11"
+                    width={120}
+                    height={64}
+                    decoding="async"
+                  />
+                </div>
+                <div className="mt-2 font-black text-[var(--ink)] text-sm leading-none tracking-wide sm:text-base">
+                  CORPERGO
+                  <div className="mt-0.5 text-[9px] font-bold text-[var(--ink-soft)] tracking-widest sm:text-[10px]">
+                    PHYSIOTHERAPY AND REHABILITATION
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <h2 className="font-extrabold tracking-tight text-[var(--ink)] text-2xl text-center">
-              Welcome back
-            </h2>
-            <p className="text-[var(--ink-soft)] text-sm mt-1 text-center">
-              Sign in to continue to your dashboard.
-            </p>
+              <h2 className="mt-4 text-center text-xl font-extrabold tracking-tight text-[var(--ink)] sm:text-2xl">
+                Welcome back
+              </h2>
+              <p className="mt-1 text-center text-sm text-[var(--ink-soft)]">
+                Sign in to continue to your dashboard.
+              </p>
 
-            <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-[var(--ivory)]/50 p-1 ring-1 ring-black/5">
-              {PORTALS.map((p) => {
-                const isActive = p.id === portal;
-                const Icon = p.icon;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setPortal(p.id)}
-                    className={`relative flex flex-col items-center gap-1 rounded-xl py-1.5 text-[11px] font-semibold transition-all cursor-pointer focus:outline-none ${
-                      isActive
-                        ? "bg-[var(--sage)] text-white shadow-sm"
-                        : "text-[var(--ink-soft)] hover:bg-[var(--ivory)]"
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    {p.label}
-                  </button>
-                );
-              })}
-            </div>
+              <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-[var(--ivory)]/50 p-1 ring-1 ring-black/5">
+                {PORTALS.map((p) => {
+                  const isActive = p.id === portal;
+                  const Icon = p.icon;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPortal(p.id)}
+                      className={cn(
+                        "relative flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold transition-all cursor-pointer focus:outline-none",
+                        isActive
+                          ? "bg-[var(--sage)] text-white shadow-sm"
+                          : "text-[var(--ink-soft)] hover:bg-[var(--ivory)]",
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
 
-            <div className="mt-2 text-[10px] text-[var(--ink-soft)] leading-relaxed text-center">
-              {active.desc}
-            </div>
+              <p className="mt-2 text-center text-[10px] leading-relaxed text-[var(--ink-soft)]">
+                {active.desc}
+              </p>
 
-            <form className="mt-4 space-y-3" onSubmit={onSubmit}>
+              <form className="mt-4 space-y-2.5 sm:space-y-3" onSubmit={onSubmit}>
               {portal === "patient" ? (
                 <>
                   <div>
@@ -168,7 +187,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                       placeholder="Enter your full name"
                       autoComplete="name"
                       required
-                      className="mt-1.5 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-4 py-2.5 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
+                      className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
                     />
                   </div>
                   <div>
@@ -182,12 +201,12 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                       placeholder="+91 9876543210"
                       autoComplete="tel"
                       required
-                      className="mt-1.5 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-4 py-2.5 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
+                      className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
                     />
                   </div>
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                      Email (Optional)
+                      Email <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
@@ -195,7 +214,8 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@email.com"
                       autoComplete="email"
-                      className="mt-1.5 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-4 py-2.5 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
+                      required
+                      className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
                     />
                   </div>
                 </>
@@ -208,13 +228,14 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="staff@corpergo.in"
+                    placeholder="physio.chansandra@corpergo.in"
                     autoComplete="email"
                     required
                     className="mt-1.5 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-4 py-3 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
                   />
                 </div>
               )}
+
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
                   Password
@@ -271,7 +292,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             </form>
 
             {portal === "patient" ? (
-              <div className="mt-4 text-center text-xs text-[var(--ink-soft)]">
+              <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
                 New patient?{" "}
                 <Link
                   to="/signup"
@@ -280,16 +301,16 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 >
                   Create an account
                 </Link>
-              </div>
+              </p>
             ) : (
-              <div className="mt-4 text-center text-xs text-[var(--ink-soft)]">
+              <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
                 Staff accounts are created by CorpErgo admin.
-              </div>
+              </p>
             )}
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
-

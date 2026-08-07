@@ -23,8 +23,10 @@ import {
   type PhysioWorkspaceBundle,
 } from "@/lib/physio-workspace-data";
 import type { PhysioAppointment } from "@/lib/physio-data";
+import { resolveStaffClinicId } from "@/lib/physio-data";
 import { cn } from "@/lib/utils";
 import { ClinicPaymentsTracker } from "@/components/physio/ClinicPaymentsTracker";
+import { ClinicSlotManager } from "@/components/physio/ClinicSlotManager";
 
 function greeting(h: number) {
   if (h < 12) return "Good morning";
@@ -139,15 +141,19 @@ export function ClinicalWorkspace() {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => new Date());
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [staffClinicId, setStaffClinicId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    void fetchPhysioWorkspace().then((bundle) => {
-      if (cancelled) return;
-      setData(bundle);
-      setSelectedId(bundle.current?.id ?? bundle.todayQueue[0]?.id ?? null);
-      setLoading(false);
-    });
+    void Promise.all([fetchPhysioWorkspace(), resolveStaffClinicId()]).then(
+      ([bundle, clinicId]) => {
+        if (cancelled) return;
+        setData(bundle);
+        setStaffClinicId(clinicId);
+        setSelectedId(bundle.current?.id ?? bundle.todayQueue[0]?.id ?? null);
+        setLoading(false);
+      },
+    );
     return () => {
       cancelled = true;
     };
@@ -488,6 +494,42 @@ export function ClinicalWorkspace() {
         </div>
       </section>
 
+      {/* Recently cancelled */}
+      {(loading || (data?.cancelled || []).length > 0) && (
+        <section className="mt-8 min-w-0">
+          <div className="mb-3 flex items-end justify-between gap-3">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+                Cancellations
+              </div>
+              <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Recently cancelled</h2>
+            </div>
+            <Link to="/physio/requests" className="text-xs font-bold text-[var(--sage-deep)] hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(loading ? [] : data?.cancelled || []).slice(0, 4).map((a) => (
+              <div
+                key={a.id}
+                className="rounded-[22px] border border-rose-100 bg-rose-50/50 p-4 shadow-sm"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-extrabold text-[var(--ink)]">{patientName(a)}</div>
+                  <StatusBadge status={a.status} />
+                </div>
+                <div className="mt-1 text-xs text-[var(--ink-soft)]">
+                  {a.appointment_code} · {formatTimeLabel(a.scheduled_time || a.preferred_time)}
+                </div>
+                {a.cancellation_reason ? (
+                  <p className="mt-2 text-xs text-rose-800 line-clamp-2">{a.cancellation_reason}</p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Insights + categories */}
       <section className="mt-8 grid min-w-0 gap-4 lg:grid-cols-[1.2fr_1fr]">
         <div>
@@ -694,22 +736,17 @@ export function ClinicalWorkspace() {
         ))}
       </section>
 
-      {/* Manual Clinic Payments & Collections Tracker */}
+      {/* Block unavailable times + payments */}
+      {staffClinicId ? (
+        <ClinicSlotManager clinicId={staffClinicId} clinicName={data?.clinicName || displayName} />
+      ) : null}
+
       <ClinicPaymentsTracker
         clinicId={
+          staffClinicId ||
           data?.todayQueue[0]?.clinic_id ||
           data?.pending[0]?.clinic_id ||
-          (displayName.toLowerCase().includes("chansandra")
-            ? "clinic-1"
-            : displayName.toLowerCase().includes("balagere")
-              ? "clinic-2"
-              : displayName.toLowerCase().includes("muthsandra")
-                ? "clinic-3"
-                : displayName.toLowerCase().includes("kannamangala")
-                  ? "clinic-4"
-                  : displayName.toLowerCase().includes("manduru")
-                    ? "clinic-5"
-                    : "clinic-1")
+          undefined
         }
         clinicName={data?.clinicName || displayName}
       />

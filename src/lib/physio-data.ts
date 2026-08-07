@@ -1,6 +1,11 @@
 import { supabaseRest, getStoredSession, fetchMyProfile } from "@/lib/auth";
 import { getSupabaseConfig } from "@/lib/supabase-config";
-import { matchesClinicId, type Appointment, type ClinicSlot } from "@/lib/clinic-data";
+import {
+  checkSlotCapacity,
+  fetchSlotsForClinicDate,
+  matchesClinicId,
+  type Appointment,
+} from "@/lib/clinic-data";
 
 export type PhysioAppointment = Appointment & {
   patients?: {
@@ -12,7 +17,7 @@ export type PhysioAppointment = Appointment & {
 };
 
 const SELECT =
-  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,profiles(full_name,phone))";
+  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,cancellation_reason,cancelled_at,reschedule_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,profiles(full_name,phone))";
 
 export function ageFromDob(dob: string | null | undefined): number | null {
   if (!dob) return null;
@@ -24,128 +29,70 @@ export function ageFromDob(dob: string | null | undefined): number | null {
   return age;
 }
 
+export async function fetchMyPhysioId() {
+  const session = getStoredSession();
+  const userId = session?.user?.id;
+  if (!userId) {
+    return { data: [] as { id: string; clinic_id: string }[], error: "Not signed in" };
+  }
+  return supabaseRest<{ id: string; clinic_id: string }[]>(
+    `physiotherapists?user_id=eq.${userId}&select=id,clinic_id&limit=1`,
+  );
+}
+
+/** Resolve the clinic ID for the currently logged-in staff member. */
+export async function resolveStaffClinicId(): Promise<string | null> {
+  const { data: profile } = await fetchMyProfile();
+  if (!profile) return null;
+
+  const isStaff =
+    profile.role === "physiotherapist" ||
+    profile.role === "clinic_manager" ||
+    profile.role === "receptionist";
+
+  if (!isStaff) return null;
+  if (profile.clinic_id) return profile.clinic_id;
+
+  const me = await fetchMyPhysioId();
+  return me.data?.[0]?.clinic_id ?? null;
+}
 
 export async function fetchClinicAppointments(status?: string) {
-  const { data: profile } = await fetchMyProfile();
-  const isStaff = profile?.role === "physiotherapist" || profile?.role === "clinic_manager" || profile?.role === "receptionist";
-  let clinicId = isStaff ? profile?.clinic_id : undefined;
-
-  if (isStaff && !clinicId) {
-    const emailOrName = `${profile?.email || ""} ${profile?.full_name || ""}`.toLowerCase();
-    if (emailOrName.includes("chansandra")) clinicId = "0e490158-e027-4948-940c-8881c3e74585";
-    else if (emailOrName.includes("balagere")) clinicId = "f4d23f3d-24bb-489a-a51f-66bc61cb2fc9";
-    else if (emailOrName.includes("muthsandra")) clinicId = "bcaefc83-ae18-48c2-9d55-29d0fb178735";
-    else if (emailOrName.includes("kannamangala")) clinicId = "7080109b-d6e4-43d7-860b-05284b216eea";
-    else if (emailOrName.includes("manduru")) clinicId = "50a0aabb-db21-46d6-b218-c8b19f67990e";
-    else {
-      const me = await fetchMyPhysioId();
-      clinicId = me.data?.[0]?.clinic_id;
-    }
+  const clinicId = await resolveStaffClinicId();
+  if (!clinicId) {
+    return { data: [] as PhysioAppointment[], error: null };
   }
 
   const filter = status ? `&status=eq.${status}` : "";
-  const clinicFilter = clinicId ? `&clinic_id=eq.${clinicId}` : "";
+  const order =
+    status === "cancelled"
+      ? "cancelled_at.desc.nullslast,preferred_date.desc"
+      : status === "rejected"
+        ? "updated_at.desc"
+        : "preferred_date.asc,preferred_time.asc";
+
   const res = await supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null${filter}${clinicFilter}&select=${SELECT}&order=preferred_date.asc,preferred_time.asc&limit=200`,
+    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}${filter}&select=${SELECT}&order=${order}&limit=200`,
   );
 
-  let list = res.data || [];
-
-  if (clinicId) {
-    list = list.filter((item) => matchesClinicId(clinicId, item.clinic_id));
-  }
-
-  if (typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem("corpergo.demo.appointments");
-      if (raw) {
-        const demoList = JSON.parse(raw) as PhysioAppointment[];
-        for (const item of demoList) {
-          const matchesStatus = !status || item.status === status;
-          const matchesClinic = !clinicId || matchesClinicId(clinicId, item.clinic_id);
-          if (
-            matchesStatus &&
-            matchesClinic &&
-            !list.some((a) => a.id === item.id || a.appointment_code === item.appointment_code)
-          ) {
-            list.unshift(item);
-          }
-        }
-      }
-    } catch {}
-  }
-
+  const list = (res.data || []).filter((item) => matchesClinicId(clinicId, item.clinic_id));
   return { data: list, error: res.error };
 }
 
 export async function fetchTodayQueue() {
   const today = new Date();
   const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const { data: profile } = await fetchMyProfile();
-  const isStaff = profile?.role === "physiotherapist" || profile?.role === "clinic_manager" || profile?.role === "receptionist";
-  let clinicId = isStaff ? profile?.clinic_id : undefined;
-
-  if (isStaff && !clinicId) {
-    const emailOrName = `${profile?.email || ""} ${profile?.full_name || ""}`.toLowerCase();
-    if (emailOrName.includes("chansandra")) clinicId = "0e490158-e027-4948-940c-8881c3e74585";
-    else if (emailOrName.includes("balagere")) clinicId = "f4d23f3d-24bb-489a-a51f-66bc61cb2fc9";
-    else if (emailOrName.includes("muthsandra")) clinicId = "bcaefc83-ae18-48c2-9d55-29d0fb178735";
-    else if (emailOrName.includes("kannamangala")) clinicId = "7080109b-d6e4-43d7-860b-05284b216eea";
-    else if (emailOrName.includes("manduru")) clinicId = "50a0aabb-db21-46d6-b218-c8b19f67990e";
-    else {
-      const me = await fetchMyPhysioId();
-      clinicId = me.data?.[0]?.clinic_id;
-    }
+  const clinicId = await resolveStaffClinicId();
+  if (!clinicId) {
+    return { data: [] as PhysioAppointment[], error: null };
   }
 
-  const clinicFilter = clinicId ? `&clinic_id=eq.${clinicId}` : "";
   const res = await supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null${clinicFilter}&or=(scheduled_date.eq.${iso},and(scheduled_date.is.null,preferred_date.eq.${iso}))&status=in.(accepted,checked_in,completed)&select=${SELECT}&order=scheduled_time.asc.nullsfirst,preferred_time.asc`,
+    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&or=(scheduled_date.eq.${iso},and(scheduled_date.is.null,preferred_date.eq.${iso}))&status=in.(accepted,checked_in,completed)&select=${SELECT}&order=scheduled_time.asc.nullsfirst,preferred_time.asc`,
   );
 
-  let list = res.data || [];
-
-  if (clinicId) {
-    list = list.filter((item) => matchesClinicId(clinicId, item.clinic_id));
-  }
-
-  if (typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem("corpergo.demo.appointments");
-      if (raw) {
-        const demoList = JSON.parse(raw) as PhysioAppointment[];
-        for (const item of demoList) {
-          const apptDate = item.scheduled_date || item.preferred_date;
-          const isToday = apptDate === iso;
-          const isAcceptedStatus = ["accepted", "checked_in", "completed"].includes(item.status);
-          const matchesClinic = !clinicId || matchesClinicId(clinicId, item.clinic_id);
-          if (
-            isToday &&
-            isAcceptedStatus &&
-            matchesClinic &&
-            !list.some((a) => a.id === item.id || a.appointment_code === item.appointment_code)
-          ) {
-            list.unshift(item);
-          }
-        }
-      }
-    } catch {}
-  }
-
+  const list = (res.data || []).filter((item) => matchesClinicId(clinicId, item.clinic_id));
   return { data: list, error: res.error };
-}
-
-export async function fetchMyPhysioId() {
-  const session = getStoredSession();
-  const userId = session?.user?.id;
-  if (!userId) {
-    return supabaseRest<{ id: string; clinic_id: string }[]>(
-      "physiotherapists?select=id,clinic_id&limit=1",
-    );
-  }
-  return supabaseRest<{ id: string; clinic_id: string }[]>(
-    `physiotherapists?user_id=eq.${userId}&select=id,clinic_id&limit=1`,
-  );
 }
 
 export async function acceptAppointment(input: {
@@ -153,10 +100,24 @@ export async function acceptAppointment(input: {
   physiotherapistId: string;
   scheduledDate: string;
   scheduledTime: string;
-  slotId?: string;
+  clinicId: string;
 }) {
   const time =
     input.scheduledTime.length === 5 ? `${input.scheduledTime}:00` : input.scheduledTime;
+
+  const capacity = await checkSlotCapacity(
+    input.clinicId,
+    input.scheduledDate,
+    time,
+    input.appointmentId,
+  );
+  if (!capacity.available) {
+    return {
+      data: null,
+      error:
+        "This time slot is now fully booked. Use Reschedule to pick a different time.",
+    };
+  }
 
   const { data, error } = await supabaseRest<Appointment[]>(
     `appointments?id=eq.${input.appointmentId}`,
@@ -170,38 +131,6 @@ export async function acceptAppointment(input: {
       }),
     },
   );
-
-  if (typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem("corpergo.demo.appointments");
-      if (raw) {
-        const demoList = JSON.parse(raw);
-        const updatedList = demoList.map((a: any) => {
-          if (a.id === input.appointmentId || a.appointment_code === input.appointmentId) {
-            return {
-              ...a,
-              status: "accepted",
-              physiotherapist_id: input.physiotherapistId,
-              scheduled_date: input.scheduledDate,
-              scheduled_time: time,
-            };
-          }
-          return a;
-        });
-        window.localStorage.setItem("corpergo.demo.appointments", JSON.stringify(updatedList));
-      }
-    } catch {}
-  }
-
-  if (!error && input.slotId) {
-    await supabaseRest(`clinic_slots?id=eq.${input.slotId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        is_available: false,
-        appointment_id: input.appointmentId,
-      }),
-    });
-  }
 
   if (!error && data?.[0]) {
     const appt = data[0];
@@ -259,26 +188,6 @@ export async function rejectAppointment(
     },
   );
 
-  if (typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem("corpergo.demo.appointments");
-      if (raw) {
-        const demoList = JSON.parse(raw);
-        const updatedList = demoList.map((a: any) => {
-          if (a.id === appointmentId || a.appointment_code === appointmentCode) {
-            return {
-              ...a,
-              status: "rejected",
-              rejection_reason: reason.trim(),
-            };
-          }
-          return a;
-        });
-        window.localStorage.setItem("corpergo.demo.appointments", JSON.stringify(updatedList));
-      }
-    } catch {}
-  }
-
   if (!error && patientId) {
     const patientRes = await supabaseRest<{ user_id: string }[]>(
       `patients?id=eq.${patientId}&select=user_id&limit=1`,
@@ -310,10 +219,23 @@ export async function rescheduleAppointment(input: {
   scheduledDate: string;
   scheduledTime: string;
   reason: string;
-  slotId?: string;
+  clinicId: string;
 }) {
   const time =
     input.scheduledTime.length === 5 ? `${input.scheduledTime}:00` : input.scheduledTime;
+
+  const capacity = await checkSlotCapacity(
+    input.clinicId,
+    input.scheduledDate,
+    time,
+    input.appointmentId,
+  );
+  if (!capacity.available) {
+    return {
+      data: null,
+      error: "This time slot is fully booked. Please choose another time.",
+    };
+  }
 
   const { data, error } = await supabaseRest<Appointment[]>(
     `appointments?id=eq.${input.appointmentId}`,
@@ -330,16 +252,6 @@ export async function rescheduleAppointment(input: {
       }),
     },
   );
-
-  if (!error && input.slotId) {
-    await supabaseRest(`clinic_slots?id=eq.${input.slotId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        is_available: false,
-        appointment_id: input.appointmentId,
-      }),
-    });
-  }
 
   if (!error && input.patientId) {
     const patientRes = await supabaseRest<{ user_id: string }[]>(
@@ -409,8 +321,42 @@ export async function scanQrToken(token: string) {
   return { data: json, error: null };
 }
 
-export async function fetchAvailableSlots(clinicId: string, date: string) {
-  return supabaseRest<ClinicSlot[]>(
-    `clinic_slots?clinic_id=eq.${clinicId}&slot_date=eq.${date}&is_available=eq.true&deleted_at=is.null&select=id,clinic_id,slot_date,start_time,end_time,is_available,physiotherapist_id&order=start_time.asc`,
+/** Staff slot picker — uses the same 2-per-hour capacity rules as patient booking. */
+export async function fetchAvailableSlots(
+  clinicId: string,
+  date: string,
+  options?: { excludeAppointmentId?: string },
+) {
+  return fetchSlotsForClinicDate(clinicId, date, options);
+}
+
+export async function blockClinicTimeSlot(
+  clinicId: string,
+  date: string,
+  startTime: string,
+  reason?: string,
+) {
+  const { getStoredSession } = await import("@/lib/auth");
+  const session = getStoredSession();
+  const time = startTime.length === 5 ? `${startTime}:00` : startTime;
+
+  return supabaseRest("clinic_blocked_times", {
+    method: "POST",
+    body: JSON.stringify({
+      clinic_id: clinicId,
+      block_date: date,
+      start_time: time,
+      reason: reason?.trim() || "Blocked by clinic staff",
+      created_by: session?.user?.id ?? null,
+    }),
+  });
+}
+
+export async function unblockClinicTimeSlot(clinicId: string, date: string, startTime: string) {
+  const time = startTime.length === 5 ? `${startTime}:00` : startTime;
+
+  return supabaseRest(
+    `clinic_blocked_times?clinic_id=eq.${clinicId}&block_date=eq.${date}&start_time=eq.${time}`,
+    { method: "DELETE" },
   );
 }

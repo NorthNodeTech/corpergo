@@ -33,6 +33,9 @@ export type Appointment = {
   symptoms: string;
   status: string;
   rejection_reason: string | null;
+  cancellation_reason?: string | null;
+  cancelled_at?: string | null;
+  reschedule_reason?: string | null;
   clinic_id: string;
   category_id: string;
   patient_id: string;
@@ -43,6 +46,14 @@ export type Appointment = {
     id: string;
     profiles?: { full_name: string } | null;
   } | null;
+};
+
+export type ClinicBlockedTime = {
+  id: string;
+  clinic_id: string;
+  block_date: string;
+  start_time: string;
+  reason: string | null;
 };
 
 export type ClinicSlot = {
@@ -118,24 +129,7 @@ export function matchesClinicId(
   appointmentClinicId: string | null | undefined,
 ): boolean {
   if (!targetClinicId || !appointmentClinicId) return false;
-  if (targetClinicId === appointmentClinicId) return true;
-
-  const chansandra = ["0e490158-e027-4948-940c-8881c3e74585", "clinic-1", "chansandra"];
-  const balagere = ["f4d23f3d-24bb-489a-a51f-66bc61cb2fc9", "clinic-2", "balagere"];
-  const muthsandra = ["bcaefc83-ae18-48c2-9d55-29d0fb178735", "clinic-3", "muthsandra"];
-  const kannamangala = ["7080109b-d6e4-43d7-860b-05284b216eea", "clinic-4", "kannamangala"];
-  const manduru = ["50a0aabb-db21-46d6-b218-c8b19f67990e", "clinic-5", "manduru"];
-
-  const targetLower = targetClinicId.toLowerCase();
-  const apptLower = appointmentClinicId.toLowerCase();
-
-  if (chansandra.some((id) => targetLower.includes(id)) && chansandra.some((id) => apptLower.includes(id))) return true;
-  if (balagere.some((id) => targetLower.includes(id)) && balagere.some((id) => apptLower.includes(id))) return true;
-  if (muthsandra.some((id) => targetLower.includes(id)) && muthsandra.some((id) => apptLower.includes(id))) return true;
-  if (kannamangala.some((id) => targetLower.includes(id)) && kannamangala.some((id) => apptLower.includes(id))) return true;
-  if (manduru.some((id) => targetLower.includes(id)) && manduru.some((id) => apptLower.includes(id))) return true;
-
-  return false;
+  return targetClinicId === appointmentClinicId;
 }
 
 export async function fetchMyAppointments() {
@@ -144,27 +138,9 @@ export async function fetchMyAppointments() {
   if (!patientId) {
     return { data: [], error: null };
   }
-  const res = await supabaseRest<Appointment[]>(
+  return supabaseRest<Appointment[]>(
     `appointments?patient_id=eq.${patientId}&deleted_at=is.null&select=${APPOINTMENT_SELECT}&order=created_at.desc`,
   );
-  let list = res.data || [];
-  if (typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem("corpergo.demo.appointments");
-      if (raw) {
-        const demoList = JSON.parse(raw) as Appointment[];
-        for (const item of demoList) {
-          if (
-            item.patient_id === patientId &&
-            !list.some((a) => a.id === item.id || a.appointment_code === item.appointment_code)
-          ) {
-            list.unshift(item);
-          }
-        }
-      }
-    } catch {}
-  }
-  return { data: list, error: res.error };
 }
 
 export async function fetchMyNotifications(limit = 8) {
@@ -179,18 +155,38 @@ export async function fetchMyNotifications(limit = 8) {
   );
 }
 
-export async function fetchSlotsForClinicDate(clinicId: string, date: string) {
-  const [slotsRes, apptsRes] = await Promise.all([
+/** Max concurrent bookings per time slot at a clinic. */
+export const SLOTS_PER_HOUR = 2;
+
+const ACTIVE_BOOKING_STATUSES =
+  "pending,accepted,checked_in,completed,rescheduled";
+
+export async function fetchSlotsForClinicDate(
+  clinicId: string,
+  date: string,
+  options?: { excludeAppointmentId?: string },
+) {
+  const [slotsRes, apptsRes, blockedRes] = await Promise.all([
     supabaseRest<(ClinicSlot & { remaining_slots?: number })[]>(
       `clinic_slots?clinic_id=eq.${clinicId}&slot_date=eq.${date}&deleted_at=is.null&select=id,clinic_id,slot_date,start_time,end_time,is_available,physiotherapist_id&order=start_time.asc`,
     ),
-    supabaseRest<{ preferred_time: string; scheduled_time: string | null; status: string }[]>(
-      `appointments?clinic_id=eq.${clinicId}&or=(preferred_date.eq.${date},scheduled_date.eq.${date})&deleted_at=is.null&status=neq.cancelled&select=preferred_time,scheduled_time,status`,
+    supabaseRest<
+      { id: string; preferred_time: string; scheduled_time: string | null; status: string }[]
+    >(
+      `appointments?clinic_id=eq.${clinicId}&or=(preferred_date.eq.${date},scheduled_date.eq.${date})&deleted_at=is.null&status=in.(${ACTIVE_BOOKING_STATUSES})&select=id,preferred_time,scheduled_time,status`,
+    ),
+    supabaseRest<ClinicBlockedTime[]>(
+      `clinic_blocked_times?clinic_id=eq.${clinicId}&block_date=eq.${date}&select=id,clinic_id,block_date,start_time,reason`,
     ),
   ]);
 
   const rawSlots = slotsRes.data || [];
-  const appts = apptsRes.data || [];
+  const appts = (apptsRes.data || []).filter(
+    (a) => !options?.excludeAppointmentId || a.id !== options.excludeAppointmentId,
+  );
+  const blockedTimes = new Set(
+    (blockedRes.data || []).map((b) => b.start_time.slice(0, 5)),
+  );
 
   const bookedCounts = new Map<string, number>();
   for (const a of appts) {
@@ -203,7 +199,8 @@ export async function fetchSlotsForClinicDate(clinicId: string, date: string) {
   const updatedSlots = rawSlots.map((s) => {
     const timeKey = s.start_time.slice(0, 5);
     const booked = bookedCounts.get(timeKey) || 0;
-    const remaining = Math.max(0, 2 - booked);
+    let remaining = Math.max(0, SLOTS_PER_HOUR - booked);
+    if (blockedTimes.has(timeKey)) remaining = 0;
     return {
       ...s,
       is_available: remaining > 0,
@@ -211,10 +208,49 @@ export async function fetchSlotsForClinicDate(clinicId: string, date: string) {
     };
   });
 
+  for (const timeKey of blockedTimes) {
+    if (!updatedSlots.some((s) => s.start_time.slice(0, 5) === timeKey)) {
+      updatedSlots.push({
+        id: `blocked-${timeKey}`,
+        clinic_id: clinicId,
+        slot_date: date,
+        start_time: `${timeKey}:00`,
+        end_time: `${timeKey}:00`,
+        is_available: false,
+        remaining_slots: 0,
+        physiotherapist_id: null,
+      });
+    }
+  }
+
+  updatedSlots.sort((a, b) => a.start_time.localeCompare(b.start_time));
+
   return {
     ...slotsRes,
     data: updatedSlots,
+    blockedTimes: blockedRes.data || [],
   };
+}
+
+export async function fetchBlockedTimes(clinicId: string, date: string) {
+  return supabaseRest<ClinicBlockedTime[]>(
+    `clinic_blocked_times?clinic_id=eq.${clinicId}&block_date=eq.${date}&select=id,clinic_id,block_date,start_time,reason&order=start_time.asc`,
+  );
+}
+
+/** Check whether a time slot still has capacity (2 bookings max per hour). */
+export async function checkSlotCapacity(
+  clinicId: string,
+  date: string,
+  time: string,
+  excludeAppointmentId?: string,
+): Promise<{ available: boolean; remaining: number }> {
+  const timeKey = time.slice(0, 5);
+  const res = await fetchSlotsForClinicDate(clinicId, date, { excludeAppointmentId });
+  const slots = uniqueSlotTimes(res.data || []);
+  const match = slots.find((s) => s.start_time === timeKey);
+  const remaining = match?.remaining_slots ?? 0;
+  return { available: remaining > 0, remaining };
 }
 
 export async function ensureSlotsGenerated() {
@@ -246,15 +282,19 @@ export type BookAppointmentInput = {
 };
 
 export async function createAppointment(input: BookAppointmentInput) {
-  const clinicNames: Record<string, string> = {
-    "0e490158-e027-4948-940c-8881c3e74585": "Chansandra Clinic",
-    "f4d23f3d-24bb-489a-a51f-66bc61cb2fc9": "Balagere Clinic",
-    "bcaefc83-ae18-48c2-9d55-29d0fb178735": "Muthsandra Clinic",
-    "7080109b-d6e4-43d7-860b-05284b216eea": "Kannamangala Clinic",
-    "50a0aabb-db21-46d6-b218-c8b19f67990e": "Manduru Clinic",
-  };
+  const capacity = await checkSlotCapacity(
+    input.clinicId,
+    input.preferredDate,
+    input.preferredTime,
+  );
+  if (!capacity.available) {
+    return {
+      data: null,
+      error: "This time slot is fully booked. Please choose another time.",
+    };
+  }
 
-  const res = await supabaseRest<Appointment[]>("appointments", {
+  return supabaseRest<Appointment[]>("appointments", {
     method: "POST",
     body: JSON.stringify({
       appointment_code: "",
@@ -269,39 +309,6 @@ export async function createAppointment(input: BookAppointmentInput) {
       created_by: input.createdBy,
     }),
   });
-
-  if (typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem("corpergo.demo.appointments");
-      const list = raw ? JSON.parse(raw) : [];
-      const newAppt = res.data?.[0] || {
-        id: "appt-" + Date.now(),
-        created_at: new Date().toISOString(),
-        appointment_code: "CE-" + Math.floor(100000 + Math.random() * 900000),
-        patient_id: input.patientId,
-        clinic_id: input.clinicId,
-        category_id: input.categoryId,
-        preferred_date: input.preferredDate,
-        preferred_time: input.preferredTime,
-        scheduled_date: null,
-        scheduled_time: null,
-        symptoms: input.symptoms.trim(),
-        status: "pending",
-        physiotherapist_id: null,
-        created_by: input.createdBy,
-        clinics: { name: clinicNames[input.clinicId] || "CorpErgo Clinic", address: "Clinic Address", phone: "+91 98765 00000" },
-        physiotherapy_categories: { name: "Physiotherapy Care" },
-        patients: { id: input.patientId, date_of_birth: "1995-05-12", profiles: { full_name: "Patient User", phone: "+91 98765 43210" } }
-      };
-
-      if (!list.some((a: any) => a.id === newAppt.id)) {
-        list.unshift(newAppt);
-        window.localStorage.setItem("corpergo.demo.appointments", JSON.stringify(list));
-      }
-    } catch {}
-  }
-
-  return res;
 }
 
 export async function cancelAppointment(id: string, reason: string) {
@@ -321,40 +328,13 @@ export async function fetchAcceptedTickets() {
   if (!patientId) {
     return { data: [], error: null };
   }
-  const res = await supabaseRest<
+  return supabaseRest<
     (QrTicket & {
       appointments: Appointment | null;
     })[]
   >(
     `qr_tickets?scan_status=eq.active&deleted_at=is.null&select=id,token,scan_status,expires_at,appointment_id,appointments!inner(${APPOINTMENT_SELECT})&appointments.patient_id=eq.${patientId}&order=created_at.desc`,
   );
-  let list = res.data || [];
-
-  if (typeof window !== "undefined") {
-    try {
-      const raw = window.localStorage.getItem("corpergo.demo.appointments");
-      if (raw) {
-        const demoAppts = JSON.parse(raw) as Appointment[];
-        const accepted = demoAppts.filter(
-          (a) => a.patient_id === patientId && (a.status === "accepted" || a.status === "checked_in"),
-        );
-        for (const appt of accepted) {
-          if (!list.some((t) => t.appointment_id === appt.id || t.appointments?.appointment_code === appt.appointment_code)) {
-            list.unshift({
-              id: `ticket-${appt.id}`,
-              token: `CE-TICKET-${appt.appointment_code || appt.id}`,
-              scan_status: "active",
-              expires_at: `${appt.scheduled_date || appt.preferred_date}T23:59:59Z`,
-              appointment_id: appt.id,
-              appointments: appt,
-            });
-          }
-        }
-      }
-    } catch {}
-  }
-
-  return { data: list, error: res.error };
 }
 
 export async function updateMyProfile(patch: {
@@ -403,7 +383,12 @@ export function uniqueSlotTimes(slots: (ClinicSlot & { remaining_slots?: number 
   >();
   for (const s of slots) {
     const key = s.start_time.slice(0, 5);
-    const rem = s.remaining_slots !== undefined ? s.remaining_slots : (s.is_available ? 2 : 0);
+    const rem =
+      s.remaining_slots !== undefined
+        ? s.remaining_slots
+        : s.is_available
+          ? SLOTS_PER_HOUR
+          : 0;
     const existing = map.get(key);
     if (!existing) {
       map.set(key, {

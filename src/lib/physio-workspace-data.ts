@@ -1,10 +1,12 @@
 import { fetchMyProfile } from "@/lib/auth";
 import { fetchAssessableAppointments } from "@/lib/assessment-data";
+import { fetchClinics } from "@/lib/clinic-data";
 import {
   ageFromDob,
   fetchClinicAppointments,
   fetchMyPhysioId,
   fetchTodayQueue,
+  resolveStaffClinicId,
   type PhysioAppointment,
 } from "@/lib/physio-data";
 
@@ -25,6 +27,7 @@ export type PhysioWorkspaceBundle = {
   clinicName: string;
   todayQueue: PhysioAppointment[];
   pending: PhysioAppointment[];
+  cancelled: PhysioAppointment[];
   accepted: PhysioAppointment[];
   completedToday: PhysioAppointment[];
   assessable: PhysioAppointment[];
@@ -165,25 +168,35 @@ export function visitTimeLabel(a: PhysioAppointment) {
 
 export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
   const today = todayIso();
-  const [profileRes, physioRes, queueRes, pendingRes, assessRes, allRes] = await Promise.all([
-    fetchMyProfile(),
-    fetchMyPhysioId(),
-    fetchTodayQueue(),
-    fetchClinicAppointments("pending"),
-    fetchAssessableAppointments(),
-    fetchClinicAppointments(),
-  ]);
+  const [profileRes, physioRes, queueRes, pendingRes, cancelledRes, assessRes, allRes, clinicId] =
+    await Promise.all([
+      fetchMyProfile(),
+      fetchMyPhysioId(),
+      fetchTodayQueue(),
+      fetchClinicAppointments("pending"),
+      fetchClinicAppointments("cancelled"),
+      fetchAssessableAppointments(),
+      fetchClinicAppointments(),
+      resolveStaffClinicId(),
+    ]);
 
   const queue = queueRes.data || [];
   const pending = pendingRes.data || [];
+  const cancelled = cancelledRes.data || [];
   const assessable = assessRes.data || [];
   const all = allRes.data || [];
 
-  const clinicName =
+  let clinicName =
     queue[0]?.clinics?.name ||
     pending[0]?.clinics?.name ||
     all[0]?.clinics?.name ||
     "CorpErgo Clinic";
+
+  if (clinicName === "CorpErgo Clinic" && clinicId) {
+    const clinicsRes = await fetchClinics();
+    const match = clinicsRes.data?.find((c) => c.id === clinicId);
+    if (match) clinicName = match.name;
+  }
 
   const completedToday = queue.filter((a) => a.status === "completed");
   const accepted = queue.filter((a) => a.status === "accepted");
@@ -199,6 +212,7 @@ export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
     clinicName,
     todayQueue: queue,
     pending,
+    cancelled: cancelled.slice(0, 10),
     accepted,
     completedToday,
     assessable: assessable.slice(0, 8),

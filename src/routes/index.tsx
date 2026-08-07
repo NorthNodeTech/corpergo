@@ -43,6 +43,7 @@ import reelTherapyInsights from "@/assets/reels/reel-therapy-insights.webp";
 import reelHandsOnCare from "@/assets/reels/reel-hands-on-care.webp";
 import reelStrongerEveryday from "@/assets/reels/reel-stronger-everyday.webp";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -161,40 +162,58 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
       initial={{ y: -40, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className={`fixed inset-x-0 top-0 z-50 transition-[padding] duration-300 ${
-        scrolled ? "py-1" : "py-1.5"
-      }`}
+      className={cn(
+        "fixed inset-x-0 top-0 z-50 transition-[padding] duration-300",
+        scrolled ? "py-1" : "py-1.5",
+      )}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 transition-all duration-300">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 transition-all duration-300">
         <div
-          className={`flex items-center justify-between rounded-2xl px-2.5 sm:px-4 py-1 sm:py-1.5 transition-all duration-300 ${
-            scrolled
-              ? "glass shadow-[var(--shadow-soft)]"
-              : "bg-white/55 shadow-sm ring-1 ring-black/[0.04] backdrop-blur-md lg:bg-transparent lg:shadow-none lg:ring-0 lg:backdrop-blur-none"
-          }`}
+          className={cn(
+            "flex min-w-0 items-center justify-between gap-2 rounded-2xl px-2 py-1.5 sm:gap-3 sm:px-4 sm:py-1.5 transition-all duration-300",
+            "lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-x-10 lg:rounded-none lg:px-0 lg:py-0",
+            scrolled && "max-lg:glass max-lg:shadow-[var(--shadow-soft)]",
+            !scrolled && "bg-transparent shadow-none ring-0",
+          )}
         >
           <Link
             to="/"
-            className="group flex items-center gap-3 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/40 focus-visible:ring-offset-2 rounded-lg"
+            className="group flex min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:flex-none lg:shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--sage)]/40 focus-visible:ring-offset-2 rounded-lg"
             aria-label="CorpErgo Physiotherapy — Home"
           >
-            <div className="flex items-center justify-center rounded-2xl bg-white p-1.5 sm:p-2 shadow-sm ring-1 ring-black/10 shrink-0 transition-transform duration-300 group-hover:scale-105">
+            <div className="flex shrink-0 items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-black/10 transition-transform duration-300 group-hover:scale-105 sm:rounded-2xl sm:p-2">
               <img
                 src={logoImg}
                 alt="CorpErgo"
-                className="h-9 w-auto sm:h-11 lg:h-13 object-contain"
+                className="h-8 w-auto object-contain sm:h-10 lg:h-14"
                 decoding="async"
               />
             </div>
-            <div className="font-black text-[var(--ink)] text-base sm:text-lg lg:text-2xl leading-none tracking-widest drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]">
-              CORPERGO
-              <div className="text-[10px] lg:text-[11px] font-extrabold text-[var(--structure-maroon)] tracking-[0.18em] mt-1 drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]">
+            <div
+              className={cn(
+                "min-w-0 leading-none",
+                scrolled
+                  ? "text-[var(--ink)]"
+                  : "text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] lg:text-[var(--ink)] lg:drop-shadow-[0_0_10px_rgba(255,255,255,0.9)]",
+              )}
+            >
+              <div className="truncate text-sm font-black tracking-[0.14em] sm:text-base lg:text-2xl lg:tracking-widest">
+                CORPERGO
+              </div>
+              <div
+                className={cn(
+                  "mt-0.5 max-w-[11rem] font-black leading-[1.2] tracking-[0.06em] text-[7px] min-[380px]:text-[8px] sm:max-w-none sm:truncate sm:text-[9px] lg:text-[11px] lg:tracking-[0.18em]",
+                  scrolled
+                    ? "text-[var(--structure-maroon)]"
+                    : "text-white lg:text-[var(--structure-maroon)]",
+                )}
+              >
                 PHYSIOTHERAPY AND REHABILITATION
               </div>
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center justify-center gap-1 shrink-0">
             {items.map(([label, href]) => (
               <a
                 key={label}
@@ -206,25 +225,34 @@ function Nav({ onLoginClick }: { onLoginClick: () => void }) {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2 lg:gap-3">
             <button
+              type="button"
               onClick={onLoginClick}
-              className="inline-flex items-center rounded-full bg-[var(--structure-maroon)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md hover:bg-[var(--pink-hover)] transition-all hover:scale-105 cursor-pointer focus:outline-none"
+              className="inline-flex shrink-0 items-center rounded-full bg-[var(--structure-maroon)] px-3.5 py-2 text-xs font-bold text-white shadow-md transition-all hover:bg-[var(--pink-hover)] cursor-pointer focus:outline-none sm:px-4 sm:text-sm"
             >
               Login
             </button>
             <button
+              type="button"
               onClick={onLoginClick}
-              className="group inline-flex items-center gap-1 rounded-full bg-[var(--structure-maroon)] hover:bg-[var(--pink-hover)] px-3 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 cursor-pointer focus:outline-none"
+              className="group hidden sm:inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--structure-maroon)] px-3 py-1.5 text-xs font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:bg-[var(--pink-hover)] hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 cursor-pointer focus:outline-none lg:text-sm"
             >
               <span>
-                Book<span className="hidden sm:inline"> Appointment</span>
+                Book<span className="hidden md:inline"> Appointment</span>
               </span>
               <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </button>
             <button
+              type="button"
               onClick={() => setOpen((v) => !v)}
-              className="lg:hidden grid h-8 w-8 place-items-center rounded-xl bg-white/60 ring-1 ring-black/5"
+              className={cn(
+                "lg:hidden grid h-9 w-9 shrink-0 place-items-center rounded-xl transition-colors",
+                scrolled
+                  ? "bg-white/80 ring-1 ring-black/8 text-[var(--ink)]"
+                  : "bg-white/20 text-white ring-1 ring-white/30 backdrop-blur-sm",
+              )}
+              aria-label={open ? "Close menu" : "Open menu"}
             >
               {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>

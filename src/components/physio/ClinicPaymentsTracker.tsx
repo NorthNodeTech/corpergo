@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   TrendingUp,
   Receipt,
-  Search,
   X,
 } from "lucide-react";
 
@@ -51,13 +50,12 @@ function getCurrentTimeStr() {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
 }
 
-export function ClinicPaymentsTracker({ clinicId = "clinic-1", clinicName = "CorpErgo Clinic" }: ClinicPaymentsTrackerProps) {
-  const storageKey = `${STORAGE_PREFIX}${clinicId}`;
+export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic" }: ClinicPaymentsTrackerProps) {
+  const storageKey = clinicId ? `${STORAGE_PREFIX}${clinicId}` : null;
   
   const [selectedDate, setSelectedDate] = useState<string>(getTodayIso());
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Form State
@@ -70,50 +68,25 @@ export function ClinicPaymentsTracker({ clinicId = "clinic-1", clinicName = "Cor
 
   // Load stored payments
   useEffect(() => {
+    if (!storageKey) {
+      setPayments([]);
+      return;
+    }
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         setPayments(JSON.parse(raw));
       } else {
-        // Seed default sample payments for demo date
-        const today = getTodayIso();
-        const seed: PaymentRecord[] = [
-          {
-            id: `pay-${Date.now()}-1`,
-            clinicId,
-            patientName: "Rahul Sharma",
-            patientPhone: "+91 98765 12345",
-            amount: 850,
-            paymentMethod: "UPI",
-            notes: "Physiotherapy Assessment & Spine Session",
-            date: today,
-            time: "10:30 AM",
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: `pay-${Date.now()}-2`,
-            clinicId,
-            patientName: "Priya Patel",
-            patientPhone: "+91 98123 45678",
-            amount: 1200,
-            paymentMethod: "Cash",
-            notes: "Post-op Knee Rehab (Session 3)",
-            date: today,
-            time: "11:45 AM",
-            createdAt: new Date().toISOString(),
-          },
-        ];
-        setPayments(seed);
-        localStorage.setItem(storageKey, JSON.stringify(seed));
+        setPayments([]);
       }
     } catch {
       setPayments([]);
     }
-  }, [storageKey, clinicId]);
+  }, [storageKey]);
 
-  // Save payments to localStorage
   const savePayments = (updated: PaymentRecord[]) => {
     setPayments(updated);
+    if (!storageKey) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify(updated));
     } catch (e) {
@@ -123,7 +96,7 @@ export function ClinicPaymentsTracker({ clinicId = "clinic-1", clinicName = "Cor
 
   const handleAddPayment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!patientName.trim() || !patientPhone.trim() || !amount || Number(amount) <= 0) {
+    if (!clinicId || !patientName.trim() || !patientPhone.trim() || !amount || Number(amount) <= 0) {
       return;
     }
 
@@ -165,18 +138,8 @@ export function ClinicPaymentsTracker({ clinicId = "clinic-1", clinicName = "Cor
 
   // Filter payments by selected date & search query
   const dayPayments = useMemo(() => {
-    return payments.filter((p) => {
-      const matchesDate = p.date === selectedDate;
-      if (!matchesDate) return false;
-      if (!searchQuery.trim()) return true;
-      const q = searchQuery.toLowerCase();
-      return (
-        p.patientName.toLowerCase().includes(q) ||
-        p.patientPhone.toLowerCase().includes(q) ||
-        (p.notes && p.notes.toLowerCase().includes(q))
-      );
-    });
-  }, [payments, selectedDate, searchQuery]);
+    return payments.filter((p) => p.date === selectedDate);
+  }, [payments, selectedDate]);
 
   // Daily Totals & Method Breakdowns
   const totalDayCollection = useMemo(() => {
@@ -237,36 +200,18 @@ export function ClinicPaymentsTracker({ clinicId = "clinic-1", clinicName = "Cor
       {/* Filter & Summary Section */}
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         {/* Date Selector & Search */}
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--ivory)]/40 p-4 space-y-3">
-          <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)] block mb-1">
-              Select Collection Date
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
-              />
-              <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--ink-soft)] pointer-events-none" />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)] block mb-1">
-              Filter by Patient Name / Phone
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search patient..."
-                className="w-full rounded-xl border border-[var(--border)] bg-white pl-9 pr-3 py-2 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
-              />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--ink-soft)]" />
-            </div>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--ivory)]/40 p-4">
+          <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)] block mb-1">
+            Select Collection Date
+          </label>
+          <div className="relative">
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+            />
+            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--ink-soft)] pointer-events-none" />
           </div>
         </div>
 

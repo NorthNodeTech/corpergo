@@ -29,8 +29,16 @@ export const Route = createFileRoute("/physio/requests")({
 });
 
 type ModalMode = "accept" | "reschedule" | null;
+type InboxTab = "pending" | "cancelled" | "rejected";
+
+const TABS: { id: InboxTab; label: string }[] = [
+  { id: "pending", label: "Pending" },
+  { id: "cancelled", label: "Cancelled" },
+  { id: "rejected", label: "Rejected" },
+];
 
 function AppointmentRequestsPage() {
+  const [tab, setTab] = useState<InboxTab>("pending");
   const [items, setItems] = useState<PhysioAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [physioId, setPhysioId] = useState<string | null>(null);
@@ -39,21 +47,20 @@ function AppointmentRequestsPage() {
   const [mode, setMode] = useState<ModalMode>(null);
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState<string | null>(null);
-  const [slotId, setSlotId] = useState<string | null>(null);
   const [slots, setSlots] = useState<
-    { start_time: string; end_time: string; available: boolean; id?: string }[]
+    { start_time: string; end_time: string; available: boolean; remaining_slots: number }[]
   >([]);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function reload() {
+  async function reload(activeTab: InboxTab = tab) {
     setLoading(true);
-    const [pending, me, profile] = await Promise.all([
-      fetchClinicAppointments("pending"),
+    const [listRes, me, profile] = await Promise.all([
+      fetchClinicAppointments(activeTab),
       fetchMyPhysioId(),
       fetchMyProfile(),
     ]);
-    const fetchedItems = pending.data || [];
+    const fetchedItems = listRes.data || [];
     setItems(fetchedItems);
     setPhysioId(me.data?.[0]?.id || null);
 
@@ -66,29 +73,22 @@ function AppointmentRequestsPage() {
   }
 
   useEffect(() => {
-    void reload();
-  }, []);
+    void reload(tab);
+  }, [tab]);
 
   const dateIso = date
     ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
     : null;
 
   useEffect(() => {
-    if (!active || !dateIso || !mode) {
+    if (!active || !dateIso || mode !== "reschedule") {
       setSlots([]);
       return;
     }
-    void fetchAvailableSlots(active.clinic_id, dateIso).then((res) => {
-      const raw = res.data || [];
-      const times = uniqueSlotTimes(raw);
-      setSlots(
-        times.map((t) => {
-          const match = raw.find(
-            (s) => s.start_time.slice(0, 5) === t.start_time && s.is_available,
-          );
-          return { ...t, id: match?.id };
-        }),
-      );
+    void fetchAvailableSlots(active.clinic_id, dateIso, {
+      excludeAppointmentId: active.id,
+    }).then((res) => {
+      setSlots(uniqueSlotTimes(res.data || []));
     });
   }, [active, dateIso, mode]);
 
@@ -96,10 +96,8 @@ function AppointmentRequestsPage() {
     setActive(a);
     setMode("accept");
     setReason("");
-    const preferred = new Date(a.preferred_date + "T12:00:00");
-    setDate(preferred);
-    setTime(a.preferred_time.slice(0, 5));
-    setSlotId(null);
+    setDate(undefined);
+    setTime(null);
   }
 
   function openReschedule(a: PhysioAppointment) {
@@ -108,7 +106,14 @@ function AppointmentRequestsPage() {
     setReason("");
     setDate(undefined);
     setTime(null);
-    setSlotId(null);
+  }
+
+  function closeModal() {
+    setMode(null);
+    setActive(null);
+    setDate(undefined);
+    setTime(null);
+    setReason("");
   }
 
   async function onReject(a: PhysioAppointment) {
@@ -133,56 +138,71 @@ function AppointmentRequestsPage() {
     }
   }
 
-  async function confirmModal() {
-    if (!active || !dateIso || !time) {
-      toast.error("Choose date and time");
-      return;
-    }
+  async function confirmAccept() {
+    if (!active) return;
+
     let pId = physioId;
     if (!pId) {
       const me = await fetchMyPhysioId();
-      pId = me.data?.[0]?.id || "5a5d7f58-167e-4942-a5d7-d65dd5625aff";
+      pId = me.data?.[0]?.id || null;
     }
-
-    setBusy(true);
-    if (mode === "accept") {
-      const { error } = await acceptAppointment({
-        appointmentId: active.id,
-        physiotherapistId: pId,
-        scheduledDate: dateIso,
-        scheduledTime: time,
-        slotId: slotId || undefined,
-      });
-      setBusy(false);
-      if (error) toast.error(error);
-      else {
-        toast.success("Accepted — QR ticket generated");
-        setMode(null);
-        setActive(null);
-        void reload();
-      }
+    if (!pId) {
+      toast.error("Could not resolve physiotherapist profile.");
       return;
     }
 
-    if (mode === "reschedule") {
-      const { error } = await rescheduleAppointment({
-        appointmentId: active.id,
-        patientId: active.patient_id,
-        appointmentCode: active.appointment_code,
-        physiotherapistId: pId,
-        scheduledDate: dateIso,
-        scheduledTime: time,
-        reason: reason || "Rescheduled by clinic",
-        slotId: slotId || undefined,
-      });
-      setBusy(false);
-      if (error) toast.error(error);
-      else {
-        toast.success("Rescheduled — patient notified");
-        setMode(null);
-        setActive(null);
-        void reload();
-      }
+    setBusy(true);
+    const { error } = await acceptAppointment({
+      appointmentId: active.id,
+      physiotherapistId: pId,
+      scheduledDate: active.preferred_date,
+      scheduledTime: active.preferred_time.slice(0, 5),
+      clinicId: active.clinic_id,
+    });
+    setBusy(false);
+
+    if (error) toast.error(error);
+    else {
+      toast.success("Accepted — QR ticket generated");
+      closeModal();
+      void reload();
+    }
+  }
+
+  async function confirmReschedule() {
+    if (!active || !dateIso || !time) {
+      toast.error("Choose a new date and time");
+      return;
+    }
+
+    let pId = physioId;
+    if (!pId) {
+      const me = await fetchMyPhysioId();
+      pId = me.data?.[0]?.id || null;
+    }
+    if (!pId) {
+      toast.error("Could not resolve physiotherapist profile.");
+      return;
+    }
+
+    setBusy(true);
+    const { error } = await rescheduleAppointment({
+      appointmentId: active.id,
+      patientId: active.patient_id,
+      appointmentCode: active.appointment_code,
+      physiotherapistId: pId,
+      scheduledDate: dateIso,
+      scheduledTime: time,
+      reason: reason.trim() || "Rescheduled by clinic",
+      clinicId: active.clinic_id,
+    });
+    setBusy(false);
+
+    if (error) toast.error(error);
+    else {
+      toast.success("Rescheduled — patient notified");
+      closeModal();
+      void reload();
     }
   }
 
@@ -191,8 +211,26 @@ function AppointmentRequestsPage() {
       <PortalPageHeader
         eyebrow={`Inbox · ${clinicName}`}
         title="Appointment requests"
-        description={`Review pending bookings routed specifically to ${clinicName}. Accepting a request confirms the appointment and generates a QR ticket for the patient.`}
+        description={`Review pending bookings and track cancelled or rejected visits for ${clinicName}.`}
       />
+
+      <div className="mb-6 flex flex-wrap gap-2">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-bold transition-colors",
+              tab === t.id
+                ? "bg-[var(--sage)] text-white"
+                : "bg-white text-[var(--ink-soft)] ring-1 ring-black/5 hover:bg-[var(--ivory)]",
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <div className="grid gap-4">
@@ -203,8 +241,20 @@ function AppointmentRequestsPage() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={CalendarClock}
-          title="No pending requests"
-          description="New patient booking requests for your clinic will appear here."
+          title={
+            tab === "pending"
+              ? "No pending requests"
+              : tab === "cancelled"
+                ? "No cancelled appointments"
+                : "No rejected appointments"
+          }
+          description={
+            tab === "pending"
+              ? "New patient booking requests for your clinic will appear here."
+              : tab === "cancelled"
+                ? "When patients cancel visits, they will appear here so your team can follow up."
+                : "Rejected booking requests will appear here."
+          }
         />
       ) : (
         <div className="grid gap-4">
@@ -239,10 +289,25 @@ function AppointmentRequestsPage() {
                 <p className="mt-3 text-sm text-[var(--ink-soft)] leading-relaxed">{a.symptoms}</p>
 
                 <div className="mt-3 text-sm font-semibold text-[var(--ink)]">
-                  Requested {formatDateLabel(a.preferred_date)} ·{" "}
-                  {formatTimeLabel(a.preferred_time)}
+                  {tab === "cancelled" && a.cancelled_at
+                    ? `Cancelled ${formatDateLabel(a.cancelled_at.slice(0, 10))}`
+                    : `Requested ${formatDateLabel(a.preferred_date)}`}{" "}
+                  · {formatTimeLabel(a.scheduled_time || a.preferred_time)}
                 </div>
 
+                {tab === "cancelled" && a.cancellation_reason ? (
+                  <p className="mt-2 text-sm text-rose-700 bg-rose-50 rounded-xl px-3 py-2 ring-1 ring-rose-100">
+                    Patient reason: {a.cancellation_reason}
+                  </p>
+                ) : null}
+
+                {tab === "rejected" && a.rejection_reason ? (
+                  <p className="mt-2 text-sm text-rose-700 bg-rose-50 rounded-xl px-3 py-2 ring-1 ring-rose-100">
+                    Rejection reason: {a.rejection_reason}
+                  </p>
+                ) : null}
+
+                {tab === "pending" ? (
                 <div className="mt-5 flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -269,20 +334,65 @@ function AppointmentRequestsPage() {
                     <X className="h-4 w-4" /> Reject
                   </button>
                 </div>
+                ) : null}
               </article>
             );
           })}
         </div>
       )}
 
-      {mode && active ? (
+      {mode === "accept" && active ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] bg-white p-6 shadow-xl">
-            <h3 className="text-xl font-extrabold text-[var(--ink)]">
-              {mode === "accept" ? "Accept & confirm slot" : "Reschedule appointment"}
-            </h3>
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-xl">
+            <h3 className="text-xl font-extrabold text-[var(--ink)]">Accept appointment</h3>
             <p className="mt-1 text-sm text-[var(--ink-soft)]">
               {active.patients?.profiles?.full_name} · {active.appointment_code}
+            </p>
+
+            <div className="mt-5 rounded-2xl bg-emerald-50 px-4 py-4 ring-1 ring-emerald-100">
+              <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                Patient requested time
+              </p>
+              <p className="mt-2 text-lg font-extrabold text-[var(--ink)]">
+                {formatDateLabel(active.preferred_date)} ·{" "}
+                {formatTimeLabel(active.preferred_time)}
+              </p>
+              <p className="mt-2 text-xs text-[var(--ink-soft)]">
+                Accepting confirms this slot and generates a QR ticket for the patient.
+              </p>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeModal}
+                className="rounded-full px-4 py-2.5 text-sm font-bold text-[var(--ink-soft)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void confirmAccept()}
+                className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+              >
+                {busy ? "Accepting…" : "Confirm accept"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {mode === "reschedule" && active ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] bg-white p-6 shadow-xl">
+            <h3 className="text-xl font-extrabold text-[var(--ink)]">Reschedule appointment</h3>
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">
+              {active.patients?.profiles?.full_name} · {active.appointment_code}
+            </p>
+            <p className="mt-2 text-xs text-[var(--ink-soft)]">
+              Originally requested {formatDateLabel(active.preferred_date)} ·{" "}
+              {formatTimeLabel(active.preferred_time)}. Pick a new date and time below.
             </p>
 
             <div className="mt-4 flex justify-center rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -292,7 +402,6 @@ function AppointmentRequestsPage() {
                 onSelect={(d) => {
                   setDate(d);
                   setTime(null);
-                  setSlotId(null);
                 }}
                 disabled={(d) => {
                   const today = new Date();
@@ -321,47 +430,54 @@ function AppointmentRequestsPage() {
               />
             </div>
 
-            <div className="mt-4 grid grid-cols-3 gap-2">
-              {slots.map((s) => (
-                <button
-                  key={s.start_time}
-                  type="button"
-                  disabled={!s.available}
-                  onClick={() => {
-                    setTime(s.start_time);
-                    setSlotId(s.id || null);
-                  }}
-                  className={cn(
-                    "rounded-2xl px-2 py-2.5 text-xs font-bold ring-1",
-                    !s.available
-                      ? "bg-slate-100 text-slate-400 line-through"
-                      : time === s.start_time
-                        ? "bg-[var(--sage)] text-white ring-[var(--sage)]"
-                        : "bg-[var(--ivory)] ring-black/5",
-                  )}
-                >
-                  {formatTimeLabel(s.start_time)}
-                </button>
-              ))}
-            </div>
+            {dateIso ? (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {slots.length === 0 ? (
+                  <p className="col-span-3 text-center text-xs text-[var(--ink-soft)] py-2">
+                    No available slots on this date.
+                  </p>
+                ) : (
+                  slots.map((s) => (
+                    <button
+                      key={s.start_time}
+                      type="button"
+                      disabled={!s.available}
+                      onClick={() => setTime(s.start_time)}
+                      className={cn(
+                        "rounded-2xl px-2 py-2.5 text-xs font-bold ring-1",
+                        !s.available
+                          ? "bg-slate-100 text-slate-400 line-through cursor-not-allowed"
+                          : time === s.start_time
+                            ? "bg-[var(--sage)] text-white ring-[var(--sage)]"
+                            : "bg-[var(--ivory)] ring-black/5",
+                      )}
+                    >
+                      {formatTimeLabel(s.start_time)}
+                      {s.available && s.remaining_slots === 1 ? (
+                        <span className="block text-[9px] font-normal opacity-80">1 left</span>
+                      ) : null}
+                    </button>
+                  ))
+                )}
+              </div>
+            ) : (
+              <p className="mt-4 text-center text-xs text-[var(--ink-soft)]">
+                Select a date to see available times.
+              </p>
+            )}
 
-            {mode === "reschedule" ? (
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Reschedule note for the patient"
-                className="mt-4 w-full rounded-2xl bg-[var(--ivory)] px-4 py-3 text-sm ring-1 ring-black/5"
-                rows={3}
-              />
-            ) : null}
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Reschedule note for the patient (optional)"
+              className="mt-4 w-full rounded-2xl bg-[var(--ivory)] px-4 py-3 text-sm ring-1 ring-black/5"
+              rows={3}
+            />
 
             <div className="mt-6 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setMode(null);
-                  setActive(null);
-                }}
+                onClick={closeModal}
                 className="rounded-full px-4 py-2.5 text-sm font-bold text-[var(--ink-soft)]"
               >
                 Cancel
@@ -369,10 +485,10 @@ function AppointmentRequestsPage() {
               <button
                 type="button"
                 disabled={busy || !time}
-                onClick={() => void confirmModal()}
+                onClick={() => void confirmReschedule()}
                 className="rounded-full bg-[var(--sage)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
               >
-                {busy ? "Saving…" : "Confirm"}
+                {busy ? "Saving…" : "Confirm reschedule"}
               </button>
             </div>
           </div>

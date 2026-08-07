@@ -40,6 +40,10 @@ function SignupPage() {
       setError("Please enter your full name.");
       return;
     }
+    if (!phone.trim()) {
+      setError("Please enter your mobile number.");
+      return;
+    }
     if (!email.trim() || !email.includes("@")) {
       setError("Please enter a valid email address.");
       return;
@@ -67,7 +71,6 @@ function SignupPage() {
       return;
     }
 
-    // If session was created (email auto-confirmed), go straight to patient portal
     if (getStoredSession()) {
       setSuccess("Account created. Opening your portal…");
       window.setTimeout(() => {
@@ -83,31 +86,31 @@ function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--ivory)] grid lg:grid-cols-2">
+    <main className="min-h-dvh bg-[var(--ivory)] lg:grid lg:h-dvh lg:grid-cols-2 lg:overflow-hidden">
       <div
-        className="relative hidden lg:block overflow-hidden"
+        className="relative hidden overflow-hidden lg:block"
         style={{ background: "linear-gradient(135deg, #06261E 0%, #0F6B58 60%, #00A896 100%)" }}
       >
         <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[var(--pink-main)]/25 blur-3xl" />
         <div className="absolute inset-0 grain opacity-60" />
 
-        <div className="relative h-full flex flex-col justify-between p-12 text-white">
+        <div className="relative flex h-full flex-col justify-between p-10 xl:p-12 text-white">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-medium text-white/80 transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" /> Back home
           </Link>
 
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-3.5 py-1.5 text-xs font-semibold ring-1 ring-white/20">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold ring-1 ring-white/20 backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Patient registration
             </div>
-            <h1 className="mt-6 text-5xl font-extrabold tracking-tight leading-[1.05] text-balance">
+            <h1 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-balance xl:text-5xl">
               Start your recovery with CorpErgo.
             </h1>
-            <p className="mt-5 text-white/85 text-lg max-w-md">
+            <p className="mt-5 max-w-md text-lg text-white/85">
               Create a patient account to book assessments, view prescriptions,
               and follow your progress across our Bengaluru clinics.
             </p>
@@ -117,7 +120,7 @@ function SignupPage() {
             <img
               src={logoImg}
               alt="CorpErgo"
-              className="h-16 w-auto object-contain sm:h-20"
+              className="h-16 w-auto object-contain xl:h-20"
               width={96}
               height={96}
               decoding="async"
@@ -126,168 +129,172 @@ function SignupPage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center p-6 sm:p-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
-        >
-          <div className="lg:hidden mb-8 space-y-5">
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 text-sm font-medium text-[var(--ink-soft)]"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back to login
-            </Link>
-            <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/10">
-              <img
-                src={logoImg}
-                alt="CorpErgo"
-                className="h-12 w-auto object-contain sm:h-14"
-                width={72}
-                height={72}
-                decoding="async"
-              />
-            </div>
-          </div>
-
-          <h2 className="text-3xl font-extrabold tracking-tight text-[var(--ink)]">
-            Create patient account
-          </h2>
-          <p className="mt-2 text-[var(--ink-soft)]">
-            Physiotherapist and admin accounts are issued by CorpErgo — only
-            patients can self-register.
-          </p>
-
-          <form className="mt-8 space-y-4" onSubmit={onSubmit}>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                Full name
-              </label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Your name"
-                autoComplete="name"
-                className="mt-2 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-5 py-3.5 text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@email.com"
-                autoComplete="email"
-                className="mt-2 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-5 py-3.5 text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                Phone <span className="font-medium normal-case tracking-normal">(optional)</span>
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 …"
-                autoComplete="tel"
-                className="mt-2 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-5 py-3.5 text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                Password
-              </label>
-              <div className="relative mt-2">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  autoComplete="new-password"
-                  className="w-full rounded-2xl bg-white ring-1 ring-black/[0.08] pl-5 pr-12 py-3.5 text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-[var(--ink-soft)] hover:text-[var(--sage)] focus:outline-none rounded-lg transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+      <div className="flex min-h-dvh flex-col overflow-y-auto overscroll-contain lg:min-h-0 lg:h-full">
+        <div className="flex flex-1 flex-col justify-center px-4 py-6 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-auto w-full max-w-md"
+          >
+            <div className="rounded-3xl bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-7 lg:bg-transparent lg:p-0 lg:shadow-none lg:ring-0">
+              <div className="mb-6 space-y-4 lg:hidden">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-[var(--ink-soft)]"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
+                  <ArrowLeft className="h-4 w-4" /> Back to login
+                </Link>
+                <div className="flex justify-center">
+                  <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/10">
+                    <img
+                      src={logoImg}
+                      alt="CorpErgo"
+                      className="h-11 w-auto object-contain sm:h-12"
+                      width={72}
+                      height={72}
+                      decoding="async"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                Confirm password
-              </label>
-              <div className="relative mt-2">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat password"
-                  autoComplete="new-password"
-                  className="w-full rounded-2xl bg-white ring-1 ring-black/[0.08] pl-5 pr-12 py-3.5 text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
-                />
+              <h2 className="text-2xl font-extrabold tracking-tight text-[var(--ink)] sm:text-3xl">
+                Create patient account
+              </h2>
+              <p className="mt-2 text-sm text-[var(--ink-soft)] sm:text-base">
+                Physiotherapist and admin accounts are issued by CorpErgo — only
+                patients can self-register.
+              </p>
+
+              <form className="mt-6 space-y-3 sm:mt-8 sm:space-y-4" onSubmit={onSubmit}>
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                    Full name
+                  </label>
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Your name"
+                    autoComplete="name"
+                    className="mt-1.5 w-full rounded-2xl bg-white px-4 py-3 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)] sm:mt-2 sm:px-5 sm:py-3.5"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@email.com"
+                    autoComplete="email"
+                    required
+                    className="mt-1.5 w-full rounded-2xl bg-white px-4 py-3 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)] sm:mt-2 sm:px-5 sm:py-3.5"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                    Mobile number
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 9876543210"
+                    autoComplete="tel"
+                    required
+                    className="mt-1.5 w-full rounded-2xl bg-white px-4 py-3 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)] sm:mt-2 sm:px-5 sm:py-3.5"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                    Password
+                  </label>
+                  <div className="relative mt-1.5 sm:mt-2">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      autoComplete="new-password"
+                      className="w-full rounded-2xl bg-white py-3 pl-4 pr-11 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)] sm:py-3.5 sm:pl-5 sm:pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--ink-soft)] transition-colors hover:text-[var(--sage)] focus:outline-none"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                    Confirm password
+                  </label>
+                  <div className="relative mt-1.5 sm:mt-2">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Repeat password"
+                      autoComplete="new-password"
+                      className="w-full rounded-2xl bg-white py-3 pl-4 pr-11 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)] sm:py-3.5 sm:pl-5 sm:pr-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[var(--ink-soft)] transition-colors hover:text-[var(--sage)] focus:outline-none"
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {error ? (
+                  <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100">
+                    {error}
+                  </p>
+                ) : null}
+                {success ? (
+                  <p className="rounded-xl bg-[var(--sage)]/10 px-4 py-3 text-sm text-[var(--sage-deep)] ring-1 ring-[var(--sage)]/20">
+                    {success}
+                  </p>
+                ) : null}
+
                 <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword((v) => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-[var(--ink-soft)] hover:text-[var(--sage)] focus:outline-none rounded-lg transition-colors"
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  type="submit"
+                  disabled={loading}
+                  className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--pink-main)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:bg-[var(--pink-hover)] hover:shadow-[var(--shadow-elev)] disabled:pointer-events-none disabled:opacity-60 sm:py-3.5"
                 >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                  {loading ? "Creating account…" : "Create patient account"}
+                  {!loading ? (
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  ) : null}
                 </button>
-              </div>
+              </form>
+
+              <p className="mt-5 pb-2 text-center text-sm text-[var(--ink-soft)] sm:mt-6">
+                Already registered?{" "}
+                <Link to="/login" className="font-semibold text-[var(--sage)] hover:underline">
+                  Sign in
+                </Link>
+              </p>
             </div>
-
-            {error ? (
-              <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 ring-1 ring-red-100">
-                {error}
-              </p>
-            ) : null}
-            {success ? (
-              <p className="text-sm text-[var(--sage-deep)] bg-[var(--sage)]/10 rounded-xl px-4 py-3 ring-1 ring-[var(--sage)]/20">
-                {success}
-              </p>
-            ) : null}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="group w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-5 py-3.5 text-sm font-semibold text-white transition-all shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-elev)] hover:-translate-y-0.5 disabled:opacity-60 disabled:pointer-events-none"
-            >
-              {loading ? "Creating account…" : "Create patient account"}
-              {!loading ? (
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              ) : null}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-[var(--ink-soft)]">
-            Already registered?{" "}
-            <Link to="/login" className="font-semibold text-[var(--sage)] hover:underline">
-              Sign in
-            </Link>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </main>
   );

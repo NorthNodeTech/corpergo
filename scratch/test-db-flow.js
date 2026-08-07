@@ -15,7 +15,7 @@ async function testRealFlow() {
   // 2. Login as physio chansandra
   const chansandraLogin = await supabase.auth.signInWithPassword({
     email: 'physio.chansandra@corpergo.in',
-    password: '123456',
+    password: 'Chansandra',
   });
   console.log('Physio Chansandra User ID:', chansandraLogin.data?.user?.id, 'Error:', chansandraLogin.error?.message);
 
@@ -41,7 +41,7 @@ async function testRealFlow() {
   // 3. Login as physio balagere
   const balagereLogin = await supabase.auth.signInWithPassword({
     email: 'physio.balagere@corpergo.in',
-    password: '123456',
+    password: 'Balagere',
   });
   console.log('Physio Balagere User ID:', balagereLogin.data?.user?.id, 'Error:', balagereLogin.error?.message);
 
