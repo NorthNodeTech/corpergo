@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DirectBookingRouteImport } from './routes/direct-booking'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PatientRouteImport } from './routes/patient'
 import { Route as PhysioRouteImport } from './routes/physio'
@@ -28,6 +29,7 @@ import { Route as PhysioDashboardRouteImport } from './routes/physio/dashboard'
 import { Route as PhysioQueueRouteImport } from './routes/physio/queue'
 import { Route as PhysioRequestsRouteImport } from './routes/physio/requests'
 import { Route as PhysioScanRouteImport } from './routes/physio/scan'
+import { Route as PatientReportsReportIdRouteImport } from './routes/patient/reports/$reportId'
 import { Route as PhysioAssessmentsIndexRouteImport } from './routes/physio/assessments/index'
 import { Route as PhysioAssessmentsAppointmentIdRouteImport } from './routes/physio/assessments/$appointmentId'
 
@@ -39,6 +41,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DirectBookingRoute = DirectBookingRouteImport.update({
+  id: '/direct-booking',
+  path: '/direct-booking',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -126,6 +133,11 @@ const PhysioScanRoute = PhysioScanRouteImport.update({
   path: '/scan',
   getParentRoute: () => PhysioRoute,
 } as any)
+const PatientReportsReportIdRoute = PatientReportsReportIdRouteImport.update({
+  id: '/$reportId',
+  path: '/$reportId',
+  getParentRoute: () => PatientReportsRoute,
+} as any)
 const PhysioAssessmentsIndexRoute = PhysioAssessmentsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -141,6 +153,7 @@ const PhysioAssessmentsAppointmentIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/direct-booking': typeof DirectBookingRoute
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
@@ -151,19 +164,21 @@ export interface FileRoutesByFullPath {
   '/patient/dashboard': typeof PatientDashboardRoute
   '/patient/profile': typeof PatientProfileRoute
   '/patient/qr-ticket': typeof PatientQrTicketRoute
-  '/patient/reports': typeof PatientReportsRoute
+  '/patient/reports': typeof PatientReportsRouteWithChildren
   '/patient/settings': typeof PatientSettingsRoute
   '/physio/assessments': typeof PhysioAssessmentsRouteWithChildren
   '/physio/dashboard': typeof PhysioDashboardRoute
   '/physio/queue': typeof PhysioQueueRoute
   '/physio/requests': typeof PhysioRequestsRoute
   '/physio/scan': typeof PhysioScanRoute
+  '/patient/reports/$reportId': typeof PatientReportsReportIdRoute
   '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
   '/physio/assessments/': typeof PhysioAssessmentsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/direct-booking': typeof DirectBookingRoute
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
@@ -174,12 +189,13 @@ export interface FileRoutesByTo {
   '/patient/dashboard': typeof PatientDashboardRoute
   '/patient/profile': typeof PatientProfileRoute
   '/patient/qr-ticket': typeof PatientQrTicketRoute
-  '/patient/reports': typeof PatientReportsRoute
+  '/patient/reports': typeof PatientReportsRouteWithChildren
   '/patient/settings': typeof PatientSettingsRoute
   '/physio/dashboard': typeof PhysioDashboardRoute
   '/physio/queue': typeof PhysioQueueRoute
   '/physio/requests': typeof PhysioRequestsRoute
   '/physio/scan': typeof PhysioScanRoute
+  '/patient/reports/$reportId': typeof PatientReportsReportIdRoute
   '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
   '/physio/assessments': typeof PhysioAssessmentsIndexRoute
 }
@@ -187,6 +203,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/direct-booking': typeof DirectBookingRoute
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
@@ -197,13 +214,14 @@ export interface FileRoutesById {
   '/patient/dashboard': typeof PatientDashboardRoute
   '/patient/profile': typeof PatientProfileRoute
   '/patient/qr-ticket': typeof PatientQrTicketRoute
-  '/patient/reports': typeof PatientReportsRoute
+  '/patient/reports': typeof PatientReportsRouteWithChildren
   '/patient/settings': typeof PatientSettingsRoute
   '/physio/assessments': typeof PhysioAssessmentsRouteWithChildren
   '/physio/dashboard': typeof PhysioDashboardRoute
   '/physio/queue': typeof PhysioQueueRoute
   '/physio/requests': typeof PhysioRequestsRoute
   '/physio/scan': typeof PhysioScanRoute
+  '/patient/reports/$reportId': typeof PatientReportsReportIdRoute
   '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
   '/physio/assessments/': typeof PhysioAssessmentsIndexRoute
 }
@@ -212,6 +230,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/direct-booking'
     | '/login'
     | '/patient'
     | '/physio'
@@ -229,12 +248,14 @@ export interface FileRouteTypes {
     | '/physio/queue'
     | '/physio/requests'
     | '/physio/scan'
+    | '/patient/reports/$reportId'
     | '/physio/assessments/$appointmentId'
     | '/physio/assessments/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/direct-booking'
     | '/login'
     | '/patient'
     | '/physio'
@@ -251,12 +272,14 @@ export interface FileRouteTypes {
     | '/physio/queue'
     | '/physio/requests'
     | '/physio/scan'
+    | '/patient/reports/$reportId'
     | '/physio/assessments/$appointmentId'
     | '/physio/assessments'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/direct-booking'
     | '/login'
     | '/patient'
     | '/physio'
@@ -274,6 +297,7 @@ export interface FileRouteTypes {
     | '/physio/queue'
     | '/physio/requests'
     | '/physio/scan'
+    | '/patient/reports/$reportId'
     | '/physio/assessments/$appointmentId'
     | '/physio/assessments/'
   fileRoutesById: FileRoutesById
@@ -281,6 +305,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  DirectBookingRoute: typeof DirectBookingRoute
   LoginRoute: typeof LoginRoute
   PatientRoute: typeof PatientRouteWithChildren
   PhysioRoute: typeof PhysioRouteWithChildren
@@ -301,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/direct-booking': {
+      id: '/direct-booking'
+      path: '/direct-booking'
+      fullPath: '/direct-booking'
+      preLoaderRoute: typeof DirectBookingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -422,6 +454,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhysioScanRouteImport
       parentRoute: typeof PhysioRoute
     }
+    '/patient/reports/$reportId': {
+      id: '/patient/reports/$reportId'
+      path: '/$reportId'
+      fullPath: '/patient/reports/$reportId'
+      preLoaderRoute: typeof PatientReportsReportIdRouteImport
+      parentRoute: typeof PatientReportsRoute
+    }
     '/physio/assessments/': {
       id: '/physio/assessments/'
       path: '/'
@@ -449,13 +488,25 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface PatientReportsRouteChildren {
+  PatientReportsReportIdRoute: typeof PatientReportsReportIdRoute
+}
+
+const PatientReportsRouteChildren: PatientReportsRouteChildren = {
+  PatientReportsReportIdRoute: PatientReportsReportIdRoute,
+}
+
+const PatientReportsRouteWithChildren = PatientReportsRoute._addFileChildren(
+  PatientReportsRouteChildren,
+)
+
 interface PatientRouteChildren {
   PatientAppointmentsRoute: typeof PatientAppointmentsRoute
   PatientBookRoute: typeof PatientBookRoute
   PatientDashboardRoute: typeof PatientDashboardRoute
   PatientProfileRoute: typeof PatientProfileRoute
   PatientQrTicketRoute: typeof PatientQrTicketRoute
-  PatientReportsRoute: typeof PatientReportsRoute
+  PatientReportsRoute: typeof PatientReportsRouteWithChildren
   PatientSettingsRoute: typeof PatientSettingsRoute
 }
 
@@ -465,7 +516,7 @@ const PatientRouteChildren: PatientRouteChildren = {
   PatientDashboardRoute: PatientDashboardRoute,
   PatientProfileRoute: PatientProfileRoute,
   PatientQrTicketRoute: PatientQrTicketRoute,
-  PatientReportsRoute: PatientReportsRoute,
+  PatientReportsRoute: PatientReportsRouteWithChildren,
   PatientSettingsRoute: PatientSettingsRoute,
 }
 
@@ -507,6 +558,7 @@ const PhysioRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  DirectBookingRoute: DirectBookingRoute,
   LoginRoute: LoginRoute,
   PatientRoute: PatientRouteWithChildren,
   PhysioRoute: PhysioRouteWithChildren,

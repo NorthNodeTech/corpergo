@@ -24,9 +24,11 @@ import {
   formatDateLabel,
   formatTimeLabel,
   uniqueSlotTimes,
+  updateMyPatient,
   type Category,
   type Clinic,
 } from "@/lib/clinic-data";
+import type { DirectBookingGender } from "@/lib/direct-booking-data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/patient/book")({
@@ -36,9 +38,9 @@ export const Route = createFileRoute("/patient/book")({
 const STEPS = [
   "Clinic",
   "Category",
+  "About you",
   "Problem",
-  "Date",
-  "Time",
+  "Date & time",
   "Confirm",
 ] as const;
 
@@ -61,6 +63,8 @@ function BookAppointmentPage() {
   const [clinicId, setClinicId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [symptoms, setSymptoms] = useState("");
+  const [gender, setGender] = useState<DirectBookingGender | "">("");
+  const [ageYears, setAgeYears] = useState("");
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState<string | null>(null);
   const [slots, setSlots] = useState<{ start_time: string; end_time: string; available: boolean; remaining_slots?: number }[]>(
@@ -81,6 +85,24 @@ function BookAppointmentPage() {
       setCategories(cat.data || []);
     }
     void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchMyPatient().then((res) => {
+      if (cancelled) return;
+      const patient = res.data?.[0];
+      if (!patient) return;
+      if (patient.gender) {
+        setGender(patient.gender as DirectBookingGender);
+      }
+      if (patient.age_years != null) {
+        setAgeYears(String(patient.age_years));
+      }
+    });
     return () => {
       cancelled = true;
     };
@@ -119,14 +141,23 @@ function BookAppointmentPage() {
   function canNext() {
     if (step === 0) return !!clinicId;
     if (step === 1) return !!categoryId;
-    if (step === 2) return symptoms.trim().length >= 10;
-    if (step === 3) return !!dateIso;
-    if (step === 4) return !!time;
+    if (step === 2) {
+      const age = Number(ageYears);
+      return !!gender && Number.isFinite(age) && age >= 0 && age <= 120;
+    }
+    if (step === 3) return symptoms.trim().length >= 10;
+    if (step === 4) return !!dateIso && !!time;
     return true;
   }
 
   async function submit() {
-    if (!clinicId || !categoryId || !dateIso || !time) return;
+    if (!clinicId || !categoryId || !dateIso || !time || !gender) return;
+    const age = Number(ageYears);
+    if (!Number.isFinite(age) || age < 0 || age > 120) {
+      toast.error("Please enter a valid age.");
+      return;
+    }
+
     setSubmitting(true);
     const [profileRes, patientRes] = await Promise.all([fetchMyProfile(), fetchMyPatient()]);
     const profile = profileRes.data;
@@ -134,6 +165,16 @@ function BookAppointmentPage() {
     if (!profile || !patient) {
       setSubmitting(false);
       toast.error(profileRes.error || patientRes.error || "Could not load your patient profile.");
+      return;
+    }
+
+    const patientUpdate = await updateMyPatient(patient.id, {
+      gender,
+      age_years: age,
+    });
+    if (patientUpdate.error) {
+      setSubmitting(false);
+      toast.error(patientUpdate.error);
       return;
     }
 
@@ -197,7 +238,7 @@ function BookAppointmentPage() {
       <PortalPageHeader
         eyebrow="Booking"
         title="Book an appointment"
-        description="Six simple steps. Large buttons. We’ll guide you through clinic, care type, and time."
+        description="Five simple steps. Large buttons. We’ll guide you through clinic, care type, and time."
       />
 
       {loadError ? (
@@ -322,6 +363,42 @@ function BookAppointmentPage() {
 
             {step === 2 && (
               <div>
+                <h2 className="text-xl font-extrabold text-[var(--ink)]">About you</h2>
+                <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                  Help your physiotherapist prepare with basic details.
+                </p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <label className="block text-sm font-semibold text-[var(--ink)]">
+                    Age
+                    <input
+                      type="number"
+                      min={0}
+                      max={120}
+                      value={ageYears}
+                      onChange={(e) => setAgeYears(e.target.value)}
+                      placeholder="e.g. 34"
+                      className="mt-1.5 w-full rounded-2xl bg-[var(--ivory)] px-4 py-3 text-[var(--ink)] ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                    />
+                  </label>
+                  <label className="block text-sm font-semibold text-[var(--ink)]">
+                    Gender
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value as DirectBookingGender)}
+                      className="mt-1.5 w-full rounded-2xl bg-[var(--ivory)] px-4 py-3 text-[var(--ink)] ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div>
                 <h2 className="text-xl font-extrabold text-[var(--ink)]">Describe your problem</h2>
                 <p className="mt-1 text-sm text-[var(--ink-soft)]">
                   A few sentences help your physiotherapist prepare.
@@ -339,110 +416,123 @@ function BookAppointmentPage() {
               </div>
             )}
 
-            {step === 3 && (
-              <div>
-                <h2 className="text-xl font-extrabold text-[var(--ink)] flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-[var(--bronze)]" /> Choose a date
-                </h2>
-                <p className="mt-1 text-sm text-[var(--ink-soft)]">
-                  Sundays and past dates are unavailable.
-                </p>
-                <div className="mt-6 flex justify-center rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={(d) => {
-                      setDate(d);
-                      setTime(null);
-                    }}
-                    disabled={(d) => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      return d < today || d.getDay() === 0;
-                    }}
-                    formatters={{
-                      formatWeekdayName: (d) =>
-                        d.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 2),
-                    }}
-                    className="std-calendar w-[300px]"
-                    classNames={{
-                      root: "w-[300px]",
-                      months: "flex w-full flex-col",
-                      month: "flex w-full flex-col gap-3",
-                      weekdays: "mb-1 grid w-full grid-cols-7",
-                      weekday:
-                        "flex h-8 w-full items-center justify-center text-[11px] font-semibold text-slate-500",
-                      week: "mt-0 grid w-full grid-cols-7",
-                      day: "h-9 w-full p-0 text-center",
-                      today: "rounded-md bg-slate-100 font-semibold text-[var(--ink)]",
-                      caption_label: "text-sm font-semibold text-[var(--ink)]",
-                      button_previous: "rounded-md hover:bg-slate-100",
-                      button_next: "rounded-md hover:bg-slate-100",
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
             {step === 4 && (
               <div>
                 <h2 className="text-xl font-extrabold text-[var(--ink)] flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-[var(--bronze)]" /> Available time slots
+                  <CalendarDays className="h-5 w-5 text-[var(--bronze)]" /> Choose date & time
                 </h2>
                 <p className="mt-1 text-sm text-[var(--ink-soft)]">
-                  {dateIso
-                    ? `Slots for ${formatDateLabel(dateIso)} at ${selectedClinic?.name}`
-                    : "Select a date first"}
+                  Pick a day, then select an available slot at {selectedClinic?.name || "your clinic"}.
+                  Sundays and past dates are unavailable.
                 </p>
-                {slotsLoading ? (
-                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <div key={i} className="h-12 animate-pulse rounded-2xl bg-[var(--ivory)]" />
-                    ))}
+                <div className="mt-6 grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start">
+                  <div className="flex justify-center rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:justify-start">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={(d) => {
+                        setDate(d);
+                        setTime(null);
+                      }}
+                      disabled={(d) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return d < today || d.getDay() === 0;
+                      }}
+                      formatters={{
+                        formatWeekdayName: (d) =>
+                          d.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 2),
+                      }}
+                      className="std-calendar w-[300px]"
+                      classNames={{
+                        root: "w-[300px]",
+                        months: "flex w-full flex-col",
+                        month: "flex w-full flex-col gap-3",
+                        weekdays: "mb-1 grid w-full grid-cols-7",
+                        weekday:
+                          "flex h-8 w-full items-center justify-center text-[11px] font-semibold text-slate-500",
+                        week: "mt-0 grid w-full grid-cols-7",
+                        day: "h-9 w-full p-0 text-center",
+                        today: "rounded-md bg-slate-100 font-semibold text-[var(--ink)]",
+                        caption_label: "text-sm font-semibold text-[var(--ink)]",
+                        button_previous: "rounded-md hover:bg-slate-100",
+                        button_next: "rounded-md hover:bg-slate-100",
+                      }}
+                    />
                   </div>
-                ) : slots.length === 0 ? (
-                  <p className="mt-6 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                    No slots found for this day. Try another date.
-                  </p>
-                ) : (
-                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {slots.map((s) => {
-                      const rem = s.remaining_slots !== undefined ? s.remaining_slots : (s.available ? 2 : 0);
-                      return (
-                        <button
-                          key={s.start_time}
-                          type="button"
-                          disabled={!s.available}
-                          onClick={() => setTime(s.start_time)}
-                          className={cn(
-                            "flex flex-col items-center justify-center rounded-2xl px-3 py-2.5 transition-all ring-1 text-center cursor-pointer",
-                            !s.available
-                              ? "cursor-not-allowed bg-slate-100 text-slate-400 ring-transparent opacity-60"
-                              : time === s.start_time
-                                ? "bg-[var(--sage)] text-white ring-[var(--sage)] shadow-sm"
-                                : "bg-[var(--ivory)] text-[var(--ink)] ring-black/5 hover:ring-[var(--sage)]/40",
-                          )}
-                        >
-                          <span className="text-sm font-extrabold">{formatTimeLabel(s.start_time)}</span>
-                          <span
-                            className={cn(
-                              "text-[10px] font-semibold mt-0.5",
-                              !s.available
-                                ? "text-red-500 font-bold"
-                                : time === s.start_time
-                                  ? "text-emerald-100"
-                                  : rem === 1
-                                    ? "text-amber-600 font-bold"
-                                    : "text-emerald-600",
-                            )}
-                          >
-                            {rem > 0 ? `${rem} ${rem === 1 ? "slot left" : "slots available"}` : "Full (0 slots)"}
-                          </span>
-                        </button>
-                      );
-                    })}
+
+                  <div className="min-w-0 rounded-2xl bg-[var(--ivory)] p-4 ring-1 ring-black/5">
+                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--ink)]">
+                      <Clock className="h-4 w-4 text-[var(--bronze)]" />
+                      {dateIso
+                        ? `Available slots · ${formatDateLabel(dateIso)}`
+                        : "Select a date to see available times"}
+                    </div>
+
+                    {!dateIso ? (
+                      <p className="mt-4 text-sm text-[var(--ink-soft)]">
+                        Choose a date on the calendar first.
+                      </p>
+                    ) : slotsLoading ? (
+                      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <div key={i} className="h-12 animate-pulse rounded-2xl bg-white" />
+                        ))}
+                      </div>
+                    ) : slots.length === 0 ? (
+                      <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                        No slots found for this day. Try another date.
+                      </p>
+                    ) : (
+                      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {slots.map((s) => {
+                          const rem =
+                            s.remaining_slots !== undefined
+                              ? s.remaining_slots
+                              : s.available
+                                ? 2
+                                : 0;
+                          return (
+                            <button
+                              key={s.start_time}
+                              type="button"
+                              disabled={!s.available}
+                              onClick={() => setTime(s.start_time)}
+                              className={cn(
+                                "flex flex-col items-center justify-center rounded-2xl px-3 py-2.5 transition-all ring-1 text-center cursor-pointer",
+                                !s.available
+                                  ? "cursor-not-allowed bg-slate-100 text-slate-400 ring-transparent opacity-60"
+                                  : time === s.start_time
+                                    ? "bg-[var(--sage)] text-white ring-[var(--sage)] shadow-sm"
+                                    : "bg-white text-[var(--ink)] ring-black/5 hover:ring-[var(--sage)]/40",
+                              )}
+                            >
+                              <span className="text-sm font-extrabold">
+                                {formatTimeLabel(s.start_time)}
+                              </span>
+                              <span
+                                className={cn(
+                                  "text-[10px] font-semibold mt-0.5",
+                                  !s.available
+                                    ? "text-red-500 font-bold"
+                                    : time === s.start_time
+                                      ? "text-emerald-100"
+                                      : rem === 1
+                                        ? "text-amber-600 font-bold"
+                                        : "text-emerald-600",
+                                )}
+                              >
+                                {rem > 0
+                                  ? `${rem} ${rem === 1 ? "slot left" : "slots available"}`
+                                  : "Full (0 slots)"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
@@ -456,9 +546,15 @@ function BookAppointmentPage() {
                   {[
                     ["Clinic", selectedClinic?.name],
                     ["Category", selectedCategory?.name],
+                    ["Age", ageYears ? `${ageYears} years` : "—"],
+                    ["Gender", gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : "—"],
                     ["Problem", symptoms],
-                    ["Date", dateIso ? formatDateLabel(dateIso) : "—"],
-                    ["Time", time ? formatTimeLabel(time) : "—"],
+                    [
+                      "Date & time",
+                      dateIso && time
+                        ? `${formatDateLabel(dateIso)} · ${formatTimeLabel(time)}`
+                        : "—",
+                    ],
                   ].map(([k, v]) => (
                     <div key={k as string} className="grid gap-1 sm:grid-cols-[140px_1fr]">
                       <dt className="text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">

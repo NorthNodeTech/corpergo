@@ -1,15 +1,16 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, User, Stethoscope, Eye, EyeOff } from "lucide-react";
-import logoImg from "@/assets/LOGO.webp";
+import { CorpErgoLogo } from "@/components/CorpErgoLogo";
 import { signInWithPassword, resolvePostLoginPath } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  patientRedirectTo?: string | null;
 }
 
 const PORTALS = [
@@ -31,7 +32,7 @@ const PORTALS = [
 
 type PortalId = (typeof PORTALS)[number]["id"];
 
-export function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalProps) {
   const navigate = useNavigate();
   const [portal, setPortal] = useState<PortalId>("patient");
   const [fullName, setFullName] = useState("");
@@ -100,12 +101,20 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       return;
     }
 
+    const destination =
+      portal === "patient" && patientRedirectTo?.startsWith("/patient") ? patientRedirectTo : path;
+
     onClose();
-    void navigate({ to: path });
+    void navigate({ to: destination });
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent
         className={cn(
           "fixed left-1/2 top-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col",
@@ -121,20 +130,11 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               className="mx-auto flex w-full max-w-sm flex-col"
             >
               <div className="flex flex-col items-center text-center">
-                <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/10">
-                  <img
-                    src={logoImg}
-                    alt="CorpErgo"
-                    className="h-10 w-auto object-contain sm:h-11"
-                    width={120}
-                    height={64}
-                    decoding="async"
-                  />
-                </div>
-                <div className="mt-2 font-black text-[var(--ink)] text-sm leading-none tracking-wide sm:text-base">
-                  CORPERGO
-                  <div className="mt-0.5 text-[9px] font-bold text-[var(--ink-soft)] tracking-widest sm:text-[10px]">
-                    PHYSIOTHERAPY AND REHABILITATION
+                <CorpErgoLogo size="lg" />
+                <div className="corpergo-brand-title mt-2.5 text-base leading-none text-[var(--ink)] sm:text-lg">
+                  <span className="text-[var(--saffron)]">Corp</span>Ergo
+                  <div className="corpergo-brand-tagline mt-1 text-[10px] text-[var(--saffron-deep)] sm:text-[11px]">
+                    Physiotherapy &amp; Rehabilitation
                   </div>
                 </div>
               </div>
@@ -174,36 +174,52 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
               </p>
 
               <form className="mt-4 space-y-2.5 sm:space-y-3" onSubmit={onSubmit}>
-              {portal === "patient" ? (
-                <>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Enter your full name"
-                      autoComplete="name"
-                      required
-                      className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                      Mobile Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+91 9876543210"
-                      autoComplete="tel"
-                      required
-                      className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
-                    />
-                  </div>
+                {portal === "patient" ? (
+                  <>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Enter your full name"
+                        autoComplete="name"
+                        required
+                        className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                        Mobile Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+91 9876543210"
+                        autoComplete="tel"
+                        required
+                        className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                        Email <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@email.com"
+                        autoComplete="email"
+                        required
+                        className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                      />
+                    </div>
+                  </>
+                ) : (
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
                       Email <span className="text-red-500">*</span>
@@ -212,101 +228,90 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@email.com"
+                      placeholder="physio.chansandra@corpergo.in"
                       autoComplete="email"
                       required
-                      className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                      className="mt-1.5 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-4 py-3 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
                     />
                   </div>
-                </>
-              ) : (
+                )}
+
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                    Email <span className="text-red-500">*</span>
+                    Password
                   </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="physio.chansandra@corpergo.in"
-                    autoComplete="email"
-                    required
-                    className="mt-1.5 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-4 py-3 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
-                  />
+                  <div className="relative mt-1.5">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      className="w-full rounded-2xl bg-white ring-1 ring-black/[0.08] pl-4 pr-10 py-3 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-[var(--ink-soft)] hover:text-[var(--sage)] focus:outline-none rounded-lg transition-colors cursor-pointer"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4.5 w-4.5" />
+                      ) : (
+                        <Eye className="h-4.5 w-4.5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
-              )}
 
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                  Password
-                </label>
-                <div className="relative mt-1.5">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    className="w-full rounded-2xl bg-white ring-1 ring-black/[0.08] pl-4 pr-10 py-3 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-[var(--ink-soft)] hover:text-[var(--sage)] focus:outline-none rounded-lg transition-colors cursor-pointer"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4.5 w-4.5" />
-                    ) : (
-                      <Eye className="h-4.5 w-4.5" />
-                    )}
-                  </button>
+                <div className="flex items-center justify-between text-[11px] mt-1">
+                  <label className="flex items-center gap-2 text-[var(--ink-soft)] cursor-pointer">
+                    <input type="checkbox" className="rounded accent-[var(--pink-main)]" /> Remember
+                    me
+                  </label>
+                  <a href="#" className="font-semibold text-[var(--sage)] hover:underline">
+                    Forgot password?
+                  </a>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between text-[11px] mt-1">
-                <label className="flex items-center gap-2 text-[var(--ink-soft)] cursor-pointer">
-                  <input type="checkbox" className="rounded accent-[var(--pink-main)]" /> Remember me
-                </label>
-                <a href="#" className="font-semibold text-[var(--sage)] hover:underline">
-                  Forgot password?
-                </a>
-              </div>
-
-              {error ? (
-                <p className="text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2 ring-1 ring-red-100">
-                  {error}
-                </p>
-              ) : null}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="group w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-4 py-2.5 text-sm font-semibold text-white transition-all shadow-sm hover:-translate-y-0.5 disabled:opacity-60 disabled:pointer-events-none cursor-pointer focus:outline-none"
-              >
-                {loading ? "Signing in…" : `Sign in as ${active.buttonLabel}`}
-                {!loading ? (
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                {error ? (
+                  <p className="text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2 ring-1 ring-red-100">
+                    {error}
+                  </p>
                 ) : null}
-              </button>
-            </form>
 
-            {portal === "patient" ? (
-              <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
-                New patient?{" "}
-                <Link
-                  to="/signup"
-                  onClick={onClose}
-                  className="font-semibold text-[var(--sage-deep)] hover:underline"
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="group w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-4 py-2.5 text-sm font-semibold text-white transition-all shadow-sm hover:-translate-y-0.5 disabled:opacity-60 disabled:pointer-events-none cursor-pointer focus:outline-none"
                 >
-                  Create an account
-                </Link>
-              </p>
-            ) : (
-              <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
-                Staff accounts are created by CorpErgo admin.
-              </p>
-            )}
+                  {loading ? "Signing in…" : `Sign in as ${active.buttonLabel}`}
+                  {!loading ? (
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  ) : null}
+                </button>
+              </form>
+
+              {portal === "patient" ? (
+                <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
+                  New patient?{" "}
+                  <a
+                    href={
+                      patientRedirectTo?.startsWith("/patient")
+                        ? `/signup?next=${encodeURIComponent(patientRedirectTo)}`
+                        : "/signup"
+                    }
+                    onClick={onClose}
+                    className="font-semibold text-[var(--sage-deep)] hover:underline"
+                  >
+                    Create an account
+                  </a>
+                </p>
+              ) : (
+                <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
+                  Staff accounts are created by CorpErgo admin.
+                </p>
+              )}
             </motion.div>
           </div>
         </div>

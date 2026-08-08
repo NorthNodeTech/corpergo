@@ -40,12 +40,41 @@ export type AssessmentRow = {
   duration_minutes: number | null;
   next_visit_needed: boolean;
   assessed_by: string | null;
+  started_at: string | null;
+  admin_edit_unlocked: boolean;
   created_at: string;
   updated_at: string;
 };
 
 const ASSESS_SELECT =
-  "id,appointment_id,pain_score,body_part,diagnosis,clinical_findings,range_of_motion,muscle_strength,special_tests,treatment_given,home_exercise,notes,duration_minutes,next_visit_needed,assessed_by,created_at,updated_at";
+  "id,appointment_id,pain_score,body_part,diagnosis,clinical_findings,range_of_motion,muscle_strength,special_tests,treatment_given,home_exercise,notes,duration_minutes,next_visit_needed,assessed_by,started_at,admin_edit_unlocked,created_at,updated_at";
+
+const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+export function assessmentEditState(
+  row: Pick<AssessmentRow, "started_at" | "created_at" | "admin_edit_unlocked"> | null | undefined,
+  isNew: boolean,
+) {
+  if (isNew || !row) {
+    return { editable: true, locked: false, reason: null as string | null };
+  }
+  if (row.admin_edit_unlocked) {
+    return { editable: true, locked: false, reason: null };
+  }
+  const startedAt = new Date(row.started_at || row.created_at).getTime();
+  if (Number.isNaN(startedAt)) {
+    return { editable: true, locked: false, reason: null };
+  }
+  const expiresAt = startedAt + EDIT_WINDOW_MS;
+  if (Date.now() < expiresAt) {
+    return { editable: true, locked: false, reason: null };
+  }
+  return {
+    editable: false,
+    locked: true,
+    reason: "Editing closed after 24 hours. Ask admin to unlock this assessment.",
+  };
+}
 
 function packFindings(form: AssessmentForm) {
   return [
@@ -58,10 +87,9 @@ function packFindings(form: AssessmentForm) {
     .join("\n\n");
 }
 
-function unpackFindings(raw: string | null | undefined): Pick<
-  AssessmentForm,
-  "chief_complaint" | "medical_history" | "posture" | "clinical_findings"
-> {
+export function unpackFindings(
+  raw: string | null | undefined,
+): Pick<AssessmentForm, "chief_complaint" | "medical_history" | "posture" | "clinical_findings"> {
   const text = raw || "";
   const get = (label: string) => {
     const re = new RegExp(`${label}:\\n([\\s\\S]*?)(?=\\n\\n[A-Z][\\w ]+:\\n|$)`);
@@ -142,7 +170,19 @@ export async function fetchPatientAssessments(patientId: string) {
   );
 }
 
-export async function saveAssessment(form: AssessmentForm) {
+export async function saveAssessment(
+  form: AssessmentForm,
+  options?: { allowLocked?: boolean },
+) {
+  if (form.id && !options?.allowLocked) {
+    const existing = await fetchAssessmentForAppointment(form.appointment_id);
+    const row = existing.data?.[0];
+    const lock = assessmentEditState(row, false);
+    if (lock.locked) {
+      return { data: null, error: lock.reason || "Assessment is locked for editing." };
+    }
+  }
+
   const payload = {
     appointment_id: form.appointment_id,
     pain_score: form.pain_score,
@@ -161,16 +201,57 @@ export async function saveAssessment(form: AssessmentForm) {
   };
 
   if (form.id) {
-    return supabaseRest<AssessmentRow[]>(`assessments?id=eq.${form.id}`, {
+    const result = await supabaseRest<AssessmentRow[]>(`assessments?id=eq.${form.id}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     });
+    if (!result.error) {
+      await supabaseRest(`appointments?id=eq.${form.appointment_id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "completed" }),
+      });
+    }
+    return result;
   }
 
-  return supabaseRest<AssessmentRow[]>("assessments", {
+  const result = await supabaseRest<AssessmentRow[]>("assessments", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  if (!result.error) {
+    await supabaseRest(`appointments?id=eq.${form.appointment_id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: "completed" }),
+    });
+  }
+  return result;
+}
+
+export async function fetchSavedAssessmentAppointmentIds(appointmentIds: string[]) {
+  if (!appointmentIds.length) {
+    return { data: [] as string[], error: null };
+  }
+  const res = await supabaseRest<{ appointment_id: string }[]>(
+    `assessments?appointment_id=in.(${appointmentIds.join(",")})&deleted_at=is.null&select=appointment_id`,
+  );
+  return {
+    data: (res.data || []).map((row) => row.appointment_id),
+    error: res.error,
+  };
+}
+
+export function isVisitDocumented(
+  appointment: { id: string; status: string },
+  assessedIds: Set<string>,
+) {
+  return appointment.status === "completed" || assessedIds.has(appointment.id);
+}
+
+export function visitSessionStatus(
+  appointment: { id: string; status: string },
+  assessedIds: Set<string>,
+) {
+  return isVisitDocumented(appointment, assessedIds) ? "completed" : "progress";
 }
 
 export async function scheduleFollowUp(input: {
@@ -189,7 +270,8 @@ export async function scheduleFollowUp(input: {
     categoryId: input.fromAppointment.category_id,
     preferredDate: input.date,
     preferredTime: time,
-    symptoms: `Follow-up after ${input.fromAppointment.appointment_code}. ${input.notes || ""}`.trim(),
+    symptoms:
+      `Follow-up after ${input.fromAppointment.appointment_code}. ${input.notes || ""}`.trim(),
     createdBy: input.createdBy,
   });
 
@@ -245,6 +327,46 @@ export async function scheduleFollowUp(input: {
   return accepted.error ? accepted : { data: newAppt, error: null };
 }
 
+export type AssessmentSessionRow = PhysioAppointment & {
+  documented: boolean;
+};
+
+export async function fetchAllAssessmentSessions() {
+  const { resolveStaffClinicId } = await import("@/lib/physio-data");
+  type PhysioAppointment = import("@/lib/physio-data").PhysioAppointment;
+  const { matchesClinicId } = await import("@/lib/clinic-data");
+
+  const clinicId = await resolveStaffClinicId();
+  if (!clinicId) {
+    return { data: [] as AssessmentSessionRow[], error: null };
+  }
+
+  const res = await supabaseRest<PhysioAppointment[]>(
+    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(accepted,checked_in,completed)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc,scheduled_time.desc.nullslast,preferred_time.desc&limit=120`,
+  );
+
+  const list = (res.data || []).filter((item) => matchesClinicId(clinicId, item.clinic_id));
+  const ids = list.map((item) => item.id);
+  const saved = await fetchSavedAssessmentAppointmentIds(ids);
+  const savedSet = new Set(saved.data || []);
+
+  const rows: AssessmentSessionRow[] = list.map((appointment) => ({
+    ...appointment,
+    documented: savedSet.has(appointment.id) || appointment.status === "completed",
+  }));
+
+  rows.sort((a, b) => {
+    const dateA = a.scheduled_date || a.preferred_date || "";
+    const dateB = b.scheduled_date || b.preferred_date || "";
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    const timeA = (a.scheduled_time || a.preferred_time || "").slice(0, 5);
+    const timeB = (b.scheduled_time || b.preferred_time || "").slice(0, 5);
+    return timeB.localeCompare(timeA);
+  });
+
+  return { data: rows, error: res.error };
+}
+
 export async function fetchAssessableAppointments() {
   const { resolveStaffClinicId } = await import("@/lib/physio-data");
   type PhysioAppointment = import("@/lib/physio-data").PhysioAppointment;
@@ -256,9 +378,37 @@ export async function fetchAssessableAppointments() {
   }
 
   const res = await supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(checked_in,completed,accepted)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,medical_history,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc&limit=80`,
+    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(checked_in,completed,accepted)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,medical_history,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc&limit=80`,
   );
 
   const list = (res.data || []).filter((item) => matchesClinicId(clinicId, item.clinic_id));
-  return { data: list, error: res.error };
+  const ids = list.map((item) => item.id);
+  const saved = await fetchSavedAssessmentAppointmentIds(ids);
+  const savedSet = new Set(saved.data || []);
+  return {
+    data: list.filter((item) => !savedSet.has(item.id)),
+    error: res.error,
+  };
+}
+
+export type AdminAssessmentRow = AssessmentRow & {
+  appointments?: {
+    appointment_code: string;
+    clinic_id: string;
+    clinics?: { id: string; name: string } | null;
+    patients?: { profiles?: { full_name: string | null } | null } | null;
+  } | null;
+};
+
+export async function fetchAdminAssessments() {
+  return supabaseRest<AdminAssessmentRow[]>(
+    `assessments?deleted_at=is.null&select=${ASSESS_SELECT},appointments(appointment_code,clinic_id,clinics(id,name),patients(profiles(full_name)))&order=created_at.desc&limit=200`,
+  );
+}
+
+export async function setAssessmentAdminEditUnlocked(id: string, unlocked: boolean) {
+  return supabaseRest<AssessmentRow[]>(`assessments?id=eq.${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ admin_edit_unlocked: unlocked }),
+  });
 }

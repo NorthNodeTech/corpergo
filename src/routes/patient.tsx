@@ -56,6 +56,8 @@ function PatientLayout() {
           subtitle="Your care, simplified"
           nav={NAV}
           footerNav={FOOTER_NAV}
+          desktopNav="header"
+          headerNavMode="expandable"
           settingsPath="/patient/settings"
           userName={profile.full_name}
         >

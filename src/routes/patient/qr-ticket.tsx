@@ -4,6 +4,7 @@ import { Calendar, Clock, MapPin, QrCode, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import {
   fetchAcceptedTickets,
   formatDateLabel,
@@ -21,6 +22,7 @@ type TicketRow = QrTicket & { appointments: Appointment | null };
 function QrTicketPage() {
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const listMore = useShowMore(tickets);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,8 +61,9 @@ function QrTicketPage() {
           }
         />
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {tickets.map((t) => {
+        <>
+          <div className="grid gap-6 lg:grid-cols-2">
+            {listMore.visible.map((t) => {
             const a = t.appointments;
             if (!a) return null;
             const doctor =
@@ -68,7 +71,7 @@ function QrTicketPage() {
             return (
               <article
                 key={t.id}
-                className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-[var(--structure-maroon)] via-[#8B3439] to-[var(--accent-orange)] text-white shadow-md"
+                className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-black via-neutral-800 to-[var(--saffron)] text-white shadow-md"
               >
                 <div className="flex items-center justify-between px-6 py-4 border-b border-white/15">
                   <div>
@@ -127,7 +130,13 @@ function QrTicketPage() {
               </article>
             );
           })}
-        </div>
+          </div>
+          <ShowMoreButton
+            hiddenCount={listMore.hiddenCount}
+            expanded={listMore.expanded}
+            onClick={listMore.toggle}
+          />
+        </>
       )}
     </div>
   );

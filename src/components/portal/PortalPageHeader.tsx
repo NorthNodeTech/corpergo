@@ -1,6 +1,4 @@
-import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
-
 export function PortalPageHeader({
   eyebrow,
   title,
@@ -40,7 +38,7 @@ export function PortalPageHeader({
           </p>
         ) : null}
       </div>
-      {actions ? <div className={cn("flex flex-wrap gap-2")}>{actions}</div> : null}
+      {actions ? <div className="portal-page-header-actions">{actions}</div> : null}
     </div>
   );
 }

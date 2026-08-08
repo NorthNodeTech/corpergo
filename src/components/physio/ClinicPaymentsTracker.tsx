@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import {
   IndianRupee,
   Plus,
@@ -140,6 +141,11 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
   const dayPayments = useMemo(() => {
     return payments.filter((p) => p.date === selectedDate);
   }, [payments, selectedDate]);
+  const dayPaymentsMore = useShowMore(dayPayments);
+
+  useEffect(() => {
+    dayPaymentsMore.collapse();
+  }, [selectedDate, dayPaymentsMore.collapse]);
 
   // Daily Totals & Method Breakdowns
   const totalDayCollection = useMemo(() => {
@@ -163,7 +169,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-5 right-5 z-50 flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-white shadow-xl text-sm font-semibold"
+            className="fixed top-5 right-5 z-50 flex items-center gap-2 rounded-2xl bg-[var(--saffron)] px-4 py-3 text-white shadow-xl text-sm font-semibold"
           >
             <CheckCircle2 className="h-5 w-5" />
             Payment recorded successfully!
@@ -216,23 +222,23 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
         </div>
 
         {/* Daily Total Collection Display */}
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 flex flex-col justify-between shadow-sm">
+        <div className="rounded-2xl border border-[var(--saffron)]/25 bg-[var(--saffron-light)]/60 p-4 flex flex-col justify-between shadow-sm">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
                 Daily Total Collection
               </span>
-              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-700">
+              <span className="rounded-full bg-[var(--saffron-light)] px-2.5 py-0.5 text-[10px] font-extrabold text-[var(--saffron-deep)]">
                 {selectedDate === getTodayIso() ? "Today" : selectedDate}
               </span>
             </div>
-            <div className="mt-3 flex items-baseline gap-1 text-3xl sm:text-4xl font-black text-emerald-900">
-              <span className="text-xl font-bold text-emerald-700">₹</span>
+            <div className="mt-3 flex items-baseline gap-1 text-3xl sm:text-4xl font-black text-[var(--ink)]">
+              <span className="text-xl font-bold text-[var(--saffron-deep)]">₹</span>
               {totalDayCollection.toLocaleString("en-IN")}
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-700">
+          <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-[var(--saffron-deep)]">
             <TrendingUp className="h-4 w-4" />
             <span>{dayPayments.length} payment record(s) on this day</span>
           </div>
@@ -307,21 +313,22 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-[var(--border)] shadow-sm">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[var(--ivory)] text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)] border-b border-[var(--border)]">
-                <tr>
-                  <th className="px-4 py-3">Time</th>
-                  <th className="px-4 py-3">Patient Name</th>
-                  <th className="px-4 py-3">Mobile Number</th>
-                  <th className="px-4 py-3">Treatment / Notes</th>
-                  <th className="px-4 py-3">Mode</th>
-                  <th className="px-4 py-3 text-right">Amount</th>
-                  <th className="px-4 py-3 text-center">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border)] bg-white">
-                {dayPayments.map((p) => (
+          <>
+            <div className="overflow-x-auto rounded-2xl border border-[var(--border)] shadow-sm">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[var(--ivory)] text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)] border-b border-[var(--border)]">
+                  <tr>
+                    <th className="px-4 py-3">Time</th>
+                    <th className="px-4 py-3">Patient Name</th>
+                    <th className="px-4 py-3">Mobile Number</th>
+                    <th className="px-4 py-3">Treatment / Notes</th>
+                    <th className="px-4 py-3">Mode</th>
+                    <th className="px-4 py-3 text-right">Amount</th>
+                    <th className="px-4 py-3 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border)] bg-white">
+                  {dayPaymentsMore.visible.map((p) => (
                   <tr key={p.id} className="hover:bg-[var(--ivory)]/40 transition-colors">
                     <td className="px-4 py-3 text-xs font-semibold text-[var(--ink-soft)] whitespace-nowrap">
                       {p.time}
@@ -356,7 +363,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                         {p.paymentMethod}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-black text-emerald-700 text-base">
+                    <td className="px-4 py-3 text-right font-black text-[var(--saffron-deep)] text-base">
                       ₹{p.amount.toLocaleString("en-IN")}
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -371,9 +378,15 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                     </td>
                   </tr>
                 ))}
-              </tbody>
-            </table>
-          </div>
+                </tbody>
+              </table>
+            </div>
+            <ShowMoreButton
+              hiddenCount={dayPaymentsMore.hiddenCount}
+              expanded={dayPaymentsMore.expanded}
+              onClick={dayPaymentsMore.toggle}
+            />
+          </>
         )}
       </div>
 

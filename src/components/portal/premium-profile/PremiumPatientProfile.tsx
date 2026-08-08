@@ -26,17 +26,14 @@ import { uploadAvatar } from "@/lib/auth";
 import { updateMyProfile } from "@/lib/clinic-data";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { GlassDatePicker } from "@/components/portal/GlassDatePicker";
+import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
 import type { PatientIntakeValues } from "@/components/portal/PatientIntakeForm";
-import {
-  formatDateLabel,
-  formatTimeLabel,
-  type Appointment,
-} from "@/lib/clinic-data";
+import { formatDateLabel, formatTimeLabel, type Appointment } from "@/lib/clinic-data";
 import {
   BLOOD_GROUPS,
   MEDICAL_CONDITION_OPTIONS,
-  ageFromDob,
+  ageFromPatient,
   computeProfileCompletion,
   formatPatientCode,
   type MedicalConditions,
@@ -224,7 +221,7 @@ export function PremiumPatientProfile({
   const [extrasOpen, setExtrasOpen] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const age = ageFromDob(values.patient.date_of_birth);
+  const age = ageFromPatient(values.patient);
   const completion = useMemo(() => computeProfileCompletion(values), [values]);
   const patientCode = formatPatientCode(values.patient.id);
   const memberSince = values.patient.created_at
@@ -246,7 +243,8 @@ export function PremiumPatientProfile({
     [appointments],
   );
 
-  const recent = useMemo(() => appointments.slice(0, 5), [appointments]);
+  const recent = useMemo(() => appointments, [appointments]);
+  const recentMore = useShowMore(recent);
   const primaryClinic = upcoming?.clinics?.name || appointments[0]?.clinics?.name || "—";
 
   const conditions = values.patient.medical_conditions || {};
@@ -330,20 +328,28 @@ export function PremiumPatientProfile({
     } else if (first === "address") {
       setExtrasOpen(true);
       window.setTimeout(
-        () => document.getElementById("address")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        () =>
+          document
+            .getElementById("address")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" }),
         50,
       );
     } else if (first === "emergency") {
       setExtrasOpen(true);
       window.setTimeout(
         () =>
-          document.getElementById("emergency")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+          document
+            .getElementById("emergency")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" }),
         50,
       );
     } else {
       setExtrasOpen(true);
       window.setTimeout(
-        () => document.getElementById("medical")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        () =>
+          document
+            .getElementById("medical")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" }),
         50,
       );
     }
@@ -378,7 +384,7 @@ export function PremiumPatientProfile({
   async function handleAvatarSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     // Max 5MB
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image must be smaller than 5MB");
@@ -387,7 +393,7 @@ export function PremiumPatientProfile({
 
     setUploadingAvatar(true);
     const { url, error } = await uploadAvatar(file);
-    
+
     if (error || !url) {
       toast.error(error || "Failed to upload photo");
       setUploadingAvatar(false);
@@ -424,29 +430,29 @@ export function PremiumPatientProfile({
       >
         <div className="alive-orb alive-orb--cta-a blur-[60px]" />
         <div className="alive-orb alive-orb--cta-b blur-[60px]" />
-        
+
         <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <label 
+            <label
               className={cn(
                 "relative block shrink-0 cursor-pointer group",
-                uploadingAvatar && "pointer-events-none opacity-80"
+                uploadingAvatar && "pointer-events-none opacity-80",
               )}
             >
-              <input 
-                type="file" 
+              <input
+                type="file"
                 accept="image/jpeg,image/png,image/webp,image/heic"
-                className="hidden" 
+                className="hidden"
                 onChange={handleAvatarSelect}
               />
-              
+
               <div className="relative grid h-20 w-20 place-items-center rounded-full bg-white/15 text-2xl font-extrabold ring-4 ring-white/25 backdrop-blur transition-all group-hover:ring-white/40 overflow-hidden">
                 <div className="absolute inset-0 rounded-full bg-white/20 blur-md animate-pulse" />
-                
+
                 {values.avatar_url ? (
-                  <img 
-                    src={values.avatar_url} 
-                    alt="Profile" 
+                  <img
+                    src={values.avatar_url}
+                    alt="Profile"
                     className="absolute inset-0 h-full w-full rounded-full object-cover z-10"
                   />
                 ) : (
@@ -475,7 +481,9 @@ export function PremiumPatientProfile({
               <div className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
                 Health record
               </div>
-              <h1 className="mt-1 text-3xl font-extrabold tracking-tight">{values.full_name || "Patient"}</h1>
+              <h1 className="mt-1 text-3xl font-extrabold tracking-tight">
+                {values.full_name || "Patient"}
+              </h1>
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/85">
                 <span>Patient ID · {patientCode}</span>
                 <span>Member since · {memberSince}</span>
@@ -698,7 +706,12 @@ export function PremiumPatientProfile({
 
           {extrasOpen ? (
             <>
-              <SectionCard id="address" title="Address" subtitle="Home location for clinic coordination" icon={MapPin}>
+              <SectionCard
+                id="address"
+                title="Address"
+                subtitle="Home location for clinic coordination"
+                icon={MapPin}
+              >
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Street address" className="sm:col-span-2">
                     <textarea
@@ -882,7 +895,9 @@ export function PremiumPatientProfile({
                           rows={2}
                           disabled={!editing}
                           value={values.patient.other_allergies || ""}
-                          onChange={(e) => patchPatient({ other_allergies: e.target.value || null })}
+                          onChange={(e) =>
+                            patchPatient({ other_allergies: e.target.value || null })
+                          }
                         />
                       </Field>
                     </div>
@@ -908,7 +923,11 @@ export function PremiumPatientProfile({
 
         {/* Right rail */}
         <div className="space-y-5">
-          <SectionCard title="Health summary" subtitle="At-a-glance clinical snapshot" icon={Shield}>
+          <SectionCard
+            title="Health summary"
+            subtitle="At-a-glance clinical snapshot"
+            icon={Shield}
+          >
             <dl className="space-y-3 text-sm">
               <SummaryRow label="Blood group" value={values.patient.blood_group || "—"} />
               <SummaryRow label="Age" value={age != null ? `${age} years` : "—"} />
@@ -978,34 +997,35 @@ export function PremiumPatientProfile({
                     </div>
                     <StatusBadge status={upcoming.status} />
                   </div>
-                <div className="flex flex-wrap gap-3 text-sm font-semibold text-[var(--ink)]">
-                  <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays className="h-4 w-4 text-[var(--bronze)]" />
-                    {formatDateLabel(upcoming.scheduled_date || upcoming.preferred_date)}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock className="h-4 w-4 text-[var(--bronze)]" />
-                    {formatTimeLabel(upcoming.scheduled_time || upcoming.preferred_time)}
-                  </span>
-                </div>
-                <div className="text-sm text-[var(--ink-soft)]">
-                  Physio · {upcoming.physiotherapists?.profiles?.full_name || "Assigned at clinic"}
-                </div>
-                {upcoming.status === "accepted" ? (
-                  <Link
-                    to="/patient/qr-ticket"
-                    className="mt-2 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--sage)] px-4 text-sm font-bold text-white transition hover:bg-[var(--sage-deep)]"
-                  >
-                    <QrCode className="h-4 w-4" /> View QR ticket
-                  </Link>
-                ) : (
-                  <Link
-                    to="/patient/appointments"
-                    className="mt-2 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ivory)] px-4 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
-                  >
-                    View appointments
-                  </Link>
-                )}
+                  <div className="flex flex-wrap gap-3 text-sm font-semibold text-[var(--ink)]">
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDays className="h-4 w-4 text-[var(--bronze)]" />
+                      {formatDateLabel(upcoming.scheduled_date || upcoming.preferred_date)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-[var(--bronze)]" />
+                      {formatTimeLabel(upcoming.scheduled_time || upcoming.preferred_time)}
+                    </span>
+                  </div>
+                  <div className="text-sm text-[var(--ink-soft)]">
+                    Physio ·{" "}
+                    {upcoming.physiotherapists?.profiles?.full_name || "Assigned at clinic"}
+                  </div>
+                  {upcoming.status === "accepted" ? (
+                    <Link
+                      to="/patient/qr-ticket"
+                      className="mt-2 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--sage)] px-4 text-sm font-bold text-white transition hover:bg-[var(--sage-deep)]"
+                    >
+                      <QrCode className="h-4 w-4" /> View QR ticket
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/patient/appointments"
+                      className="mt-2 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--ivory)] px-4 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
+                    >
+                      View appointments
+                    </Link>
+                  )}
                 </div>
               </div>
             ) : (
@@ -1023,32 +1043,42 @@ export function PremiumPatientProfile({
 
           <SectionCard title="Recent activity" subtitle="Your care timeline" icon={HeartPulse}>
             {recent.length === 0 ? (
-              <p className="text-sm text-[var(--ink-soft)]">Activity will appear after your first booking.</p>
+              <p className="text-sm text-[var(--ink-soft)]">
+                Activity will appear after your first booking.
+              </p>
             ) : (
-              <ol className="space-y-0">
-                {recent.map((a, i) => (
-                  <li key={a.id} className="group relative flex gap-3 pb-5 last:pb-0">
-                    {i < recent.length - 1 ? (
+              <>
+                <ol className="space-y-0">
+                  {recentMore.visible.map((a, i) => (
+                    <li key={a.id} className="group relative flex gap-3 pb-5 last:pb-0">
+                      {i < recentMore.visible.length - 1 ? (
                       <span className="absolute left-[9px] top-5 h-[calc(100%-12px)] w-px bg-[var(--sage)]/15 transition-colors group-hover:bg-[var(--sage)]/40" />
                     ) : null}
-                    <span className={cn(
-                      "relative z-[1] mt-1 h-[18px] w-[18px] shrink-0 rounded-full ring-4 transition-all",
-                      i === 0 
-                        ? "bg-[var(--sage)] ring-[var(--sage)]/20 shadow-[0_0_12px_rgba(93,114,94,0.5)]" 
-                        : "bg-white ring-black/[0.04] border-[4px] border-white ring-inset ring-2 ring-[var(--sage)]/40 group-hover:ring-[var(--sage)]"
-                    )} />
+                    <span
+                      className={cn(
+                        "relative z-[1] mt-1 h-[18px] w-[18px] shrink-0 rounded-full ring-4 transition-all",
+                        i === 0
+                          ? "bg-[var(--sage)] ring-[var(--sage)]/20 shadow-[0_0_12px_rgba(93,114,94,0.5)]"
+                          : "bg-white ring-black/[0.04] border-[4px] border-white ring-inset ring-2 ring-[var(--sage)]/40 group-hover:ring-[var(--sage)]",
+                      )}
+                    />
                     <div className="min-w-0 transition-transform group-hover:translate-x-1">
                       <div className="text-sm font-bold text-[var(--ink)] capitalize">
                         {a.status.replaceAll("_", " ")} · {a.appointment_code}
                       </div>
                       <div className="text-xs text-[var(--ink-soft)]">
-                        {a.clinics?.name} ·{" "}
-                        {formatDateLabel(a.scheduled_date || a.preferred_date)}
+                        {a.clinics?.name} · {formatDateLabel(a.scheduled_date || a.preferred_date)}
                       </div>
                     </div>
                   </li>
                 ))}
-              </ol>
+                </ol>
+                <ShowMoreButton
+                  hiddenCount={recentMore.hiddenCount}
+                  expanded={recentMore.expanded}
+                  onClick={recentMore.toggle}
+                />
+              </>
             )}
           </SectionCard>
         </div>

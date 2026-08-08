@@ -1,20 +1,34 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Check, CalendarClock, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CalendarClock, Check, Phone, PhoneCall, UserPlus, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
 import { Calendar } from "@/components/ui/calendar";
 import {
+  fetchCategories,
   formatDateLabel,
   formatTimeLabel,
   uniqueSlotTimes,
+  type Category,
 } from "@/lib/clinic-data";
+import {
+  convertDirectBookingRequest,
+  defaultDirectBookingCategory,
+  defaultDirectBookingEmail,
+  defaultDirectBookingPassword,
+  fetchDirectBookingRequests,
+  filterActiveDirectRequests,
+  updateDirectBookingRequest,
+  type DirectBookingRequest,
+  type DirectBookingStatus,
+} from "@/lib/direct-booking-data";
+import { fetchSavedAssessmentAppointmentIds } from "@/lib/assessment-data";
 import { fetchMyProfile } from "@/lib/auth";
 import {
   acceptAppointment,
-  ageFromDob,
   fetchAvailableSlots,
   fetchClinicAppointments,
   fetchMyPhysioId,
@@ -22,28 +36,48 @@ import {
   rescheduleAppointment,
   type PhysioAppointment,
 } from "@/lib/physio-data";
-import { cn } from "@/lib/utils";
+import { cn, formatClinicName } from "@/lib/utils";
 
 export const Route = createFileRoute("/physio/requests")({
   component: AppointmentRequestsPage,
 });
 
 type ModalMode = "accept" | "reschedule" | null;
-type InboxTab = "pending" | "cancelled" | "rejected";
+type InboxTab = "pending" | "direct" | "cancelled" | "rejected";
 
 const TABS: { id: InboxTab; label: string }[] = [
   { id: "pending", label: "Pending" },
+  { id: "direct", label: "Direct" },
   { id: "cancelled", label: "Cancelled" },
   { id: "rejected", label: "Rejected" },
 ];
 
+function initialInboxTab(): InboxTab {
+  if (typeof window === "undefined") return "pending";
+  const requested =
+    new URLSearchParams(window.location.search).get("tab") ||
+    window.location.hash.replace(/^#/, "");
+  return TABS.some((tab) => tab.id === requested) ? (requested as InboxTab) : "pending";
+}
+
+type InboxCounts = Record<InboxTab, number>;
+
+function emptyInboxCounts(): InboxCounts {
+  return { pending: 0, direct: 0, cancelled: 0, rejected: 0 };
+}
+
 function AppointmentRequestsPage() {
-  const [tab, setTab] = useState<InboxTab>("pending");
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<InboxTab>(() => initialInboxTab());
   const [items, setItems] = useState<PhysioAppointment[]>([]);
+  const [directItems, setDirectItems] = useState<DirectBookingRequest[]>([]);
+  const [inboxCounts, setInboxCounts] = useState<InboxCounts>(() => emptyInboxCounts());
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [physioId, setPhysioId] = useState<string | null>(null);
   const [clinicName, setClinicName] = useState<string>("Clinic");
   const [active, setActive] = useState<PhysioAppointment | null>(null);
+  const [activeDirect, setActiveDirect] = useState<DirectBookingRequest | null>(null);
   const [mode, setMode] = useState<ModalMode>(null);
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState<string | null>(null);
@@ -52,29 +86,107 @@ function AppointmentRequestsPage() {
   >([]);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
+  const [convertEmail, setConvertEmail] = useState("");
+  const [convertPassword, setConvertPassword] = useState("");
+  const [convertDate, setConvertDate] = useState(todayIsoDate());
+  const [convertTime, setConvertTime] = useState(currentTimeValue());
+  const [convertCategoryId, setConvertCategoryId] = useState<string | null>(null);
+  const itemsMore = useShowMore(items);
 
-  async function reload(activeTab: InboxTab = tab) {
-    setLoading(true);
-    const [listRes, me, profile] = await Promise.all([
-      fetchClinicAppointments(activeTab),
-      fetchMyPhysioId(),
-      fetchMyProfile(),
-    ]);
-    const fetchedItems = listRes.data || [];
-    setItems(fetchedItems);
-    setPhysioId(me.data?.[0]?.id || null);
+  useEffect(() => {
+    itemsMore.collapse();
+  }, [tab, itemsMore.collapse]);
 
-    const detectedClinic =
-      fetchedItems[0]?.clinics?.name ||
-      profile.data?.full_name?.replace(/^(dr\.?|physio)\s*/i, "").trim() ||
-      "Clinic";
-    setClinicName(detectedClinic.startsWith("CorpErgo") ? detectedClinic : `CorpErgo - ${detectedClinic}`);
-    setLoading(false);
-  }
+  const reload = useCallback(
+    async (activeTab: InboxTab = tab, options?: { silent?: boolean }) => {
+      if (!options?.silent) setLoading(true);
+
+      const [pendingRes, cancelledRes, rejectedRes, directRes, me, profile, categoryRes] =
+        await Promise.all([
+          fetchClinicAppointments("pending"),
+          fetchClinicAppointments("cancelled"),
+          fetchClinicAppointments("rejected"),
+          fetchDirectBookingRequests(),
+          fetchMyPhysioId(),
+          fetchMyProfile(),
+          fetchCategories(),
+        ]);
+
+      const pending = pendingRes.data || [];
+      const cancelled = cancelledRes.data || [];
+      const rejected = rejectedRes.data || [];
+      const fetchedDirect = directRes.data || [];
+      const fetchedCategories = categoryRes.data || [];
+      const directApptIds = fetchedDirect
+        .map((request) => request.appointment_id)
+        .filter((id): id is string => Boolean(id));
+      const saved = await fetchSavedAssessmentAppointmentIds(directApptIds);
+      const activeDirect = filterActiveDirectRequests(fetchedDirect, saved.data || []);
+
+      setInboxCounts({
+        pending: pending.length,
+        cancelled: cancelled.length,
+        rejected: rejected.length,
+        direct: activeDirect.length,
+      });
+      setPhysioId(me.data?.[0]?.id || null);
+      setCategories(fetchedCategories);
+      setConvertCategoryId(
+        (current) => current || defaultDirectBookingCategory(fetchedCategories),
+      );
+
+      if (activeTab === "direct") {
+        setDirectItems(activeDirect);
+        setItems([]);
+      } else {
+        const listByTab: Record<Exclude<InboxTab, "direct">, PhysioAppointment[]> = {
+          pending,
+          cancelled,
+          rejected,
+        };
+        setItems(listByTab[activeTab]);
+        setDirectItems(activeDirect);
+      }
+
+      const detectedClinic =
+        pending[0]?.clinics?.name ||
+        activeDirect[0]?.clinics?.name ||
+        cancelled[0]?.clinics?.name ||
+        rejected[0]?.clinics?.name ||
+        profile.data?.full_name?.replace(/^(dr\.?|physio)\s*/i, "").trim() ||
+        "Clinic";
+      setClinicName(formatClinicName(detectedClinic));
+      if (!options?.silent) setLoading(false);
+    },
+    [tab],
+  );
 
   useEffect(() => {
     void reload(tab);
-  }, [tab]);
+    const refresh = window.setInterval(() => {
+      void reload(tab, { silent: true });
+    }, 30_000);
+    return () => window.clearInterval(refresh);
+  }, [reload, tab]);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const next = initialInboxTab();
+      setTab(next);
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  function selectTab(next: InboxTab) {
+    setTab(next);
+    if (typeof window === "undefined") return;
+    if (next === "direct") {
+      window.history.replaceState(null, "", `${window.location.pathname}#direct`);
+    } else {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }
 
   const dateIso = date
     ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
@@ -116,6 +228,23 @@ function AppointmentRequestsPage() {
     setReason("");
   }
 
+  function openConvert(request: DirectBookingRequest) {
+    setActiveDirect(request);
+    setConvertEmail(defaultDirectBookingEmail(request));
+    setConvertPassword(defaultDirectBookingPassword(request));
+    setConvertDate(todayIsoDate());
+    setConvertTime(currentTimeValue());
+    setConvertCategoryId(defaultDirectBookingCategory(categories));
+  }
+
+  function closeConvert() {
+    setActiveDirect(null);
+    setConvertEmail("");
+    setConvertPassword("");
+    setConvertDate(todayIsoDate());
+    setConvertTime(currentTimeValue());
+  }
+
   async function onReject(a: PhysioAppointment) {
     const r = window.prompt("Rejection reason (required):");
     if (r === null) return;
@@ -124,16 +253,11 @@ function AppointmentRequestsPage() {
       return;
     }
     setBusy(true);
-    const { error } = await rejectAppointment(
-      a.id,
-      a.patient_id,
-      a.appointment_code,
-      r,
-    );
+    const { error } = await rejectAppointment(a.id, a.patient_id, a.appointment_code, r);
     setBusy(false);
     if (error) toast.error(error);
     else {
-      toast.success("Request rejected — patient notified");
+      toast.success("Request rejected - patient notified");
       void reload();
     }
   }
@@ -163,7 +287,7 @@ function AppointmentRequestsPage() {
 
     if (error) toast.error(error);
     else {
-      toast.success("Accepted — QR ticket generated");
+      toast.success("Accepted - QR ticket generated");
       closeModal();
       void reload();
     }
@@ -200,34 +324,98 @@ function AppointmentRequestsPage() {
 
     if (error) toast.error(error);
     else {
-      toast.success("Rescheduled — patient notified");
+      toast.success("Rescheduled - patient notified");
       closeModal();
       void reload();
     }
   }
 
+  async function updateDirectStatus(
+    request: DirectBookingRequest,
+    status: Extract<DirectBookingStatus, "called" | "ready_for_session">,
+  ) {
+    const now = new Date().toISOString();
+    setBusy(true);
+    const { error } = await updateDirectBookingRequest(request.id, {
+      status,
+      contacted_at: status === "called" ? now : request.contacted_at || now,
+      ready_at: status === "ready_for_session" ? now : request.ready_at,
+    });
+    setBusy(false);
+
+    if (error) toast.error(error);
+    else {
+      toast.success(status === "called" ? "Marked as called" : "Marked ready for session");
+      void reload("direct");
+    }
+  }
+
+  async function confirmConvertDirect() {
+    if (!activeDirect) return;
+    if (!convertDate || !convertTime) {
+      toast.error("Choose session date and time.");
+      return;
+    }
+
+    setBusy(true);
+    const { data, error } = await convertDirectBookingRequest({
+      requestId: activeDirect.id,
+      email: convertEmail,
+      password: convertPassword,
+      categoryId: convertCategoryId,
+      scheduledDate: convertDate,
+      scheduledTime: convertTime,
+    });
+    setBusy(false);
+
+    if (error || !data) {
+      toast.error(error || "Could not create patient account.");
+      return;
+    }
+
+    toast.success("Account created - opening assessment");
+    closeConvert();
+    await reload("direct");
+    void navigate({
+      to: "/physio/assessments/$appointmentId",
+      params: { appointmentId: data.appointment_id },
+    });
+  }
+
   return (
     <div>
       <PortalPageHeader
-        eyebrow={`Inbox · ${clinicName}`}
+        eyebrow={`Inbox - ${clinicName}`}
         title="Appointment requests"
-        description={`Review pending bookings and track cancelled or rejected visits for ${clinicName}.`}
+        description={
+          tab === "direct"
+            ? `Call direct-booking patients and create an account only when the session starts.`
+            : `Review pending bookings and track cancelled or rejected visits for ${clinicName}.`
+        }
       />
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 portal-filter-row">
         {TABS.map((t) => (
           <button
             key={t.id}
             type="button"
-            onClick={() => setTab(t.id)}
+            onClick={() => selectTab(t.id)}
             className={cn(
-              "rounded-full px-4 py-2 text-sm font-bold transition-colors",
+              "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors",
               tab === t.id
-                ? "bg-[var(--sage)] text-white"
+                ? "bg-[var(--saffron)] text-white"
                 : "bg-white text-[var(--ink-soft)] ring-1 ring-black/5 hover:bg-[var(--ivory)]",
             )}
           >
             {t.label}
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10px]",
+                tab === t.id ? "bg-white/20 text-white" : "bg-black/5 text-[var(--ink-soft)]",
+              )}
+            >
+              {inboxCounts[t.id]}
+            </span>
           </button>
         ))}
       </div>
@@ -238,6 +426,14 @@ function AppointmentRequestsPage() {
             <div key={i} className="h-40 animate-pulse rounded-3xl bg-white" />
           ))}
         </div>
+      ) : tab === "direct" ? (
+        <DirectRequestsList
+          items={directItems}
+          busy={busy}
+          onMarkCalled={(request) => void updateDirectStatus(request, "called")}
+          onMarkReady={(request) => void updateDirectStatus(request, "ready_for_session")}
+          onCreateAccount={openConvert}
+        />
       ) : items.length === 0 ? (
         <EmptyState
           icon={CalendarClock}
@@ -257,10 +453,10 @@ function AppointmentRequestsPage() {
           }
         />
       ) : (
-        <div className="grid gap-4">
-          {items.map((a) => {
+        <>
+          <div className="grid gap-4">
+            {itemsMore.visible.map((a) => {
             const name = a.patients?.profiles?.full_name || "Patient";
-            const age = ageFromDob(a.patients?.date_of_birth);
             return (
               <article
                 key={a.id}
@@ -268,19 +464,12 @@ function AppointmentRequestsPage() {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <div className="text-xs font-bold uppercase tracking-wider text-[var(--bronze)]">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
                       {a.appointment_code}
                     </div>
-                    <h3 className="mt-1 text-xl font-extrabold text-[var(--ink)]">
-                      {name}
-                      {age != null ? (
-                        <span className="ml-2 text-base font-semibold text-[var(--ink-soft)]">
-                          · {age} yrs
-                        </span>
-                      ) : null}
-                    </h3>
+                    <h3 className="mt-1 text-xl font-extrabold text-[var(--ink)]">{name}</h3>
                     <p className="text-sm text-[var(--ink-soft)]">
-                      {a.physiotherapy_categories?.name} · {a.clinics?.name}
+                      {a.physiotherapy_categories?.name} - {formatClinicName(a.clinics?.name || "Clinic")}
                     </p>
                   </div>
                   <StatusBadge status={a.status} />
@@ -292,7 +481,7 @@ function AppointmentRequestsPage() {
                   {tab === "cancelled" && a.cancelled_at
                     ? `Cancelled ${formatDateLabel(a.cancelled_at.slice(0, 10))}`
                     : `Requested ${formatDateLabel(a.preferred_date)}`}{" "}
-                  · {formatTimeLabel(a.scheduled_time || a.preferred_time)}
+                  - {formatTimeLabel(a.scheduled_time || a.preferred_time)}
                 </div>
 
                 {tab === "cancelled" && a.cancellation_reason ? (
@@ -308,37 +497,43 @@ function AppointmentRequestsPage() {
                 ) : null}
 
                 {tab === "pending" ? (
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => openAccept(a)}
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    <Check className="h-4 w-4" /> Accept
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => openReschedule(a)}
-                    className="inline-flex items-center gap-2 rounded-full bg-[var(--ivory)] px-4 py-2.5 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
-                  >
-                    <CalendarClock className="h-4 w-4" /> Reschedule
-                  </button>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() => void onReject(a)}
-                    className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-800"
-                  >
-                    <X className="h-4 w-4" /> Reject
-                  </button>
-                </div>
+                  <div className="mt-5 portal-card-actions portal-card-actions--stack">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => openAccept(a)}
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--saffron)] px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[var(--saffron-deep)] transition-colors disabled:opacity-50 cursor-pointer"
+                    >
+                      <Check className="h-4 w-4" /> Accept
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => openReschedule(a)}
+                      className="inline-flex items-center gap-2 rounded-full bg-[var(--ivory)] px-4 py-2.5 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5"
+                    >
+                      <CalendarClock className="h-4 w-4" /> Reschedule
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void onReject(a)}
+                      className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-800"
+                    >
+                      <X className="h-4 w-4" /> Reject
+                    </button>
+                  </div>
                 ) : null}
               </article>
             );
           })}
-        </div>
+          </div>
+          <ShowMoreButton
+            hiddenCount={itemsMore.hiddenCount}
+            expanded={itemsMore.expanded}
+            onClick={itemsMore.toggle}
+          />
+        </>
       )}
 
       {mode === "accept" && active ? (
@@ -346,16 +541,15 @@ function AppointmentRequestsPage() {
           <div className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-xl">
             <h3 className="text-xl font-extrabold text-[var(--ink)]">Accept appointment</h3>
             <p className="mt-1 text-sm text-[var(--ink-soft)]">
-              {active.patients?.profiles?.full_name} · {active.appointment_code}
+              {active.patients?.profiles?.full_name} - {active.appointment_code}
             </p>
 
-            <div className="mt-5 rounded-2xl bg-emerald-50 px-4 py-4 ring-1 ring-emerald-100">
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+            <div className="mt-5 rounded-2xl bg-[var(--saffron-light)] px-4 py-4 ring-1 ring-[var(--saffron)]/20">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
                 Patient requested time
               </p>
               <p className="mt-2 text-lg font-extrabold text-[var(--ink)]">
-                {formatDateLabel(active.preferred_date)} ·{" "}
-                {formatTimeLabel(active.preferred_time)}
+                {formatDateLabel(active.preferred_date)} - {formatTimeLabel(active.preferred_time)}
               </p>
               <p className="mt-2 text-xs text-[var(--ink-soft)]">
                 Accepting confirms this slot and generates a QR ticket for the patient.
@@ -374,9 +568,9 @@ function AppointmentRequestsPage() {
                 type="button"
                 disabled={busy}
                 onClick={() => void confirmAccept()}
-                className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                className="rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
               >
-                {busy ? "Accepting…" : "Confirm accept"}
+                {busy ? "Accepting..." : "Confirm accept"}
               </button>
             </div>
           </div>
@@ -388,10 +582,10 @@ function AppointmentRequestsPage() {
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] bg-white p-6 shadow-xl">
             <h3 className="text-xl font-extrabold text-[var(--ink)]">Reschedule appointment</h3>
             <p className="mt-1 text-sm text-[var(--ink-soft)]">
-              {active.patients?.profiles?.full_name} · {active.appointment_code}
+              {active.patients?.profiles?.full_name} - {active.appointment_code}
             </p>
             <p className="mt-2 text-xs text-[var(--ink-soft)]">
-              Originally requested {formatDateLabel(active.preferred_date)} ·{" "}
+              Originally requested {formatDateLabel(active.preferred_date)} -{" "}
               {formatTimeLabel(active.preferred_time)}. Pick a new date and time below.
             </p>
 
@@ -448,7 +642,7 @@ function AppointmentRequestsPage() {
                         !s.available
                           ? "bg-slate-100 text-slate-400 line-through cursor-not-allowed"
                           : time === s.start_time
-                            ? "bg-[var(--sage)] text-white ring-[var(--sage)]"
+                            ? "bg-[var(--saffron)] text-white ring-[var(--saffron)]"
                             : "bg-[var(--ivory)] ring-black/5",
                       )}
                     >
@@ -486,9 +680,99 @@ function AppointmentRequestsPage() {
                 type="button"
                 disabled={busy || !time}
                 onClick={() => void confirmReschedule()}
-                className="rounded-full bg-[var(--sage)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                className="rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
               >
-                {busy ? "Saving…" : "Confirm reschedule"}
+                {busy ? "Saving..." : "Confirm reschedule"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {activeDirect ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] bg-white p-6 shadow-xl">
+            <h3 className="text-xl font-extrabold text-[var(--ink)]">Create patient account</h3>
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">
+              {activeDirect.full_name} - {activeDirect.request_code}
+            </p>
+
+            <div className="mt-4 rounded-2xl bg-[var(--ivory)] px-4 py-3 text-xs text-[var(--ink-soft)] ring-1 ring-black/5">
+              Give these credentials to the patient after creation. They can use them next time to
+              view assessments and reports.
+            </div>
+
+            <div className="mt-5 grid gap-4">
+              <label className="block text-sm font-semibold">
+                Email / login id
+                <input
+                  type="email"
+                  value={convertEmail}
+                  onChange={(e) => setConvertEmail(e.target.value)}
+                  className={fieldClass}
+                />
+              </label>
+              <label className="block text-sm font-semibold">
+                Temporary password
+                <input
+                  type="text"
+                  value={convertPassword}
+                  onChange={(e) => setConvertPassword(e.target.value)}
+                  className={fieldClass}
+                />
+              </label>
+              <label className="block text-sm font-semibold">
+                Category
+                <select
+                  value={convertCategoryId || ""}
+                  onChange={(e) => setConvertCategoryId(e.target.value || null)}
+                  className={fieldClass}
+                >
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-semibold">
+                  Session date
+                  <input
+                    type="date"
+                    value={convertDate}
+                    onChange={(e) => setConvertDate(e.target.value)}
+                    className={fieldClass}
+                  />
+                </label>
+                <label className="block text-sm font-semibold">
+                  Session time
+                  <input
+                    type="time"
+                    value={convertTime}
+                    onChange={(e) => setConvertTime(e.target.value)}
+                    className={fieldClass}
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={closeConvert}
+                className="rounded-full px-4 py-2.5 text-sm font-bold text-[var(--ink-soft)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void confirmConvertDirect()}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+              >
+                <UserPlus className="h-4 w-4" />
+                {busy ? "Creating..." : "Create account & start"}
               </button>
             </div>
           </div>
@@ -497,3 +781,151 @@ function AppointmentRequestsPage() {
     </div>
   );
 }
+
+function DirectRequestsList({
+  items,
+  busy,
+  onMarkCalled,
+  onMarkReady,
+  onCreateAccount,
+}: {
+  items: DirectBookingRequest[];
+  busy: boolean;
+  onMarkCalled: (request: DirectBookingRequest) => void;
+  onMarkReady: (request: DirectBookingRequest) => void;
+  onCreateAccount: (request: DirectBookingRequest) => void;
+}) {
+  const listMore = useShowMore(items);
+
+  if (items.length === 0) {
+    return (
+      <EmptyState
+        icon={PhoneCall}
+        title="No direct requests waiting"
+        description="Active walk-in leads appear here. Completed sessions move to the workspace completed section."
+      />
+    );
+  }
+
+  return (
+    <>
+      <div className="grid gap-4">
+        {listMore.visible.map((request) => (
+        <article
+          key={request.id}
+          className="rounded-3xl bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-6"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+                {request.request_code}
+              </div>
+              <h3 className="mt-1 text-xl font-extrabold text-[var(--ink)]">{request.full_name}</h3>
+              <p className="text-sm text-[var(--ink-soft)]">{formatClinicName(request.clinics?.name || "Clinic")}</p>
+            </div>
+            <DirectStatusBadge status={request.status} />
+          </div>
+
+          <div className="mt-4 grid gap-2 text-sm text-[var(--ink)] sm:grid-cols-2">
+            <div className="flex items-center gap-2 font-semibold">
+              <Phone className="h-4 w-4 text-[var(--sage)]" />
+              <a href={`tel:${request.phone}`} className="hover:underline">
+                {request.phone}
+              </a>
+            </div>
+            <div className="font-semibold">Requested {formatDateTimeLabel(request.created_at)}</div>
+          </div>
+
+          <div className="mt-5 portal-card-actions portal-card-actions--stack">
+            {request.status === "new" ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => onMarkCalled(request)}
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--saffron)] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+              >
+                <PhoneCall className="h-4 w-4" /> Mark called
+              </button>
+            ) : null}
+
+            {request.status === "called" ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => onMarkReady(request)}
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--saffron)] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+              >
+                <Check className="h-4 w-4" /> Ready for session
+              </button>
+            ) : null}
+
+            {request.status === "ready_for_session" ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => onCreateAccount(request)}
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--pink-main)] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+              >
+                <UserPlus className="h-4 w-4" /> Create account & start
+              </button>
+            ) : null}
+          </div>
+        </article>
+      ))}
+      </div>
+      <ShowMoreButton
+        hiddenCount={listMore.hiddenCount}
+        expanded={listMore.expanded}
+        onClick={listMore.toggle}
+      />
+    </>
+  );
+}
+
+function DirectStatusBadge({ status }: { status: DirectBookingStatus }) {
+  const styles: Record<DirectBookingStatus, string> = {
+    new: "bg-amber-50 text-amber-800 ring-amber-100",
+    called: "bg-sky-50 text-sky-800 ring-sky-100",
+    ready_for_session: "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/20",
+    converted: "bg-[var(--saffron)]/10 text-[var(--sage-deep)] ring-[var(--saffron)]/20",
+    closed: "bg-slate-100 text-slate-600 ring-slate-200",
+  };
+
+  const labels: Record<DirectBookingStatus, string> = {
+    new: "New",
+    called: "Called",
+    ready_for_session: "Ready",
+    converted: "Account created",
+    closed: "Closed",
+  };
+
+  return (
+    <span className={cn("rounded-full px-3 py-1 text-xs font-bold ring-1", styles[status])}>
+      {labels[status]}
+    </span>
+  );
+}
+
+function todayIsoDate() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+function currentTimeValue() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
+function formatDateTimeLabel(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+const fieldClass =
+  "mt-1.5 w-full rounded-2xl bg-[var(--ivory)] px-4 py-3 text-sm text-[var(--ink)] ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--saffron)]";

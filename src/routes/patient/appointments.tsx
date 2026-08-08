@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
 import {
   cancelAppointment,
@@ -36,10 +37,15 @@ function MyAppointmentsPage() {
     void reload();
   }, []);
 
-  const visible = useMemo(
+  const filtered = useMemo(
     () => (filter === "all" ? items : items.filter((a) => a.status === filter)),
     [items, filter],
   );
+  const listMore = useShowMore(filtered);
+
+  useEffect(() => {
+    listMore.collapse();
+  }, [filter, listMore.collapse]);
 
   async function onCancel(id: string) {
     const reason = window.prompt("Optional: why are you cancelling?");
@@ -68,7 +74,7 @@ function MyAppointmentsPage() {
         }
       />
 
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className="mb-6 portal-filter-row">
         {FILTERS.map((f) => (
           <button
             key={f}
@@ -91,7 +97,7 @@ function MyAppointmentsPage() {
             <div key={i} className="h-36 animate-pulse rounded-3xl bg-white ring-1 ring-black/5" />
           ))}
         </div>
-      ) : visible.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <EmptyState
           icon={Calendar}
           title="No appointments here"
@@ -106,8 +112,9 @@ function MyAppointmentsPage() {
           }
         />
       ) : (
-        <div className="grid gap-4">
-          {visible.map((a) => (
+        <>
+          <div className="grid gap-4">
+            {listMore.visible.map((a) => (
             <article
               key={a.id}
               className="rounded-3xl bg-white p-5 sm:p-6 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)]"
@@ -152,7 +159,7 @@ function MyAppointmentsPage() {
                 </p>
               ) : null}
 
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 portal-card-actions">
                 {a.status === "accepted" ? (
                   <Link
                     to="/patient/qr-ticket"
@@ -172,8 +179,14 @@ function MyAppointmentsPage() {
                 ) : null}
               </div>
             </article>
-          ))}
-        </div>
+            ))}
+          </div>
+          <ShowMoreButton
+            hiddenCount={listMore.hiddenCount}
+            expanded={listMore.expanded}
+            onClick={listMore.toggle}
+          />
+        </>
       )}
     </div>
   );

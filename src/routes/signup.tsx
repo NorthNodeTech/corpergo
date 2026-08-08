@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { FormEvent, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
-import logoImg from "@/assets/LOGO.webp";
+import { CorpErgoLogo } from "@/components/CorpErgoLogo";
 import { getStoredSession, signUpPatient } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({
@@ -30,6 +30,9 @@ function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const nextPath =
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") : null;
+  const patientDestination = nextPath?.startsWith("/patient") ? nextPath : "/patient/dashboard";
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -74,7 +77,7 @@ function SignupPage() {
     if (getStoredSession()) {
       setSuccess("Account created. Opening your portal…");
       window.setTimeout(() => {
-        void navigate({ to: "/patient/dashboard" });
+        void navigate({ to: patientDestination });
       }, 600);
       return;
     }
@@ -89,7 +92,7 @@ function SignupPage() {
     <main className="min-h-dvh bg-[var(--ivory)] lg:grid lg:h-dvh lg:grid-cols-2 lg:overflow-hidden">
       <div
         className="relative hidden overflow-hidden lg:block"
-        style={{ background: "linear-gradient(135deg, #06261E 0%, #0F6B58 60%, #00A896 100%)" }}
+        style={{ background: "linear-gradient(135deg, #000000 0%, #1a1a1a 55%, #ff9933 100%)" }}
       >
         <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
         <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[var(--pink-main)]/25 blur-3xl" />
@@ -111,21 +114,12 @@ function SignupPage() {
               Start your recovery with CorpErgo.
             </h1>
             <p className="mt-5 max-w-md text-lg text-white/85">
-              Create a patient account to book assessments, view prescriptions,
-              and follow your progress across our Bengaluru clinics.
+              Create a patient account to book assessments, view prescriptions, and follow your
+              progress across our Bengaluru clinics.
             </p>
           </div>
 
-          <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2.5 shadow-md ring-1 ring-white/20">
-            <img
-              src={logoImg}
-              alt="CorpErgo"
-              className="h-16 w-auto object-contain xl:h-20"
-              width={96}
-              height={96}
-              decoding="async"
-            />
-          </div>
+          <CorpErgoLogo size="xl" frameClassName="shadow-md ring-white/20" />
         </div>
       </div>
 
@@ -145,16 +139,7 @@ function SignupPage() {
                   <ArrowLeft className="h-4 w-4" /> Back to login
                 </Link>
                 <div className="flex justify-center">
-                  <div className="inline-flex items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/10">
-                    <img
-                      src={logoImg}
-                      alt="CorpErgo"
-                      className="h-11 w-auto object-contain sm:h-12"
-                      width={72}
-                      height={72}
-                      decoding="async"
-                    />
-                  </div>
+                  <CorpErgoLogo size="lg" />
                 </div>
               </div>
 
@@ -162,8 +147,8 @@ function SignupPage() {
                 Create patient account
               </h2>
               <p className="mt-2 text-sm text-[var(--ink-soft)] sm:text-base">
-                Physiotherapist and admin accounts are issued by CorpErgo — only
-                patients can self-register.
+                Physiotherapist and admin accounts are issued by CorpErgo — only patients can
+                self-register.
               </p>
 
               <form className="mt-6 space-y-3 sm:mt-8 sm:space-y-4" onSubmit={onSubmit}>

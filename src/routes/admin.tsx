@@ -26,7 +26,7 @@ const NAV: PortalNavItem[] = [
   { to: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/admin/dashboard", label: "Network", icon: Building2, hash: "admin-network" },
   { to: "/admin/dashboard", label: "Analytics", icon: Activity, hash: "admin-analytics" },
-  { to: "/admin/dashboard", label: "Bookings", icon: ClipboardList, hash: "admin-bookings" },
+  { to: "/admin/dashboard", label: "Clinics", icon: ClipboardList, hash: "admin-clinic-detail" },
 ];
 
 /** Mobile footer — executive sections (not clinical Scan/Queue) */
@@ -48,10 +48,10 @@ const FOOTER_NAV: PortalNavItem[] = [
   },
   {
     to: "/admin/dashboard",
-    label: "Bookings",
-    shortLabel: "Bookings",
+    label: "Clinics",
+    shortLabel: "Clinics",
     icon: ClipboardList,
-    hash: "admin-bookings",
+    hash: "admin-clinic-detail",
   },
 ];
 
@@ -64,6 +64,7 @@ function AdminLayout() {
           subtitle="Executive command center"
           nav={NAV}
           footerNav={FOOTER_NAV}
+          desktopNav="header"
           centerAction={{
             to: "/admin/dashboard",
             label: "Alerts",

@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import {
   BLOOD_GROUPS,
   MEDICAL_CONDITION_OPTIONS,
-  ageFromDob,
+  ageFromPatient,
   type MedicalConditions,
   type PatientRecord,
 } from "@/lib/patient-intake";
@@ -43,7 +43,7 @@ export function PatientIntakeForm({
   collapsibleExtras = false,
   className,
 }: PatientIntakeFormProps) {
-  const age = useMemo(() => ageFromDob(values.patient.date_of_birth), [values.patient.date_of_birth]);
+  const age = ageFromPatient(values.patient);
   const [extrasOpen, setExtrasOpen] = useState(!collapsibleExtras);
 
   function patchPatient(patch: Partial<PatientRecord>) {
@@ -118,11 +118,7 @@ export function PatientIntakeForm({
 
           <label className={labelClass}>
             Age
-            <input
-              className={fieldClass}
-              value={age != null ? `${age} years` : "—"}
-              disabled
-            />
+            <input className={fieldClass} value={age != null ? `${age} years` : "—"} disabled />
           </label>
 
           <label className={labelClass}>
@@ -182,7 +178,9 @@ export function PatientIntakeForm({
 
       {showExtras ? (
         <div className="space-y-6">
-          <section className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}>
+          <section
+            className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}
+          >
             <h2 className="text-base font-semibold text-[var(--ink)]">Address</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <label className={cn(labelClass, "sm:col-span-2")}>
@@ -213,7 +211,9 @@ export function PatientIntakeForm({
             </div>
           </section>
 
-          <section className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}>
+          <section
+            className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}
+          >
             <h2 className="text-base font-semibold text-[var(--ink)]">Emergency contact</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <label className={labelClass}>
@@ -221,9 +221,7 @@ export function PatientIntakeForm({
                 <input
                   className={fieldClass}
                   value={values.patient.emergency_contact_name || ""}
-                  onChange={(e) =>
-                    patchPatient({ emergency_contact_name: e.target.value || null })
-                  }
+                  onChange={(e) => patchPatient({ emergency_contact_name: e.target.value || null })}
                 />
               </label>
               <label className={labelClass}>
@@ -250,7 +248,9 @@ export function PatientIntakeForm({
             </div>
           </section>
 
-          <section className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}>
+          <section
+            className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}
+          >
             <h2 className="text-base font-semibold text-[var(--ink)]">Medical history</h2>
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
               {MEDICAL_CONDITION_OPTIONS.map(({ key, label }) => (
@@ -284,14 +284,14 @@ export function PatientIntakeForm({
                 className={fieldClass}
                 rows={2}
                 value={values.patient.other_medical_conditions || ""}
-                onChange={(e) =>
-                  patchPatient({ other_medical_conditions: e.target.value || null })
-                }
+                onChange={(e) => patchPatient({ other_medical_conditions: e.target.value || null })}
               />
             </label>
           </section>
 
-          <section className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}>
+          <section
+            className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}
+          >
             <h2 className="text-base font-semibold text-[var(--ink)]">Allergies</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
               <label className={labelClass}>
@@ -324,7 +324,9 @@ export function PatientIntakeForm({
             </div>
           </section>
 
-          <section className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}>
+          <section
+            className={cn(collapsibleExtras && "rounded-xl border border-slate-200 p-4 sm:p-5")}
+          >
             <h2 className="text-base font-semibold text-[var(--ink)]">Current medications</h2>
             <label className={cn(labelClass, "mt-4")}>
               List medicines and doses

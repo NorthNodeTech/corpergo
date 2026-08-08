@@ -1,8 +1,10 @@
 import { fetchMyProfile } from "@/lib/auth";
-import { fetchAssessableAppointments } from "@/lib/assessment-data";
+import { fetchAssessableAppointments, fetchSavedAssessmentAppointmentIds } from "@/lib/assessment-data";
+import { formatClinicName } from "@/lib/utils";
 import { fetchClinics } from "@/lib/clinic-data";
+import { fetchDirectBookingRequests, filterActiveDirectRequests, instantWalkInAppointments, type DirectBookingRequest } from "@/lib/direct-booking-data";
 import {
-  ageFromDob,
+  ageFromPatient,
   fetchClinicAppointments,
   fetchMyPhysioId,
   fetchTodayQueue,
@@ -27,10 +29,17 @@ export type PhysioWorkspaceBundle = {
   clinicName: string;
   todayQueue: PhysioAppointment[];
   pending: PhysioAppointment[];
+  directRequests: DirectBookingRequest[];
+  directRequestsActive: DirectBookingRequest[];
+  instantWalkIns: PhysioAppointment[];
   cancelled: PhysioAppointment[];
   accepted: PhysioAppointment[];
   completedToday: PhysioAppointment[];
   assessable: PhysioAppointment[];
+  assessedAppointmentIds: string[];
+  directAppointmentIds: string[];
+  instantAppointmentIds: string[];
+  inProgressQueue: PhysioAppointment[];
   current: PhysioAppointment | null;
   insights: PhysioInsight[];
   categories: CategoryCount[];
@@ -38,6 +47,7 @@ export type PhysioWorkspaceBundle = {
     today: number;
     waiting: number;
     pending: number;
+    direct: number;
     followUps: number;
     completed: number;
   };
@@ -55,7 +65,9 @@ function apptTime(a: PhysioAppointment) {
 function buildInsights(
   queue: PhysioAppointment[],
   pending: PhysioAppointment[],
+  directRequests: DirectBookingRequest[],
   assessable: PhysioAppointment[],
+  assessedIds: Set<string>,
 ): PhysioInsight[] {
   const items: PhysioInsight[] = [];
   const waiting = queue.filter((a) => a.status === "checked_in");
@@ -87,7 +99,23 @@ function buildInsights(
     });
   }
 
-  const needsAssess = assessable.filter((a) => a.status === "checked_in" || a.status === "accepted");
+  if (directRequests.length) {
+    items.push({
+      id: "direct",
+      tone: "warn",
+      title: `${directRequests.length} direct booking request${directRequests.length > 1 ? "s" : ""} waiting`,
+      detail: directRequests
+        .slice(0, 3)
+        .map((request) => request.full_name)
+        .join(", "),
+    });
+  }
+
+  const needsAssess = assessable.filter(
+    (a) =>
+      (a.status === "checked_in" || a.status === "accepted") &&
+      !assessedIds.has(a.id),
+  );
   if (needsAssess.length) {
     items.push({
       id: "assess",
@@ -97,9 +125,7 @@ function buildInsights(
     });
   }
 
-  const symptoms = queue
-    .map((a) => (a.symptoms || "").toLowerCase())
-    .filter(Boolean);
+  const symptoms = queue.map((a) => (a.symptoms || "").toLowerCase()).filter(Boolean);
   const back = symptoms.filter((s) => /back|spine|lumbar|disc/.test(s)).length;
   if (back >= 2) {
     items.push({
@@ -147,15 +173,21 @@ function buildCategories(appts: PhysioAppointment[]): CategoryCount[] {
     .slice(0, 6);
 }
 
-export function pickCurrentPatient(queue: PhysioAppointment[]): PhysioAppointment | null {
-  const waiting = queue.filter((a) => a.status === "checked_in");
+export function pickCurrentPatient(
+  queue: PhysioAppointment[],
+  assessedIds: Set<string>,
+): PhysioAppointment | null {
+  const active = queue.filter(
+    (a) =>
+      (a.status === "checked_in" || a.status === "accepted") && !assessedIds.has(a.id),
+  );
+  const waiting = active.filter((a) => a.status === "checked_in");
   if (waiting[0]) return waiting[0];
-  const next = queue.find((a) => a.status === "accepted");
-  return next || null;
+  return active.find((a) => a.status === "accepted") || null;
 }
 
 export function patientAge(a: PhysioAppointment) {
-  return ageFromDob(a.patients?.date_of_birth);
+  return ageFromPatient(a.patients);
 }
 
 export function patientName(a: PhysioAppointment) {
@@ -168,27 +200,65 @@ export function visitTimeLabel(a: PhysioAppointment) {
 
 export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
   const today = todayIso();
-  const [profileRes, physioRes, queueRes, pendingRes, cancelledRes, assessRes, allRes, clinicId] =
-    await Promise.all([
-      fetchMyProfile(),
-      fetchMyPhysioId(),
-      fetchTodayQueue(),
-      fetchClinicAppointments("pending"),
-      fetchClinicAppointments("cancelled"),
-      fetchAssessableAppointments(),
-      fetchClinicAppointments(),
-      resolveStaffClinicId(),
-    ]);
+  const [
+    profileRes,
+    physioRes,
+    queueRes,
+    pendingRes,
+    directRes,
+    cancelledRes,
+    assessRes,
+    allRes,
+    clinicId,
+  ] = await Promise.all([
+    fetchMyProfile(),
+    fetchMyPhysioId(),
+    fetchTodayQueue(),
+    fetchClinicAppointments("pending"),
+    fetchDirectBookingRequests(),
+    fetchClinicAppointments("cancelled"),
+    fetchAssessableAppointments(),
+    fetchClinicAppointments(),
+    resolveStaffClinicId(),
+  ]);
 
   const queue = queueRes.data || [];
+  const allDirect = directRes.data || [];
   const pending = pendingRes.data || [];
   const cancelled = cancelledRes.data || [];
   const assessable = assessRes.data || [];
   const all = allRes.data || [];
+  const todayAll = all.filter((a) => (a.scheduled_date || a.preferred_date) === today);
+
+  const directApptIds = allDirect
+    .map((request) => request.appointment_id)
+    .filter((id): id is string => Boolean(id));
+  const allAppointmentIds = all.map((a) => a.id);
+  const savedAssessments = await fetchSavedAssessmentAppointmentIds(allAppointmentIds);
+  const assessedAppointmentIds = savedAssessments.data || [];
+  const assessedIds = new Set(assessedAppointmentIds);
+
+  const directRequests = filterActiveDirectRequests(allDirect, assessedIds);
+  const directRequestsActive = directRequests;
+  const instantWalkIns = instantWalkInAppointments(allDirect, all, assessedIds);
+  const directAppointmentIds = [...new Set(directApptIds.filter((id) => {
+    const req = allDirect.find((r) => r.appointment_id === id);
+    return (req?.booking_source || "web") === "web";
+  }))];
+  const instantAppointmentIds = [
+    ...new Set(
+      allDirect
+        .filter((r) => r.booking_source === "instant" && r.appointment_id)
+        .map((r) => r.appointment_id!),
+    ),
+  ];
+
+  const inProgressQueue = queue.filter((a) => !assessedIds.has(a.id) && a.status !== "completed");
 
   let clinicName =
     queue[0]?.clinics?.name ||
     pending[0]?.clinics?.name ||
+    directRequests[0]?.clinics?.name ||
     all[0]?.clinics?.name ||
     "CorpErgo Clinic";
 
@@ -198,31 +268,47 @@ export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
     if (match) clinicName = match.name;
   }
 
-  const completedToday = queue.filter((a) => a.status === "completed");
+  const completedById = new Map<string, PhysioAppointment>();
+  for (const appt of all) {
+    if (appt.status === "completed" || assessedIds.has(appt.id)) {
+      const visitDate = appt.scheduled_date || appt.preferred_date;
+      const isTodayVisit = visitDate === today || queue.some((q) => q.id === appt.id);
+      if (isTodayVisit) completedById.set(appt.id, appt);
+    }
+  }
+  const completedToday = [...completedById.values()].sort((a, b) =>
+    apptTime(a).localeCompare(apptTime(b)),
+  );
   const accepted = queue.filter((a) => a.status === "accepted");
   const waiting = queue.filter((a) => a.status === "checked_in");
 
   // Follow-ups heuristic: accepted visits that aren't checked in yet + assessable with next visit cues
   const followUps = accepted.length;
 
-  const todayAll = all.filter((a) => (a.scheduled_date || a.preferred_date) === today);
-
   return {
     profileName: profileRes.data?.full_name?.trim() || "Doctor",
-    clinicName,
+    clinicName: formatClinicName(clinicName),
     todayQueue: queue,
     pending,
+    directRequests,
+    directRequestsActive,
+    instantWalkIns,
     cancelled: cancelled.slice(0, 10),
     accepted,
     completedToday,
     assessable: assessable.slice(0, 8),
-    current: pickCurrentPatient(queue),
-    insights: buildInsights(queue, pending, assessable),
+    assessedAppointmentIds,
+    directAppointmentIds,
+    instantAppointmentIds,
+    inProgressQueue,
+    current: pickCurrentPatient(queue, assessedIds),
+    insights: buildInsights(queue, pending, directRequestsActive, assessable, assessedIds),
     categories: buildCategories(todayAll.length ? todayAll : queue),
     counts: {
       today: todayAll.length || queue.length,
       waiting: waiting.length,
       pending: pending.length,
+      direct: directRequestsActive.length + instantWalkIns.length,
       followUps,
       completed: completedToday.length,
     },

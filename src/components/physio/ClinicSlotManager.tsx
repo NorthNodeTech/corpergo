@@ -71,7 +71,7 @@ export function ClinicSlotManager({ clinicId, clinicName = "Clinic" }: ClinicSlo
       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-[var(--sage)]/10 text-[var(--sage-deep)]">
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-[var(--saffron)]/10 text-[var(--saffron-deep)]">
               <Lock className="h-4 w-4" />
             </span>
             <h2 className="text-xl font-extrabold text-[var(--ink)]">Block unavailable times</h2>
@@ -96,7 +96,7 @@ export function ClinicSlotManager({ clinicId, clinicName = "Clinic" }: ClinicSlo
             value={selectedDate}
             min={todayIso()}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+            className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--saffron)]"
           />
           <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--ink-soft)] pointer-events-none" />
         </div>
@@ -131,7 +131,7 @@ export function ClinicSlotManager({ clinicId, clinicName = "Clinic" }: ClinicSlo
                     ? "bg-rose-50 text-rose-800 ring-rose-200 hover:bg-rose-100 cursor-pointer"
                     : isFull
                       ? "bg-slate-100 text-slate-400 ring-transparent line-through cursor-not-allowed"
-                      : "bg-[var(--ivory)] text-[var(--ink)] ring-black/5 hover:ring-[var(--sage)] cursor-pointer",
+                      : "bg-[var(--ivory)] text-[var(--ink)] ring-black/5 hover:ring-[var(--saffron)] cursor-pointer",
                 )}
                 title={
                   isBlocked

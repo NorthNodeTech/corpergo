@@ -12,6 +12,7 @@ export type PatientRecord = {
   id: string;
   user_id: string;
   date_of_birth: string | null;
+  age_years: number | null;
   gender: string | null;
   blood_group: string | null;
   address: string | null;
@@ -50,20 +51,10 @@ export const MEDICAL_CONDITION_OPTIONS: {
   { key: "neurological", label: "Neurological Disorders" },
 ];
 
-export const BLOOD_GROUPS = [
-  "A+",
-  "A-",
-  "B+",
-  "B-",
-  "AB+",
-  "AB-",
-  "O+",
-  "O-",
-  "Unknown",
-] as const;
+export const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Unknown"] as const;
 
 export const PATIENT_SELECT =
-  "id,user_id,date_of_birth,gender,blood_group,address,city,pincode,medical_history,allergies,current_medications,emergency_contact_name,emergency_contact_phone,emergency_contact_relation,previous_surgeries,medical_conditions,medicine_allergies,food_allergies,other_allergies,other_medical_conditions,created_at,profiles(full_name,phone,email)";
+  "id,user_id,date_of_birth,age_years,gender,blood_group,address,city,pincode,medical_history,allergies,current_medications,emergency_contact_name,emergency_contact_phone,emergency_contact_relation,previous_surgeries,medical_conditions,medicine_allergies,food_allergies,other_allergies,other_medical_conditions,created_at,profiles(full_name,phone,email)";
 
 export function ageFromDob(dob: string | null | undefined): number | null {
   if (!dob) return null;
@@ -74,6 +65,12 @@ export function ageFromDob(dob: string | null | undefined): number | null {
   const m = now.getMonth() - born.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < born.getDate())) age -= 1;
   return age;
+}
+
+export function ageFromPatient(
+  patient: Pick<PatientRecord, "date_of_birth" | "age_years"> | null | undefined,
+) {
+  return ageFromDob(patient?.date_of_birth) ?? patient?.age_years ?? null;
 }
 
 export function emptyMedicalConditions(): MedicalConditions {
@@ -110,13 +107,13 @@ export function composeAllergiesSummary(p: PatientRecord): string {
 export function isPatientIntakeComplete(p: PatientRecord): boolean {
   return Boolean(
     p.date_of_birth &&
-      p.gender &&
-      p.blood_group &&
-      p.address &&
-      p.city &&
-      p.pincode &&
-      p.emergency_contact_name &&
-      p.emergency_contact_phone,
+    p.gender &&
+    p.blood_group &&
+    p.address &&
+    p.city &&
+    p.pincode &&
+    p.emergency_contact_name &&
+    p.emergency_contact_phone,
   );
 }
 
@@ -126,17 +123,16 @@ export type ProfileCompletion = {
   checks: { id: string; label: string; done: boolean }[];
 };
 
-export function computeProfileCompletion(
-  values: {
-    full_name: string;
-    phone: string;
-    email: string;
-    patient: PatientRecord;
-  },
-): ProfileCompletion {
+export function computeProfileCompletion(values: {
+  full_name: string;
+  phone: string;
+  email: string;
+  patient: PatientRecord;
+}): ProfileCompletion {
   const p = values.patient;
   const conditions = p.medical_conditions || {};
-  const hasCondition = Object.values(conditions).some(Boolean) || Boolean(p.other_medical_conditions?.trim());
+  const hasCondition =
+    Object.values(conditions).some(Boolean) || Boolean(p.other_medical_conditions?.trim());
   const hasAllergy =
     Boolean(p.medicine_allergies?.trim()) ||
     Boolean(p.food_allergies?.trim()) ||
@@ -144,13 +140,33 @@ export function computeProfileCompletion(
     Boolean(p.allergies?.trim());
 
   const checks = [
-    { id: "personal", label: "Personal details", done: Boolean(values.full_name.trim() && values.phone.trim() && p.date_of_birth && p.gender) },
+    {
+      id: "personal",
+      label: "Personal details",
+      done: Boolean(values.full_name.trim() && values.phone.trim() && p.date_of_birth && p.gender),
+    },
     { id: "blood", label: "Blood group", done: Boolean(p.blood_group) },
-    { id: "address", label: "Address", done: Boolean(p.address?.trim() && p.city?.trim() && p.pincode?.trim()) },
-    { id: "emergency", label: "Emergency contact", done: Boolean(p.emergency_contact_name?.trim() && p.emergency_contact_phone?.trim()) },
-    { id: "medical", label: "Medical history", done: hasCondition || Boolean(p.previous_surgeries?.trim()) },
+    {
+      id: "address",
+      label: "Address",
+      done: Boolean(p.address?.trim() && p.city?.trim() && p.pincode?.trim()),
+    },
+    {
+      id: "emergency",
+      label: "Emergency contact",
+      done: Boolean(p.emergency_contact_name?.trim() && p.emergency_contact_phone?.trim()),
+    },
+    {
+      id: "medical",
+      label: "Medical history",
+      done: hasCondition || Boolean(p.previous_surgeries?.trim()),
+    },
     { id: "allergies", label: "Allergies", done: hasAllergy },
-    { id: "medications", label: "Current medications", done: Boolean(p.current_medications?.trim()) },
+    {
+      id: "medications",
+      label: "Current medications",
+      done: Boolean(p.current_medications?.trim()),
+    },
   ];
 
   const doneCount = checks.filter((c) => c.done).length;

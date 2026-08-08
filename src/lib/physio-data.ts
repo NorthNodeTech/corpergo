@@ -11,13 +11,15 @@ export type PhysioAppointment = Appointment & {
   patients?: {
     id: string;
     date_of_birth: string | null;
+    age_years: number | null;
+    gender: string | null;
     medical_history?: string | null;
     profiles?: { full_name: string; phone: string | null } | null;
   } | null;
 };
 
 const SELECT =
-  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,cancellation_reason,cancelled_at,reschedule_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,profiles(full_name,phone))";
+  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,cancellation_reason,cancelled_at,reschedule_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone))";
 
 export function ageFromDob(dob: string | null | undefined): number | null {
   if (!dob) return null;
@@ -27,6 +29,17 @@ export function ageFromDob(dob: string | null | undefined): number | null {
   const m = now.getMonth() - born.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < born.getDate())) age -= 1;
   return age;
+}
+
+export function ageFromPatient(
+  patient: { date_of_birth?: string | null; age_years?: number | null } | null | undefined,
+): number | null {
+  return ageFromDob(patient?.date_of_birth) ?? patient?.age_years ?? null;
+}
+
+export function formatPatientGender(gender: string | null | undefined) {
+  if (!gender?.trim()) return null;
+  return gender.charAt(0).toUpperCase() + gender.slice(1);
 }
 
 export async function fetchMyPhysioId() {
@@ -102,8 +115,7 @@ export async function acceptAppointment(input: {
   scheduledTime: string;
   clinicId: string;
 }) {
-  const time =
-    input.scheduledTime.length === 5 ? `${input.scheduledTime}:00` : input.scheduledTime;
+  const time = input.scheduledTime.length === 5 ? `${input.scheduledTime}:00` : input.scheduledTime;
 
   const capacity = await checkSlotCapacity(
     input.clinicId,
@@ -114,8 +126,7 @@ export async function acceptAppointment(input: {
   if (!capacity.available) {
     return {
       data: null,
-      error:
-        "This time slot is now fully booked. Use Reschedule to pick a different time.",
+      error: "This time slot is now fully booked. Use Reschedule to pick a different time.",
     };
   }
 
@@ -177,16 +188,13 @@ export async function rejectAppointment(
   appointmentCode: string,
   reason: string,
 ) {
-  const { data, error } = await supabaseRest<Appointment[]>(
-    `appointments?id=eq.${appointmentId}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify({
-        status: "rejected",
-        rejection_reason: reason.trim(),
-      }),
-    },
-  );
+  const { data, error } = await supabaseRest<Appointment[]>(`appointments?id=eq.${appointmentId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      status: "rejected",
+      rejection_reason: reason.trim(),
+    }),
+  });
 
   if (!error && patientId) {
     const patientRes = await supabaseRest<{ user_id: string }[]>(
@@ -221,8 +229,7 @@ export async function rescheduleAppointment(input: {
   reason: string;
   clinicId: string;
 }) {
-  const time =
-    input.scheduledTime.length === 5 ? `${input.scheduledTime}:00` : input.scheduledTime;
+  const time = input.scheduledTime.length === 5 ? `${input.scheduledTime}:00` : input.scheduledTime;
 
   const capacity = await checkSlotCapacity(
     input.clinicId,

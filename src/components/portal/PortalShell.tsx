@@ -3,8 +3,9 @@ import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion"
 import type { LucideIcon } from "lucide-react";
 import { ChevronDown, LogOut, Settings, PanelLeftClose, PanelLeftOpen, UserRound } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import logoImg from "@/assets/LOGO.webp";
+import { CorpErgoLogo } from "@/components/CorpErgoLogo";
 import { clearSession } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 export type PortalNavItem = {
   to: string;
@@ -84,9 +85,9 @@ function AccountMenu({
         aria-controls={menuId}
         whileTap={{ scale: 0.96 }}
         onClick={() => setOpen((v) => !v)}
-        className="group flex max-w-[12rem] items-center gap-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] py-1.5 pl-1.5 pr-2.5 shadow-sm sm:max-w-[16rem] hover:bg-[var(--muted)] transition-colors"
+        className="group flex max-w-[12rem] items-center gap-2 rounded-full border border-[var(--border)] bg-white text-[var(--ink)] py-1.5 pl-1.5 pr-2.5 shadow-sm sm:max-w-[16rem] hover:bg-[var(--saffron-light)] transition-colors"
       >
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--structure-maroon)] text-xs font-bold text-white shadow-sm">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[var(--saffron)] text-xs font-bold text-white shadow-sm">
           {initialsFromName(userName)}
         </span>
         <span className="hidden min-w-0 truncate text-sm font-semibold text-[var(--ink)] sm:block">
@@ -217,14 +218,14 @@ function GlassFooterNav({
             {active ? (
               <motion.span
                 layoutId={`portal-tab-pill-${layoutKey}`}
-                className="absolute inset-x-1 inset-y-0 rounded-2xl bg-black/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
+                className="absolute inset-x-1 inset-y-0 rounded-2xl bg-[var(--saffron-light)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
                 transition={{ type: "spring", stiffness: 450, damping: 30, mass: 0.8 }}
               />
             ) : null}
             <motion.div
               animate={{ 
                 scale: active ? 1.05 : 1,
-                color: active ? "#000000" : "var(--ink-soft)"
+                color: active ? "var(--saffron-deep)" : "var(--ink-soft)"
               }}
               transition={{ type: "spring", stiffness: 400, damping: 28 }}
               className="relative z-[1] flex items-center justify-center"
@@ -234,7 +235,7 @@ function GlassFooterNav({
           </div>
           <motion.span
             animate={{
-              color: active ? "#000000" : "var(--ink-soft)"
+              color: active ? "var(--saffron-deep)" : "var(--ink-soft)"
             }}
             transition={{ duration: 0.2 }}
             className={`relative z-[1] max-w-full truncate text-[10px] tracking-wide ${active ? "font-bold" : "font-semibold"}`}
@@ -249,9 +250,9 @@ function GlassFooterNav({
   return (
     <nav
       aria-label="Primary"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4 lg:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.65rem,env(safe-area-inset-bottom))] sm:px-4 lg:hidden"
     >
-      <motion.div style={{ y: dockY, scale: dockScale }} className="pointer-events-auto mx-auto max-w-lg">
+      <motion.div style={{ y: dockY, scale: dockScale }} className="pointer-events-auto mx-auto max-w-md sm:max-w-lg">
         <div className="portal-glass-dock relative flex items-end gap-0.5 rounded-[32px] px-1.5 pb-2 pt-2">
           {left.map((item) => (
             <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
@@ -270,11 +271,7 @@ function GlassFooterNav({
                     whileTap={{ scale: 0.88, y: 4 }}
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 450, damping: 25 }}
-                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_12px_32px_rgba(71,86,63,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md ${
-                      centerActive
-                        ? "bg-black"
-                        : "bg-black"
-                    }`}
+                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full bg-[var(--saffron)] text-white shadow-[0_12px_32px_rgba(242,140,40,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md`}
                   >
                     <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
                     {CenterIcon ? (
@@ -294,11 +291,7 @@ function GlassFooterNav({
                     whileTap={{ scale: 0.88, y: 4 }}
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 450, damping: 25 }}
-                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full text-white shadow-[0_12px_32px_rgba(71,86,63,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md ${
-                      centerActive
-                        ? "bg-black"
-                        : "bg-black"
-                    }`}
+                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full bg-[var(--saffron)] text-white shadow-[0_12px_32px_rgba(242,140,40,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md`}
                   >
                     <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
                     <span className="portal-scan-pulse absolute inset-0 rounded-full" />
@@ -310,7 +303,7 @@ function GlassFooterNav({
               )}
               <span
                 className={`text-[10px] font-semibold tracking-wide ${
-                  centerActive ? "text-black" : "text-[var(--ink-soft)]"
+                  centerActive ? "text-[var(--saffron-deep)]" : "text-[var(--ink-soft)]"
                 }`}
               >
                 {centerAction.label}
@@ -327,6 +320,95 @@ function GlassFooterNav({
   );
 }
 
+function DesktopHeaderNav({
+  items,
+  mode = "full",
+}: {
+  items: PortalNavItem[];
+  mode?: "full" | "expandable";
+}) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const hash = useRouterState({ select: (s) => s.location.hash });
+
+  const activeKey = useMemo(() => {
+    const withHash = items.filter((item) => item.hash);
+    if (hash) {
+      const match = withHash.find((item) => `#${item.hash}` === hash || item.hash === hash.replace(/^#/, ""));
+      if (match) return `${match.to}#${match.hash}`;
+    }
+    const matches = items.filter((item) => !item.hash && pathMatches(pathname, item.to));
+    if (matches.length === 0) {
+      const pathMatchesItems = items.filter((item) => pathMatches(pathname, item.to));
+      if (pathMatchesItems.length && !hash) {
+        const bare = pathMatchesItems.find((i) => !i.hash);
+        if (bare) return bare.to;
+      }
+      return null;
+    }
+    return matches.sort((a, b) => b.to.length - a.to.length)[0]?.to ?? null;
+  }, [items, pathname, hash]);
+
+  const expandable = mode === "expandable";
+
+  return (
+    <nav
+      aria-label="Primary"
+      className={cn(
+        "hidden items-center gap-0.5 lg:flex",
+        expandable ? "shrink-0" : "min-w-0 w-max lg:w-auto lg:flex-1 lg:justify-center lg:gap-1",
+      )}
+    >
+      {items.map((item) => {
+        const key = item.hash ? `${item.to}#${item.hash}` : item.to;
+        const active = activeKey === key;
+        const Icon = item.icon;
+        const showLabel = !expandable || active;
+
+        return (
+          <Link
+            key={key}
+            to={item.to}
+            hash={item.hash}
+            aria-current={active ? "page" : undefined}
+            aria-label={item.label}
+            title={expandable && !active ? item.label : undefined}
+            onClick={() => {
+              if (!item.hash) return;
+              requestAnimationFrame(() => {
+                document.getElementById(item.hash!)?.scrollIntoView({ behavior: "smooth", block: "start" });
+              });
+            }}
+            className={cn(
+              "inline-flex items-center rounded-full py-2 text-sm font-semibold transition-all duration-200",
+              expandable
+                ? cn(
+                    "gap-0 px-2.5 group-hover/header-nav:gap-2 group-hover/header-nav:px-3",
+                    showLabel && "gap-2 px-3",
+                  )
+                : "gap-2 px-3.5",
+              active
+                ? "bg-[var(--saffron)] text-white shadow-sm"
+                : "text-[var(--ink-soft)] hover:bg-[var(--saffron-light)] hover:text-[var(--ink)]",
+            )}
+          >
+            <Icon className="h-4 w-4 shrink-0" strokeWidth={active ? 2.25 : 2} />
+            <span
+              className={cn(
+                "overflow-hidden whitespace-nowrap transition-all duration-200",
+                expandable && !showLabel
+                  ? "max-w-0 opacity-0 group-hover/header-nav:max-w-[11rem] group-hover/header-nav:opacity-100"
+                  : "max-w-[11rem] opacity-100",
+              )}
+            >
+              {item.label}
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
 export function PortalShell({
   title,
   subtitle,
@@ -337,6 +419,9 @@ export function PortalShell({
   centerAction,
   settingsPath,
   contentClassName,
+  headerActions,
+  desktopNav = "sidebar",
+  headerNavMode = "full",
 }: {
   title: string;
   subtitle: string;
@@ -349,6 +434,11 @@ export function PortalShell({
   centerAction?: PortalCenterAction;
   settingsPath?: string;
   contentClassName?: string;
+  headerActions?: ReactNode;
+  /** Desktop: sidebar (default) or top header nav links */
+  desktopNav?: "sidebar" | "header";
+  /** Header nav label style — full labels, or icons until logo area is hovered */
+  headerNavMode?: "full" | "expandable";
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -357,8 +447,9 @@ export function PortalShell({
     nav.find((item) => /settings/i.test(item.label) || item.to.includes("/settings"))?.to;
   const hasFooter = Boolean(footerNav?.length);
   const layoutKey = title.replace(/\s+/g, "-").toLowerCase();
-
-  const isDashboard = pathname.endsWith("/dashboard") || pathname.endsWith("/dashboard/");
+  const useHeaderNav = desktopNav === "header";
+  const expandableHeaderNav = useHeaderNav && headerNavMode === "expandable";
+  const showSidebar = !useHeaderNav && sidebarOpen;
 
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
     <nav className="flex flex-col gap-1.5 px-3">
@@ -379,7 +470,7 @@ export function PortalShell({
             className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold text-[var(--ink-soft)] transition-colors hover:bg-black/5 hover:text-[var(--ink)] border border-transparent"
             activeProps={{
               className:
-                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-[var(--muted)] text-[var(--foreground)] shadow-sm border border-[var(--border)]",
+                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-[var(--saffron-light)] text-[var(--ink)] shadow-sm border border-[var(--saffron)]/25",
             }}
             activeOptions={{ exact: to.endsWith("/dashboard") && !hash }}
           >
@@ -396,53 +487,68 @@ export function PortalShell({
       <div className="portal-shell__glow" aria-hidden />
 
       <div
-        className={`relative min-h-screen lg:h-screen lg:max-h-screen min-w-0 w-full max-w-full ${
-          hasFooter
-            ? `lg:grid ${sidebarOpen ? "lg:grid-cols-[240px_1fr]" : "lg:grid-cols-1"}`
-            : `lg:grid ${sidebarOpen ? "lg:grid-cols-[260px_1fr]" : "lg:grid-cols-1"}`
-        }`}
+        className={cn(
+          "relative min-h-screen lg:h-screen lg:max-h-screen min-w-0 w-full max-w-full",
+          useHeaderNav
+            ? "lg:grid lg:grid-cols-1"
+            : hasFooter
+              ? `lg:grid ${showSidebar ? "lg:grid-cols-[240px_1fr]" : "lg:grid-cols-1"}`
+              : `lg:grid ${showSidebar ? "lg:grid-cols-[260px_1fr]" : "lg:grid-cols-1"}`,
+        )}
       >
-        {/* Desktop sidebar */}
-        <AnimatePresence initial={false}>
-          {sidebarOpen ? (
-            <motion.aside
-              initial={{ width: 0, opacity: 0 }}
-              animate={{ width: hasFooter ? 240 : 260, opacity: 1 }}
-              exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="portal-glass-sidebar sticky top-0 z-30 hidden h-screen max-h-screen shrink-0 lg:flex lg:flex-col border-r border-black/10 overflow-hidden whitespace-nowrap"
-            >
-              <div className="px-5 py-6 flex items-start justify-between bg-gradient-to-br from-[var(--structure-maroon)] to-[#A64B29] rounded-br-[2.5rem] shadow-md mb-2">
-                <div>
-                  <Link to="/" className="flex items-center gap-3">
-                    <div className="flex items-center justify-center rounded-2xl bg-white p-2 shadow-sm ring-1 ring-black/10 shrink-0">
-                      <img src={logoImg} alt="CorpErgo" className="h-12 w-auto object-contain" />
+        {/* Desktop sidebar — hidden when using header nav (admin) */}
+        {!useHeaderNav ? (
+          <AnimatePresence initial={false}>
+            {showSidebar ? (
+              <motion.aside
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: hasFooter ? 240 : 260, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="portal-glass-sidebar sticky top-0 z-30 hidden h-screen max-h-screen shrink-0 lg:flex lg:flex-col border-r border-black/10 overflow-hidden whitespace-nowrap"
+              >
+                <div className="border-b border-black/[0.06] px-5 py-5 flex items-start justify-between bg-white mb-2">
+                  <div>
+                    <Link to="/" className="flex items-center gap-3">
+                      <CorpErgoLogo size="lg" />
+                    </Link>
+                    <div className="mt-4">
+                      <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
+                      <div className="mt-0.5 text-xs text-[var(--ink-soft)]">{subtitle}</div>
                     </div>
-                  </Link>
-                  <div className="mt-4">
-                    <div className="text-sm font-extrabold text-white">{title}</div>
-                    <div className="mt-0.5 text-xs text-white/80">{subtitle}</div>
                   </div>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="rounded-full p-1.5 hover:bg-[var(--saffron-light)] text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors"
+                    aria-label="Close sidebar"
+                  >
+                    <PanelLeftClose className="h-5 w-5" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="rounded-full p-1.5 hover:bg-white/10 text-white/80 hover:text-white transition-colors"
-                  aria-label="Close sidebar"
-                >
-                  <PanelLeftClose className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto pb-6">
-                <NavLinks />
-              </div>
-            </motion.aside>
-          ) : null}
-        </AnimatePresence>
+                <div className="flex-1 overflow-y-auto pb-6">
+                  <NavLinks />
+                </div>
+              </motion.aside>
+            ) : null}
+          </AnimatePresence>
+        ) : null}
 
-        <div className={`relative z-[1] flex min-h-screen lg:h-screen lg:max-h-screen min-w-0 w-full max-w-full flex-col lg:overflow-y-auto ${sidebarOpen ? "lg:col-start-2" : "lg:col-start-1"}`}>
-          <header className="portal-glass-header sticky top-0 z-40 flex h-[4.25rem] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-            <div className="flex min-w-0 items-center gap-3">
-              {!sidebarOpen && (
+        <div
+          className={cn(
+            "relative z-[1] flex min-h-screen lg:h-screen lg:max-h-screen min-w-0 w-full max-w-full flex-col lg:overflow-y-auto",
+            !useHeaderNav && showSidebar && "lg:col-start-2",
+            !useHeaderNav && !showSidebar && "lg:col-start-1",
+          )}
+        >
+          <header className="portal-glass-header sticky top-0 z-40 flex min-h-[4.25rem] flex-wrap items-center gap-x-2 gap-y-2 px-3 py-2.5 sm:gap-3 sm:px-6 lg:h-[4.25rem] lg:flex-nowrap lg:px-8 lg:py-0">
+            <div
+              className={cn(
+                "flex min-w-0 flex-1 items-center gap-2 sm:gap-3",
+                expandableHeaderNav && "group/header-nav",
+                !expandableHeaderNav && "shrink-0 lg:flex-none",
+              )}
+            >
+              {!useHeaderNav && !sidebarOpen ? (
                 <button
                   onClick={() => setSidebarOpen(true)}
                   className="hidden lg:block rounded-full p-2 hover:bg-black/5 text-[var(--ink-soft)] transition-colors -ml-2"
@@ -450,20 +556,32 @@ export function PortalShell({
                 >
                   <PanelLeftOpen className="h-5 w-5" />
                 </button>
-              )}
-              <div className="flex items-center justify-center rounded-xl bg-white p-1.5 shadow-sm ring-1 ring-black/10 lg:hidden shrink-0">
-                <img src={logoImg} alt="CorpErgo" className="h-9 sm:h-10 w-auto object-contain" />
-              </div>
-              <div className="min-w-0">
+              ) : null}
+              <Link to="/" className="shrink-0" aria-label="CorpErgo home">
+                <CorpErgoLogo
+                  size="md"
+                  frameClassName={cn("rounded-xl shrink-0", !useHeaderNav && "lg:hidden")}
+                />
+              </Link>
+              <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-bold text-[var(--ink)] lg:text-[15px]">
                   {title}
                 </div>
-                <div className="truncate text-[10px] uppercase tracking-[0.16em] text-[var(--ink-soft)]">
+                <div className="hidden truncate text-[10px] uppercase tracking-[0.16em] text-[var(--ink-soft)] sm:block">
                   {userName?.trim() || subtitle}
                 </div>
               </div>
+              {expandableHeaderNav ? <DesktopHeaderNav items={nav} mode="expandable" /> : null}
             </div>
-            <div className="flex items-center gap-3">
+
+            {useHeaderNav && !expandableHeaderNav ? (
+              <div className="order-last w-full min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] lg:order-none lg:w-auto lg:flex-1 lg:overflow-visible [&::-webkit-scrollbar]:hidden">
+                <DesktopHeaderNav items={nav} mode="full" />
+              </div>
+            ) : null}
+
+            <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+              {headerActions}
               {/* Show Health Profile only in Patient portal */}
               {pathname.includes("/patient") && (
                 <Link

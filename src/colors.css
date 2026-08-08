@@ -1,89 +1,95 @@
 :root {
-  /* === Color Palette === */
-  /* Background surfaces and pages */
-  --canvas-bg: #FAF5F0;
-  
-  /* Text color, headers */
-  --structure-dark: #5C1D24;
-  --structure-maroon: #5C1D24;
-  
-  /* Primary brand colors for call-to-actions, buttons */
-  --accent-orange: #F07D00;
+  /* === Brand palette: white · black · saffron === */
+  --saffron: #f28c28;
+  --saffron-deep: #d97706;
+  --saffron-light: #fff4e8;
 
-  /* === Core Theme Mapping === */
-  --background: var(--canvas-bg);
-  --foreground: var(--structure-dark);
-  
-  --card: #FFFFFF;
-  --card-foreground: var(--structure-dark);
-  
-  --popover: #FFFFFF;
-  --popover-foreground: var(--structure-dark);
-  
-  --primary: var(--accent-orange);
-  --primary-foreground: #FFFFFF;
-  
-  --secondary: var(--structure-maroon);
-  --secondary-foreground: #FFFFFF;
-  
-  --muted: #FDEFE5; /* Light orange tint for active states */
-  --muted-foreground: var(--structure-dark);
-  
-  --accent: var(--accent-orange);
-  --accent-foreground: #FFFFFF;
-  
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
-  
-  --border: #E8D3C8; /* Soft warm border */
-  --input: #E8D3C8;
-  --ring: var(--accent-orange);
+  --canvas-bg: #ffffff;
+  --structure-dark: #000000;
+  --structure-maroon: #000000;
+  --accent-orange: var(--saffron);
+
+  /* === Core theme mapping === */
+  --background: #ffffff;
+  --foreground: #000000;
+
+  --card: #ffffff;
+  --card-foreground: #000000;
+
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+
+  --secondary: #000000;
+  --secondary-foreground: #ffffff;
+
+  --muted: #f5f5f5;
+  --muted-foreground: #525252;
+
+  --accent: var(--saffron);
+  --accent-foreground: #000000;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: var(--saffron);
 
   --radius: 16px;
 
-  /* === Backwards Compatibility for custom brand colors === */
-  --sage: var(--accent-orange);
-  --sage-deep: #D96900;
-  --teal: var(--accent-orange);
-  --bronze: var(--structure-maroon);
-  --pink-main: var(--structure-maroon);
-  --pink-hover: #7b2730;
-  --pink-light: #fbebed;
-  --pink-subtle: #fbebed;
-  --ivory: var(--canvas-bg);
-  --ink: var(--structure-dark);
-  --ink-soft: #8A5A55; /* Lighter maroon for secondary text */
+  /* === Backwards compatibility === */
+  --sage: var(--saffron);
+  --sage-deep: var(--saffron-deep);
+  --teal: var(--saffron);
+  --bronze: #000000;
+  --pink-main: var(--saffron);
+  --pink-hover: var(--saffron-deep);
+  --pink-light: var(--saffron-light);
+  --pink-subtle: var(--saffron-light);
+  --ivory: #ffffff;
+  --ink: #000000;
+  --ink-soft: #525252;
 }
 
 .dark {
-  /* === Dark Mode Mapping (Warm Dark) === */
-  --canvas-bg: #2B1618;
-  --structure-dark: #FAF5F0;
-  --structure-maroon: #F07D00;
-  --accent-orange: #F07D00;
+  --canvas-bg: #000000;
+  --structure-dark: #ffffff;
+  --structure-maroon: #ffffff;
+  --saffron: #ff9933;
+  --saffron-deep: #ffb347;
+  --saffron-light: #2a2010;
 
-  --background: var(--canvas-bg);
-  --foreground: var(--structure-dark);
-  
-  --card: #3A2022;
-  --card-foreground: var(--structure-dark);
-  
-  --popover: #3A2022;
-  --popover-foreground: var(--structure-dark);
-  
-  --primary: var(--accent-orange);
-  --primary-foreground: #FFFFFF;
-  
-  --secondary: var(--structure-maroon);
-  --secondary-foreground: #FFFFFF;
-  
-  --muted: #4A2B2D;
-  --muted-foreground: #D4A3A6;
-  
-  --accent: var(--accent-orange);
-  --accent-foreground: #FFFFFF;
-  
-  --border: #4A2B2D;
-  --input: #4A2B2D;
-  --ring: var(--accent-orange);
+  --background: #000000;
+  --foreground: #ffffff;
+
+  --card: #111111;
+  --card-foreground: #ffffff;
+
+  --popover: #111111;
+  --popover-foreground: #ffffff;
+
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+
+  --secondary: #ffffff;
+  --secondary-foreground: #000000;
+
+  --muted: #1a1a1a;
+  --muted-foreground: #a3a3a3;
+
+  --accent: var(--saffron);
+  --accent-foreground: #000000;
+
+  --border: #262626;
+  --input: #262626;
+  --ring: var(--saffron);
+
+  --ivory: #0a0a0a;
+  --ink: #ffffff;
+  --ink-soft: #a3a3a3;
+  --pink-light: #2a2010;
+  --pink-subtle: #2a2010;
 }

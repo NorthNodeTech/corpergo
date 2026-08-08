@@ -14,6 +14,7 @@ import {
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
 import { fetchMyProfile } from "@/lib/auth";
 import {
@@ -48,7 +49,7 @@ function CareSnapshot({
     { label: "Upcoming", value: String(upcoming), icon: Calendar, text: "text-[#E11D48]", iconBg: "bg-[#FFE4E6]" },
     { label: "Pending", value: String(pending), icon: Clock, text: "text-[#E65100]", iconBg: "bg-[#FFE0B2]" },
     { label: "Confirmed", value: String(confirmed), icon: CheckCircle2, text: "text-[#6D28D9]", iconBg: "bg-[#F3E8FF]" },
-    { label: "Alerts", value: String(alerts), icon: Bell, text: "text-[#C94B7C]", iconBg: "bg-[#FDE8EF]" },
+    { label: "Alerts", value: String(alerts), icon: Bell, text: "text-[var(--saffron-deep)]", iconBg: "bg-[var(--saffron-light)]" },
   ];
 
   return (
@@ -70,13 +71,13 @@ function CareSnapshot({
         </Link>
       </div>
 
-      <div className="grid grid-cols-4 gap-1 sm:gap-4">
+      <div className="grid portal-metric-grid">
         {metrics.map(({ label, value, icon: Icon, text, iconBg }) => (
           <motion.div
             key={label}
             whileHover={{ y: -3 }}
             transition={{ type: "spring", stiffness: 360, damping: 24 }}
-            className="flex flex-col items-center justify-center p-1 sm:p-4 text-center transition-transform hover:-translate-y-0.5"
+            className="flex flex-col items-center justify-center rounded-2xl p-3 sm:p-4 text-center transition-transform hover:-translate-y-0.5"
           >
             <div className={`mb-2 sm:mb-3 grid h-9 w-9 sm:h-11 sm:w-11 place-items-center rounded-xl sm:rounded-2xl shadow-sm ${iconBg} ${text}`}>
               <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -141,9 +142,12 @@ function PatientDashboardPage() {
   );
 
   const recentVisits = useMemo(
-    () => appointments.filter((a) => a.status === "completed").slice(0, 4),
+    () => appointments.filter((a) => a.status === "completed"),
     [appointments],
   );
+
+  const recentVisitsMore = useShowMore(recentVisits);
+  const notificationsMore = useShowMore(notifications);
 
   const followUp = upcoming.find((a) => a.status === "accepted") || upcoming[0];
   const pendingCount = appointments.filter((a) => a.status === "pending").length;
@@ -341,24 +345,31 @@ function PatientDashboardPage() {
               </p>
             </div>
           ) : (
-            <ul className="space-y-3">
-              {recentVisits.map((a) => (
-                <li
-                  key={a.id}
-                  className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-between gap-3 p-4 shadow-sm"
-                >
-                  <div>
-                    <div className="font-bold text-[var(--ink)] text-sm sm:text-base">
-                      {a.clinics?.name} · {a.physiotherapy_categories?.name}
+            <>
+              <ul className="space-y-3">
+                {recentVisitsMore.visible.map((a) => (
+                  <li
+                    key={a.id}
+                    className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-between gap-3 p-4 shadow-sm"
+                  >
+                    <div>
+                      <div className="font-bold text-[var(--ink)] text-sm sm:text-base">
+                        {a.clinics?.name} · {a.physiotherapy_categories?.name}
+                      </div>
+                      <div className="text-xs text-[var(--ink-soft)] mt-0.5">
+                        {formatDateLabel(a.scheduled_date || a.preferred_date)}
+                      </div>
                     </div>
-                    <div className="text-xs text-[var(--ink-soft)] mt-0.5">
-                      {formatDateLabel(a.scheduled_date || a.preferred_date)}
-                    </div>
-                  </div>
-                  <StatusBadge status={a.status} />
-                </li>
-              ))}
-            </ul>
+                    <StatusBadge status={a.status} />
+                  </li>
+                ))}
+              </ul>
+              <ShowMoreButton
+                hiddenCount={recentVisitsMore.hiddenCount}
+                expanded={recentVisitsMore.expanded}
+                onClick={recentVisitsMore.toggle}
+              />
+            </>
           )}
         </section>
 
@@ -374,17 +385,24 @@ function PatientDashboardPage() {
               </p>
             </div>
           ) : (
-            <ul className="space-y-3">
-              {notifications.map((n) => (
-                <li
-                  key={n.id}
-                  className="rounded-2xl bg-[var(--card)] border border-[var(--border)] p-4 shadow-sm"
-                >
-                  <div className="font-bold text-[var(--ink)] text-sm sm:text-base">{n.title}</div>
-                  <p className="mt-1 text-xs sm:text-sm text-[var(--ink-soft)] leading-relaxed">{n.body}</p>
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-3">
+                {notificationsMore.visible.map((n) => (
+                  <li
+                    key={n.id}
+                    className="rounded-2xl bg-[var(--card)] border border-[var(--border)] p-4 shadow-sm"
+                  >
+                    <div className="font-bold text-[var(--ink)] text-sm sm:text-base">{n.title}</div>
+                    <p className="mt-1 text-xs sm:text-sm text-[var(--ink-soft)] leading-relaxed">{n.body}</p>
+                  </li>
+                ))}
+              </ul>
+              <ShowMoreButton
+                hiddenCount={notificationsMore.hiddenCount}
+                expanded={notificationsMore.expanded}
+                onClick={notificationsMore.toggle}
+              />
+            </>
           )}
         </section>
       </div>

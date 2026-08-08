@@ -1,12 +1,7 @@
 import { getSupabaseConfig } from "@/lib/supabase-config";
 
 export type AppRole =
-  | "super_admin"
-  | "admin"
-  | "clinic_manager"
-  | "receptionist"
-  | "physiotherapist"
-  | "patient";
+  "super_admin" | "admin" | "clinic_manager" | "receptionist" | "physiotherapist" | "patient";
 
 export type AuthUser = {
   id: string;
@@ -144,10 +139,9 @@ export async function signInWithPassword(identifier: string, password: string) {
   }
 
   const raw = result.error || "Invalid email or password.";
-  const friendly =
-    /invalid login credentials/i.test(raw)
-      ? "No account found with this email and password. New patient? Create an account first."
-      : raw;
+  const friendly = /invalid login credentials/i.test(raw)
+    ? "No account found with this email and password. New patient? Create an account first."
+    : raw;
 
   return { data: null, error: friendly };
 }
@@ -209,6 +203,38 @@ export async function supabaseRest<T>(
   if (res.status === 204) return { data: null, error: null };
   const data = (await res.json()) as T;
   return { data, error: null };
+}
+
+/** Public REST call for anonymous-safe reads/inserts. */
+export async function supabasePublicRest<T>(
+  path: string,
+  init: RequestInit = {},
+): Promise<{ data: T | null; error: string | null }> {
+  const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
+
+  const res = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
+    ...init,
+    headers: {
+      apikey: supabaseAnonKey,
+      Authorization: `Bearer ${supabaseAnonKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+      ...(init.headers || {}),
+    },
+  });
+
+  if (!res.ok) {
+    const json = (await res.json().catch(() => ({}))) as AuthErrorBody;
+    return {
+      data: null,
+      error: json.msg || json.message || json.error || `Request failed (${res.status})`,
+    };
+  }
+
+  if (res.status === 204) return { data: null, error: null };
+  const text = await res.text();
+  if (!text) return { data: null, error: null };
+  return { data: JSON.parse(text) as T, error: null };
 }
 
 export async function fetchMyProfile(): Promise<{
@@ -321,16 +347,18 @@ export function rolesAllowedForPath(pathname: string): AppRole[] {
 }
 
 /** Upload a profile avatar to Supabase storage */
-export async function uploadAvatar(file: File): Promise<{ url: string | null; error: string | null }> {
+export async function uploadAvatar(
+  file: File,
+): Promise<{ url: string | null; error: string | null }> {
   const session = getStoredSession();
   if (!session?.user?.id) return { url: null, error: "Not signed in" };
 
   const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
-  
+
   // Use a clean, unique file path: avatars/{userId}/{timestamp}_{filename}
-  const ext = file.name.split('.').pop() || 'jpg';
+  const ext = file.name.split(".").pop() || "jpg";
   const path = `${session.user.id}/${Date.now()}_avatar.${ext}`;
-  
+
   const res = await fetch(`${supabaseUrl}/storage/v1/object/avatars/${path}`, {
     method: "POST",
     headers: {

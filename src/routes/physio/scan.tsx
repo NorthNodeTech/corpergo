@@ -3,10 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, ClipboardList, ScanLine, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  PatientIntakeForm,
-  type PatientIntakeValues,
-} from "@/components/portal/PatientIntakeForm";
+import { PatientIntakeForm, type PatientIntakeValues } from "@/components/portal/PatientIntakeForm";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
 import { QrCameraScanner } from "@/components/portal/QrCameraScanner";
 import { supabaseRest } from "@/lib/auth";
@@ -71,7 +68,7 @@ function QrScanPage() {
     }
 
     const { data: rows, error: loadError } = await supabaseRest<PhysioAppointment[]>(
-      `appointments?id=eq.${appointmentId}&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,profiles(full_name,phone))&limit=1`,
+      `appointments?id=eq.${appointmentId}&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,profiles(full_name,phone))&limit=1`,
     );
 
     if (loadError || !rows?.[0]) {
@@ -99,7 +96,8 @@ function QrScanPage() {
     setSuccess({
       appointment,
       intake: {
-        full_name: patient.profiles?.full_name || appointment.patients?.profiles?.full_name || "Patient",
+        full_name:
+          patient.profiles?.full_name || appointment.patients?.profiles?.full_name || "Patient",
         phone: patient.profiles?.phone || "",
         email: patient.profiles?.email || "",
         patient,
@@ -137,7 +135,7 @@ function QrScanPage() {
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 16 }}
-            className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30"
+            className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-[var(--saffron)] text-white shadow-lg shadow-[var(--saffron)]/30"
           >
             <Check className="h-10 w-10" strokeWidth={3} />
           </motion.div>
@@ -148,7 +146,7 @@ function QrScanPage() {
           </p>
 
           <div className="mt-5 rounded-3xl bg-[var(--ivory)] p-4 text-left text-sm">
-            <div className="text-xs font-bold uppercase tracking-wider text-[var(--bronze)]">
+            <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
               {a.appointment_code}
             </div>
             <div className="mt-1 text-lg font-extrabold text-[var(--ink)]">
@@ -169,7 +167,7 @@ function QrScanPage() {
               assessment.
             </div>
           ) : (
-            <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-left text-sm font-semibold text-emerald-900">
+            <div className="mt-4 rounded-2xl bg-[var(--saffron-light)] px-4 py-3 text-left text-sm font-semibold text-[var(--ink)]">
               Registration chart looks complete.
             </div>
           )}
@@ -206,7 +204,7 @@ function QrScanPage() {
                   params: { appointmentId: a.id },
                 })
               }
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--sage)] px-6 py-3.5 text-sm font-bold text-white"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--saffron)] px-6 py-3.5 text-sm font-bold text-white"
             >
               <ClipboardList className="h-4 w-4" /> Proceed to assessment
               <ArrowRight className="h-4 w-4" />
@@ -220,7 +218,7 @@ function QrScanPage() {
             <button
               type="button"
               onClick={scanAnother}
-              className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-[var(--sage-deep)]"
+              className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-bold text-[var(--saffron-deep)]"
             >
               <ScanLine className="h-4 w-4" /> Scan another
             </button>
@@ -248,7 +246,7 @@ function QrScanPage() {
 
       <div className="mx-auto max-w-xl rounded-[2rem] bg-white p-5 sm:p-6 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)]">
         <div className="mb-4 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--sage)] text-white">
+          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--saffron)] text-white">
             <ScanLine className="h-5 w-5" />
           </div>
           <div>

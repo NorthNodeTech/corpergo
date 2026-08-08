@@ -16,10 +16,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   Legend,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -34,19 +31,37 @@ import {
   type ClinicStatus,
   type RecentBooking,
 } from "@/lib/admin-dashboard-data";
-import { cn } from "@/lib/utils";
+import {
+  assessmentEditState,
+  fetchAdminAssessments,
+  setAssessmentAdminEditUnlocked,
+  type AdminAssessmentRow,
+} from "@/lib/assessment-data";
+import { AdminCardCarousel } from "@/components/admin/AdminCardCarousel";
+import { cn, formatClinicName } from "@/lib/utils";
+import { toast } from "sonner";
+import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 
 const STATUS_COLOR: Record<ClinicStatus, string> = {
-  normal: "#5D725E",
-  busy: "#C48A3A",
-  attention: "#C45C5C",
+  normal: "#f28c28",
+  busy: "#d97706",
+  attention: "#dc2626",
 };
+
+const CHART_SAFFRON = "#f28c28";
+const CHART_SAFFRON_DEEP = "#d97706";
 
 const STATUS_LABEL: Record<ClinicStatus, string> = {
   normal: "Operating normally",
   busy: "Busy",
   attention: "Needs attention",
 };
+
+/** Strip Dr. prefix from staff/clinic labels shown in admin lists. */
+function displayStaffLabel(name: string) {
+  const cleaned = name.replace(/^dr\.?\s+/i, "").replace(/^physio\s*/i, "").trim();
+  return formatClinicName(cleaned) || cleaned || name;
+}
 
 function greetingForHour(h: number) {
   if (h < 12) return "Good morning";
@@ -187,19 +202,23 @@ function formatApptWhen(b: AdminDashboardBundle["bookings"][number]) {
 function statusBadgeClass(status: string) {
   switch (status) {
     case "completed":
-      return "bg-emerald-50 text-emerald-800";
+      return "bg-[var(--saffron-light)] text-[var(--saffron-deep)]";
     case "pending":
       return "bg-amber-50 text-amber-900";
     case "checked_in":
-      return "bg-sky-50 text-sky-900";
     case "accepted":
-      return "bg-[var(--sage)]/12 text-[var(--sage-deep)]";
+      return "bg-sky-50 text-sky-900";
     case "cancelled":
     case "rejected":
       return "bg-rose-50 text-rose-800";
     default:
       return "bg-slate-100 text-slate-700";
   }
+}
+
+function adminVisitStatusLabel(status: string) {
+  if (status === "accepted" || status === "checked_in") return "progress";
+  return status.replace(/_/g, " ");
 }
 
 function AnimatedNumber({ value }: { value: number }) {
@@ -221,6 +240,14 @@ function AnimatedNumber({ value }: { value: number }) {
   return <>{n}</>;
 }
 
+function bookingClinicId(b: RecentBooking) {
+  return b.clinic_id || b.clinics?.id || "";
+}
+
+function assessmentClinicId(row: AdminAssessmentRow) {
+  return row.appointments?.clinic_id || row.appointments?.clinics?.id || "";
+}
+
 function Skeleton({ className }: { className?: string }) {
   return <div className={cn("animate-pulse rounded-2xl bg-black/[0.05]", className)} />;
 }
@@ -229,9 +256,22 @@ export function AdminCommandCenter() {
   const [data, setData] = useState<AdminDashboardBundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => new Date());
-  const [expandedClinic, setExpandedClinic] = useState<string | null>(null);
+  const [selectedClinicId, setSelectedClinicId] = useState<string | null>(null);
   const [notifyOpen, setNotifyOpen] = useState(false);
-  const [bookingTab, setBookingTab] = useState<"recent" | "upcoming">("recent");
+  const [clinicTab, setClinicTab] = useState<"requests" | "upcoming" | "assessments">("requests");
+  const [assessments, setAssessments] = useState<AdminAssessmentRow[]>([]);
+  const [assessBusy, setAssessBusy] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchAdminAssessments().then((res) => {
+      if (cancelled) return;
+      setAssessments(res.data || []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -265,44 +305,190 @@ export function AdminCommandCenter() {
     return () => window.clearTimeout(t);
   }, [loading, data]);
 
-  const peakHours = useMemo(() => {
-    const map = new Map<number, number>();
-    for (const cell of data?.heatmap || []) {
-      map.set(cell.hour_of_day, (map.get(cell.hour_of_day) || 0) + cell.booking_count);
-    }
-    return Array.from(map.entries())
-      .sort((a, b) => a[0] - b[0])
-      .filter(([h]) => h >= 8 && h <= 20)
-      .map(([hour, count]) => ({
-        hour: `${hour % 12 || 12}${hour < 12 ? "a" : "p"}`,
-        count,
-      }));
-  }, [data?.heatmap]);
-
-  const conditionPie = useMemo(
-    () =>
-      (data?.conditions || []).slice(0, 5).map((c, i) => ({
-        name: c.category_name,
-        value: c.appointment_count,
-        fill: ["#5D725E", "#6F9E9C", "#9A7059", "#47563F", "#C48A3A"][i % 5],
-      })),
-    [data?.conditions],
-  );
+  useEffect(() => {
+    if (!data?.clinics?.length || selectedClinicId) return;
+    setSelectedClinicId(data.clinics[0]!.clinic_id);
+  }, [data?.clinics, selectedClinicId]);
 
   const clinicBars = useMemo(
     () =>
-      (data?.clinics || []).map((c) => ({
-        name: c.clinic_name.replace(/(.{8}).+/, "$1…"),
-        full: c.clinic_name,
-        today: c.todays_appointments,
-        pending: c.pending,
-      })),
+      (data?.clinics || []).map((c) => {
+        const full = formatClinicName(c.clinic_name);
+        return {
+          name: full.replace(/(.{8}).+/, "$1…"),
+          full,
+          today: c.todays_appointments,
+          pending: c.pending,
+        };
+      }),
     [data?.clinics],
   );
 
   const kpis = data?.kpis;
   const waiting = (kpis?.checked_in || 0) + (kpis?.accepted || 0);
   const upcoming = Math.max((kpis?.todays_bookings || 0) - (kpis?.completed || 0) - waiting, 0);
+
+  const kpiCards = [
+    { label: "Appointments", value: kpis?.todays_bookings ?? 0, icon: Activity },
+    { label: "Completed", value: kpis?.completed ?? 0, icon: CheckCircle2 },
+    { label: "Waiting", value: waiting, icon: Clock3 },
+    { label: "Upcoming", value: upcoming, icon: TrendingUp },
+  ] as const;
+
+  const clinicList = loading
+    ? Array.from({ length: 4 }).map((_, i) => ({
+        clinic_id: `sk-${i}`,
+        clinic_name: "…",
+        slug: null,
+        is_active: true,
+        todays_appointments: 0,
+        completed: 0,
+        pending: 0,
+        cancelled: 0,
+        active_physiotherapists: 0,
+        total_patients_seen: 0,
+      }))
+    : data?.clinics || [];
+
+  function renderKpiCard({ label, value, icon: Icon }: (typeof kpiCards)[number]) {
+    return (
+      <div
+        key={label}
+        className="h-full rounded-xl bg-white px-2.5 py-2 ring-1 ring-black/[0.06] shadow-sm sm:px-3 sm:py-2.5"
+      >
+        <div className="flex items-center justify-between gap-1">
+          <span className="truncate text-[10px] font-semibold leading-tight text-[var(--ink-soft)] sm:text-xs">
+            {label}
+          </span>
+          <Icon className="h-3 w-3 shrink-0 text-[var(--saffron-deep)]" />
+        </div>
+        <div className="mt-0.5 text-lg font-extrabold leading-none text-[var(--ink)] sm:mt-1 sm:text-2xl">
+          {loading ? "—" : <AnimatedNumber value={value} />}
+        </div>
+      </div>
+    );
+  }
+
+  function renderClinicCard(c: (typeof clinicList)[number]) {
+    const status = clinicStatus(c);
+    const util = utilizationPct(c);
+    const name = formatClinicName(c.clinic_name);
+    return (
+      <button
+        key={c.clinic_id}
+        type="button"
+        onClick={() => selectClinic(c.clinic_id)}
+        className={cn(
+          "h-full w-full rounded-[24px] bg-white p-4 text-left shadow-[var(--shadow-soft)] ring-1 transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)]",
+          selectedClinicId === c.clinic_id
+            ? "ring-2 ring-[var(--saffron)] ring-offset-2"
+            : "ring-black/[0.05]",
+        )}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+              <MapPin className="h-3 w-3 shrink-0" /> Clinic
+            </div>
+            <div className="mt-1 truncate text-lg font-extrabold text-[var(--ink)]">{name}</div>
+          </div>
+          <span
+            className="shrink-0 rounded-full px-2 py-1 text-[10px] font-bold"
+            style={{
+              background: `${STATUS_COLOR[status]}1f`,
+              color: STATUS_COLOR[status],
+            }}
+          >
+            {STATUS_LABEL[status]}
+          </span>
+        </div>
+        <div className="mt-4 grid grid-cols-4 gap-2 text-center">
+          {[
+            ["Today", c.todays_appointments],
+            ["Pending", c.pending],
+            ["Done", c.completed],
+            ["Physios", c.active_physiotherapists],
+          ].map(([l, v]) => (
+            <div key={String(l)}>
+              <div className="text-base font-extrabold text-[var(--ink)]">{v as number}</div>
+              <div className="text-[10px] font-semibold text-[var(--ink-soft)]">{l}</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4">
+          <div className="flex justify-between text-[11px] font-semibold text-[var(--ink-soft)]">
+            <span>Utilization</span>
+            <span>{util}%</span>
+          </div>
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]">
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: STATUS_COLOR[status] }}
+              initial={{ width: 0 }}
+              animate={{ width: `${util}%` }}
+              transition={{ duration: 0.7 }}
+            />
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  const selectedClinic = useMemo(
+    () => (data?.clinics || []).find((c) => c.clinic_id === selectedClinicId) ?? null,
+    [data?.clinics, selectedClinicId],
+  );
+
+  const clinicBookings = useMemo(
+    () =>
+      selectedClinicId
+        ? (data?.bookings || []).filter((b) => bookingClinicId(b) === selectedClinicId)
+        : [],
+    [data?.bookings, selectedClinicId],
+  );
+
+  const clinicUpcoming = useMemo(
+    () =>
+      selectedClinicId
+        ? (data?.upcoming_bookings || []).filter((b) => bookingClinicId(b) === selectedClinicId)
+        : [],
+    [data?.upcoming_bookings, selectedClinicId],
+  );
+
+  const clinicAssessments = useMemo(
+    () =>
+      selectedClinicId
+        ? assessments.filter((row) => assessmentClinicId(row) === selectedClinicId)
+        : [],
+    [assessments, selectedClinicId],
+  );
+
+  const insights = data?.insights || [];
+  const activity = data?.activity || [];
+  const physios = data?.physios || [];
+  const insightsMore = useShowMore(insights);
+  const activityMore = useShowMore(activity);
+  const physiosMore = useShowMore(physios);
+  const clinicBookingsMore = useShowMore(clinicBookings);
+  const clinicUpcomingMore = useShowMore(clinicUpcoming);
+  const clinicAssessmentsMore = useShowMore(clinicAssessments);
+
+  useEffect(() => {
+    clinicBookingsMore.collapse();
+    clinicUpcomingMore.collapse();
+    clinicAssessmentsMore.collapse();
+  }, [
+    selectedClinicId,
+    clinicTab,
+    clinicBookingsMore.collapse,
+    clinicUpcomingMore.collapse,
+    clinicAssessmentsMore.collapse,
+  ]);
+
+  function selectClinic(clinicId: string) {
+    setSelectedClinicId(clinicId);
+    setClinicTab("requests");
+  }
 
   return (
     <div className="relative w-full min-w-0 max-w-full overflow-x-hidden pb-4 sm:pb-10">
@@ -347,36 +533,18 @@ export function AdminCommandCenter() {
                 <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />
               ) : null}
             </button>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-2 text-[10px] font-bold text-emerald-800 ring-1 ring-emerald-100 sm:px-3 sm:text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--saffron-light)] px-2.5 py-2 text-[10px] font-bold text-[var(--saffron-deep)] ring-1 ring-[var(--saffron)]/20 sm:px-3 sm:text-xs">
               <Radio className="h-3.5 w-3.5" /> Online
             </span>
           </div>
         </div>
 
         <div className="mt-6">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
             Today&apos;s operations
           </div>
-          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-4 sm:overflow-visible">
-            {[
-              { label: "Appointments", value: kpis?.todays_bookings ?? 0, icon: Activity },
-              { label: "Completed", value: kpis?.completed ?? 0, icon: CheckCircle2 },
-              { label: "Waiting", value: waiting, icon: Clock3 },
-              { label: "Upcoming", value: upcoming, icon: TrendingUp },
-            ].map(({ label, value, icon: Icon }) => (
-              <div
-                key={label}
-                className="min-w-[9.5rem] shrink-0 rounded-2xl bg-[var(--ivory)]/90 px-4 py-3 ring-1 ring-black/[0.04] sm:min-w-0"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-[var(--ink-soft)]">{label}</span>
-                  <Icon className="h-3.5 w-3.5 text-[var(--sage-deep)]" />
-                </div>
-                <div className="mt-1 text-2xl font-extrabold text-[var(--ink)]">
-                  {loading ? "—" : <AnimatedNumber value={value} />}
-                </div>
-              </div>
-            ))}
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {kpiCards.map((card) => renderKpiCard(card))}
           </div>
         </div>
       </motion.section>
@@ -395,28 +563,33 @@ export function AdminCommandCenter() {
             </button>
           </div>
           <ul className="mt-3 space-y-2">
-            {(data?.insights || []).map((ins) => (
+            {insightsMore.visible.map((ins) => (
               <li
                 key={ins.id}
                 className={cn(
                   "rounded-2xl px-3.5 py-3 text-sm",
                   ins.tone === "warn"
-                    ? "bg-amber-50 text-amber-950"
+                    ? "bg-[var(--saffron-light)] text-[var(--saffron-deep)]"
                     : ins.tone === "good"
-                      ? "bg-emerald-50 text-emerald-950"
-                      : "bg-[var(--ivory)] text-[var(--ink)]",
+                      ? "bg-[var(--saffron-light)] text-[var(--ink)]"
+                      : "bg-white text-[var(--ink)] ring-1 ring-black/[0.05]",
                 )}
               >
                 <div className="font-bold">{ins.title}</div>
                 <div className="mt-0.5 text-xs opacity-80">{ins.detail}</div>
               </li>
             ))}
-            {!data?.insights.length ? (
+            {!insights.length ? (
               <li className="rounded-2xl bg-[var(--ivory)] px-3.5 py-3 text-sm text-[var(--ink-soft)]">
                 No alerts right now — network is calm.
               </li>
             ) : null}
           </ul>
+          <ShowMoreButton
+            hiddenCount={insightsMore.hiddenCount}
+            expanded={insightsMore.expanded}
+            onClick={insightsMore.toggle}
+          />
         </div>
       ) : null}
 
@@ -424,110 +597,43 @@ export function AdminCommandCenter() {
       <section id="admin-network" className="mt-6 grid w-full min-w-0 scroll-mt-24 gap-4 sm:mt-8 lg:grid-cols-[1.6fr_1fr]">
         <div className="min-w-0">
           <div className="mb-3">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
               Network overview
             </div>
             <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Five clinics. One pulse.</h2>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-1 lg:grid lg:grid-cols-2 lg:overflow-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {(loading
-              ? Array.from({ length: 4 }).map((_, i) => ({
-                  clinic_id: `sk-${i}`,
-                  clinic_name: "…",
-                  slug: null,
-                  is_active: true,
-                  todays_appointments: 0,
-                  completed: 0,
-                  pending: 0,
-                  cancelled: 0,
-                  active_physiotherapists: 0,
-                  total_patients_seen: 0,
-                }))
-              : data?.clinics || []
-            ).map((c) => {
-              const status = clinicStatus(c);
-              const util = utilizationPct(c);
-              return (
-                <button
-                  key={c.clinic_id}
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById(`clinic-${c.slug || c.clinic_id}`);
-                    el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                    setExpandedClinic(c.clinic_id);
-                  }}
-                  className="min-w-[16.5rem] shrink-0 rounded-[24px] bg-white p-4 text-left shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)] lg:min-w-0"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
-                        <MapPin className="h-3 w-3" /> Clinic
-                      </div>
-                      <div className="mt-1 text-lg font-extrabold text-[var(--ink)]">{c.clinic_name}</div>
-                    </div>
-                    <span
-                      className="rounded-full px-2 py-1 text-[10px] font-bold"
-                      style={{
-                        background: `${STATUS_COLOR[status]}1f`,
-                        color: STATUS_COLOR[status],
-                      }}
-                    >
-                      {STATUS_LABEL[status]}
-                    </span>
-                  </div>
-                  <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-                    {[
-                      ["Today", c.todays_appointments],
-                      ["Pending", c.pending],
-                      ["Done", c.completed],
-                      ["Physios", c.active_physiotherapists],
-                    ].map(([l, v]) => (
-                      <div key={String(l)}>
-                        <div className="text-base font-extrabold text-[var(--ink)]">{v as number}</div>
-                        <div className="text-[10px] font-semibold text-[var(--ink-soft)]">{l}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex justify-between text-[11px] font-semibold text-[var(--ink-soft)]">
-                      <span>Utilization</span>
-                      <span>{util}%</span>
-                    </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--ivory)]">
-                      <motion.div
-                        className="h-full rounded-full"
-                        style={{ background: STATUS_COLOR[status] }}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${util}%` }}
-                        transition={{ duration: 0.7 }}
-                      />
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          <AdminCardCarousel
+            className="mt-1"
+            itemCount={Math.max(clinicList.length, 1)}
+            ariaLabel="clinic"
+            renderItem={(i) => renderClinicCard(clinicList[i]!)}
+            desktop={
+              <div className="grid gap-3 lg:grid-cols-2">
+                {clinicList.map((c) => renderClinicCard(c))}
+              </div>
+            }
+          />
         </div>
 
         <div className="min-w-0 rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
                 Live activity
               </div>
               <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">What happened today</h3>
             </div>
-            <Activity className="h-4 w-4 text-[var(--sage-deep)]" />
+            <Activity className="h-4 w-4 text-[var(--saffron-deep)]" />
           </div>
-          <ul className="mt-4 max-h-[28rem] space-y-3 overflow-y-auto pr-1">
+          <ul className="mt-4 space-y-3 pr-1">
             {loading ? (
               <>
                 <Skeleton className="h-14" />
                 <Skeleton className="h-14" />
                 <Skeleton className="h-14" />
               </>
-            ) : (data?.activity || []).length ? (
-              groupActivityByTime(data!.activity, now).map((group, gi) => (
+            ) : activity.length ? (
+              groupActivityByTime(activityMore.visible, now).map((group, gi) => (
                 <div key={group.label} className="mb-4 last:mb-0">
                   <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
                     {group.label}
@@ -572,18 +678,25 @@ export function AdminCommandCenter() {
               </li>
             )}
           </ul>
+          {!loading && activity.length ? (
+            <ShowMoreButton
+              hiddenCount={activityMore.hiddenCount}
+              expanded={activityMore.expanded}
+              onClick={activityMore.toggle}
+            />
+          ) : null}
         </div>
       </section>
 
       {/* KPI mix */}
       <section className="mt-6 grid w-full min-w-0 gap-4 sm:mt-8 lg:grid-cols-12">
-        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5 lg:col-span-7">
+        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5 lg:col-span-12">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
                 Appointments
               </div>
-              <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Last 7 days</h3>
+              <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Last 7 days — all clinics</h3>
             </div>
             <Users className="h-4 w-4 text-[var(--ink-soft)]" />
           </div>
@@ -592,8 +705,8 @@ export function AdminCommandCenter() {
               <AreaChart data={data?.series7d || []}>
                 <defs>
                   <linearGradient id="apptFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#5D725E" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#5D725E" stopOpacity={0.02} />
+                    <stop offset="0%" stopColor={CHART_SAFFRON} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={CHART_SAFFRON} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
@@ -605,40 +718,10 @@ export function AdminCommandCenter() {
                     boxShadow: "0 8px 24px rgba(38,50,56,0.08)",
                   }}
                 />
-                <Area type="monotone" dataKey="count" stroke="#47563F" strokeWidth={2.5} fill="url(#apptFill)" />
+                <Area type="monotone" dataKey="count" stroke={CHART_SAFFRON_DEEP} strokeWidth={2.5} fill="url(#apptFill)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
-        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5 lg:col-span-5">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
-            Treatment mix
-          </div>
-          <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Top categories</h3>
-          <div className="mt-2 h-44 w-full min-w-0 overflow-hidden sm:h-48">
-            <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <PieChart>
-                <Pie data={conditionPie} dataKey="value" nameKey="name" innerRadius={48} outerRadius={72} paddingAngle={3}>
-                  {conditionPie.map((entry) => (
-                    <Cell key={entry.name} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <ul className="space-y-1.5">
-            {conditionPie.map((c) => (
-              <li key={c.name} className="flex items-center justify-between text-xs">
-                <span className="inline-flex min-w-0 items-center gap-2 font-semibold text-[var(--ink)]">
-                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: c.fill }} />
-                  <span className="truncate">{c.name}</span>
-                </span>
-                <span className="shrink-0 font-bold text-[var(--ink-soft)]">{c.value}</span>
-              </li>
-            ))}
-          </ul>
         </div>
 
         <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-4">
@@ -663,17 +746,17 @@ export function AdminCommandCenter() {
       </section>
 
       {/* Analytics */}
-      <section id="admin-analytics" className="mt-6 grid w-full min-w-0 scroll-mt-24 gap-4 sm:mt-8 lg:grid-cols-2">
+      <section id="admin-analytics" className="mt-6 w-full min-w-0 scroll-mt-24 sm:mt-8">
         <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
           <h3 className="text-lg font-extrabold text-[var(--ink)]">Clinic comparison</h3>
-          <p className="mt-1 text-sm text-[var(--ink-soft)]">Today&apos;s appointments by location</p>
+          <p className="mt-1 text-sm text-[var(--ink-soft)]">Today&apos;s appointments by location — tap a clinic above to drill down</p>
           <div className="mt-4 h-64 w-full min-w-0 sm:h-72">
             <ResponsiveContainer width="100%" height="100%" debounce={50}>
               <BarChart data={clinicBars} layout="vertical" margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorToday" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#5D725E" stopOpacity={0.8}/>
-                    <stop offset="100%" stopColor="#5D725E" stopOpacity={1}/>
+                    <stop offset="0%" stopColor={CHART_SAFFRON} stopOpacity={0.8}/>
+                    <stop offset="100%" stopColor={CHART_SAFFRON} stopOpacity={1}/>
                   </linearGradient>
                   <linearGradient id="colorPending" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#C48A3A" stopOpacity={0.8}/>
@@ -710,43 +793,13 @@ export function AdminCommandCenter() {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
-          <h3 className="text-lg font-extrabold text-[var(--ink)]">Peak hours</h3>
-          <p className="mt-1 text-sm text-[var(--ink-soft)]">Booking intensity across the day</p>
-          <div className="mt-4 h-64 w-full min-w-0 sm:h-72">
-            <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <AreaChart data={peakHours} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorPeak" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6F9E9C" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#6F9E9C" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                <XAxis dataKey="hour" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={40} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
-                <Tooltip
-                  cursor={{ stroke: "rgba(0,0,0,0.1)", strokeWidth: 1, strokeDasharray: "4 4" }}
-                  contentStyle={{
-                    borderRadius: 12,
-                    border: "1px solid rgba(0,0,0,0.06)",
-                    boxShadow: "0 8px 24px rgba(38,50,56,0.08)",
-                    fontSize: 13,
-                  }}
-                  formatter={(value) => [value as number, "Bookings"]}
-                />
-                <Area type="monotone" name="Bookings" dataKey="count" stroke="#6F9E9C" strokeWidth={3} fillOpacity={1} fill="url(#colorPeak)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
       </section>
 
       {/* Doctor performance */}
       <section className="mt-8 min-w-0">
         <div className="mb-3 flex items-end justify-between">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
               Team
             </div>
             <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Doctor performance</h2>
@@ -754,29 +807,29 @@ export function AdminCommandCenter() {
         </div>
         <div className="overflow-hidden rounded-[28px] bg-white shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
           <div className="divide-y divide-black/[0.05]">
-            {(data?.physios || []).slice(0, 8).map((p, i) => (
+            {physiosMore.visible.map((p, i) => (
               <div key={p.physiotherapist_id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
                 <div className="w-6 text-center text-xs font-extrabold text-[var(--ink-soft)]">{i + 1}</div>
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sage)] text-xs font-bold text-white">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--saffron)] text-xs font-bold text-white">
                   {initials(p.full_name)}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <div className="truncate font-extrabold text-[var(--ink)]">{p.full_name}</div>
                     {i === 0 ? (
-                      <span className="rounded-full bg-[var(--bronze)]/15 px-2 py-0.5 text-[10px] font-bold text-[var(--bronze)]">
+                      <span className="rounded-full bg-[var(--saffron-light)] px-2 py-0.5 text-[10px] font-bold text-[var(--saffron-deep)]">
                         Top performer
                       </span>
                     ) : null}
                   </div>
-                  <div className="truncate text-xs text-[var(--ink-soft)]">{p.clinic_name}</div>
+                  <div className="truncate text-xs text-[var(--ink-soft)]">{formatClinicName(p.clinic_name)}</div>
                 </div>
                 <div className="hidden text-right sm:block">
                   <div className="text-sm font-extrabold text-[var(--ink)]">{p.completed}</div>
                   <div className="text-[10px] font-semibold text-[var(--ink-soft)]">Completed</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-extrabold text-[var(--sage-deep)]">
+                  <div className="text-sm font-extrabold text-[var(--saffron-deep)]">
                     {p.completion_pct ?? 0}%
                   </div>
                   <div className="text-[10px] font-semibold text-[var(--ink-soft)]">Rate</div>
@@ -789,231 +842,464 @@ export function AdminCommandCenter() {
               </div>
             ) : null}
           </div>
+          {!loading && physios.length ? (
+            <ShowMoreButton
+              hiddenCount={physiosMore.hiddenCount}
+              expanded={physiosMore.expanded}
+              onClick={physiosMore.toggle}
+              className="mx-4 mb-4 sm:mx-5"
+            />
+          ) : null}
         </div>
       </section>
 
-      {/* Clinic performance rows */}
-      <section className="mt-8">
-        <h2 className="text-xl font-extrabold text-[var(--ink)]">Clinic performance</h2>
-        <div className="mt-4 space-y-3">
-          {(data?.clinics || []).map((c) => {
-            const util = utilizationPct(c);
-            const open = expandedClinic === c.clinic_id;
-            return (
-              <div
-                key={c.clinic_id}
-                id={`clinic-${c.slug || c.clinic_id}`}
-                className="rounded-[24px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5"
-              >
-                <button
-                  type="button"
-                  className="flex w-full flex-col gap-3 text-left sm:flex-row sm:items-center"
-                  onClick={() => setExpandedClinic(open ? null : c.clinic_id)}
-                >
-                  <div className="min-w-[8rem] font-extrabold text-[var(--ink)]">{c.clinic_name}</div>
-                  <div className="flex-1">
-                    <div className="h-2.5 overflow-hidden rounded-full bg-[var(--ivory)]">
-                      <div
-                        className="h-full rounded-full bg-[var(--sage)]"
-                        style={{ width: `${util}%` }}
-                      />
+      {/* Clinic detail — patients, schedule, assessment locks */}
+      <section id="admin-clinic-detail" className="mt-8 scroll-mt-24">
+        {!selectedClinic ? (
+          <div className="rounded-[28px] bg-white px-6 py-12 text-center shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+            <MapPin className="mx-auto h-8 w-8 text-[var(--ink-soft)]" />
+            <p className="mt-3 text-sm font-semibold text-[var(--ink)]">Select a clinic above</p>
+            <p className="mt-1 text-sm text-[var(--ink-soft)]">
+              View patients, upcoming schedule, and assessment edit access for that location.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-[28px] bg-white shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+            <div className="border-b border-black/[0.05] p-4 sm:p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+                    Clinic workspace
+                  </div>
+                  <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)] sm:text-2xl">
+                    {formatClinicName(selectedClinic.clinic_name)}
+                  </h2>
+                  <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                    Patients and assessment controls for this location only
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(data?.clinics || []).map((c) => (
+                    <button
+                      key={c.clinic_id}
+                      type="button"
+                      onClick={() => selectClinic(c.clinic_id)}
+                      className={cn(
+                        "rounded-full px-3 py-1.5 text-xs font-bold ring-1 transition",
+                        selectedClinicId === c.clinic_id
+                          ? "bg-[var(--saffron)] text-white ring-[var(--saffron)]"
+                          : "bg-white text-[var(--ink-soft)] ring-black/[0.08] hover:text-[var(--ink)]",
+                      )}
+                    >
+                      {formatClinicName(c.clinic_name.replace(/ CorpErgo.*/i, "").trim() || c.clinic_name)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5">
+                {[
+                  ["Today", selectedClinic.todays_appointments],
+                  ["Pending", selectedClinic.pending],
+                  ["Completed", selectedClinic.completed],
+                  ["Cancelled", selectedClinic.cancelled],
+                  ["Physios", selectedClinic.active_physiotherapists],
+                ].map(([label, value]) => (
+                  <div
+                    key={String(label)}
+                    className="rounded-2xl bg-[var(--ivory)]/80 px-3 py-3 text-center ring-1 ring-black/[0.04]"
+                  >
+                    <div className="text-lg font-extrabold text-[var(--ink)]">{value as number}</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--ink-soft)]">
+                      {label}
                     </div>
                   </div>
-                  <div className="text-sm font-extrabold text-[var(--ink)]">{util}%</div>
-                </button>
-                {open ? (
-                  <div className="mt-4 grid grid-cols-2 gap-3 border-t border-black/[0.05] pt-4 text-sm sm:grid-cols-5">
-                    {[
-                      ["Appointments", c.todays_appointments],
-                      ["Waiting / pending", c.pending],
-                      ["Completed", c.completed],
-                      ["Cancelled", c.cancelled],
-                      ["Staff", c.active_physiotherapists],
-                    ].map(([l, v]) => (
-                      <div key={String(l)}>
-                        <div className="text-[11px] font-semibold text-[var(--ink-soft)]">{l}</div>
-                        <div className="font-extrabold text-[var(--ink)]">{v as number}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
+                ))}
               </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Recent bookings */}
-      <section id="admin-bookings" className="mt-6 scroll-mt-24 sm:mt-8">
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--bronze)]">
-              Queue
             </div>
-            <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">
-              {bookingTab === "recent" ? "Recent requests" : "Upcoming schedule"}
-            </h2>
-          </div>
-          <div className="flex w-full items-center rounded-2xl bg-black/[0.03] p-1 sm:w-auto">
-            <button
-              onClick={() => setBookingTab("recent")}
-              className={cn(
-                "flex-1 rounded-xl px-4 py-2 text-xs font-bold transition sm:flex-none",
-                bookingTab === "recent"
-                  ? "bg-white text-[var(--ink)] shadow-sm"
-                  : "text-[var(--ink-soft)] hover:text-[var(--ink)]",
-              )}
-            >
-              Recent requests
-            </button>
-            <button
-              onClick={() => setBookingTab("upcoming")}
-              className={cn(
-                "flex-1 rounded-xl px-4 py-2 text-xs font-bold transition sm:flex-none",
-                bookingTab === "upcoming"
-                  ? "bg-white text-[var(--ink)] shadow-sm"
-                  : "text-[var(--ink-soft)] hover:text-[var(--ink)]",
-              )}
-            >
-              Upcoming schedule
-            </button>
-          </div>
-        </div>
 
-        {/* Mobile cards */}
-        <div className="md:hidden">
-          {!(bookingTab === "recent" ? data?.bookings : data?.upcoming_bookings)?.length && !loading ? (
-            <div className="rounded-3xl bg-white px-5 py-10 text-center text-sm text-[var(--ink-soft)] ring-1 ring-black/[0.05]">
-              No bookings yet.
+            <div className="border-b border-black/[0.05] px-3 py-3 sm:px-6">
+              <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap sm:gap-2">
+                {(
+                  [
+                    ["requests", "Recent requests", "Requests", clinicBookings.length],
+                    ["upcoming", "Upcoming schedule", "Schedule", clinicUpcoming.length],
+                    ["assessments", "Assessment locks", "Locks", clinicAssessments.length],
+                  ] as const
+                ).map(([tab, label, shortLabel, count]) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setClinicTab(tab)}
+                    className={cn(
+                      "min-w-0 rounded-xl px-2 py-2 text-center text-[10px] font-bold leading-tight transition sm:px-4 sm:py-2 sm:text-left sm:text-xs",
+                      clinicTab === tab
+                        ? "bg-[var(--saffron)] text-white shadow-sm"
+                        : "bg-black/[0.04] text-[var(--ink-soft)] hover:text-[var(--ink)]",
+                    )}
+                  >
+                    <span className="hidden sm:inline">{label}</span>
+                    <span className="sm:hidden">{shortLabel}</span>
+                    <span className="ml-0 block opacity-80 sm:ml-1.5 sm:inline">({count})</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : (
-            (bookingTab === "recent"
-              ? groupBookingsByTime(data?.bookings || [], now)
-              : groupUpcomingByTime(data?.upcoming_bookings || [], now)
-            ).map((group) => (
-              <div key={group.label} className="mb-6 last:mb-0">
-                <div className="mb-3 pl-1 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                  {group.label}
-                </div>
-                <div className="space-y-3">
-                  {group.items.map((b) => {
-                    const patient = b.patients?.profiles?.full_name || "Patient";
-                    return (
-                      <div
-                        key={b.id}
-                        className="rounded-3xl bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex min-w-0 items-center gap-2.5">
-                            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--sage)]/15 text-[10px] font-bold text-[var(--sage-deep)]">
-                              {initials(patient)}
-                            </span>
-                            <div className="min-w-0">
-                              <div className="truncate font-extrabold text-[var(--ink)]">{patient}</div>
-                              <div className="truncate text-xs text-[var(--ink-soft)]">
-                                {b.clinics?.name || "—"}
-                              </div>
-                            </div>
+
+            <div className="p-4 sm:p-6">
+              {clinicTab === "requests" ? (
+                <>
+                  <div className="md:hidden">
+                    {!clinicBookings.length && !loading ? (
+                      <div className="rounded-2xl bg-[var(--ivory)] px-5 py-10 text-center text-sm text-[var(--ink-soft)]">
+                        No recent requests at this clinic.
+                      </div>
+                    ) : (
+                      groupBookingsByTime(clinicBookingsMore.visible, now).map((group) => (
+                        <div key={group.label} className="mb-6 last:mb-0">
+                          <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                            {group.label}
                           </div>
-                          <span
-                            className={cn(
-                              "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold capitalize",
-                              statusBadgeClass(b.status),
-                            )}
-                          >
-                            {b.status.replace(/_/g, " ")}
-                          </span>
+                          <div className="space-y-3">
+                            {group.items.map((b) => {
+                              const patient = b.patients?.profiles?.full_name || "Patient";
+                              return (
+                                <div
+                                  key={b.id}
+                                  className="rounded-2xl bg-[var(--ivory)]/80 p-4 ring-1 ring-black/[0.04]"
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-2.5">
+                                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[var(--saffron)]/15 text-[10px] font-bold text-[var(--saffron-deep)]">
+                                        {initials(patient)}
+                                      </span>
+                                      <div className="min-w-0">
+                                        <div className="truncate font-extrabold text-[var(--ink)]">{patient}</div>
+                                        <div className="truncate text-xs text-[var(--ink-soft)]">
+                                          {displayStaffLabel(b.physiotherapists?.profiles?.full_name || "Unassigned")}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <span
+                                      className={cn(
+                                        "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold capitalize",
+                                        statusBadgeClass(b.status),
+                                      )}
+                                    >
+                                      {adminVisitStatusLabel(b.status)}
+                                    </span>
+                                  </div>
+                                  <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--ink-soft)]">
+                                    <span>{formatApptWhen(b)}</span>
+                                    <span>{b.physiotherapy_categories?.name || "—"}</span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--ink-soft)]">
-                          <span>{formatApptWhen(b)}</span>
-                          <span>{b.physiotherapists?.profiles?.full_name || "Unassigned"}</span>
-                          <span>{b.physiotherapy_categories?.name || "—"}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+                      ))
+                    )}
+                  </div>
+                  <div className="hidden overflow-x-auto md:block">
+                    <table className="min-w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-black/[0.06] text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                          <th className="px-4 py-3">Patient</th>
+                          <th className="px-4 py-3">Doctor</th>
+                          <th className="hidden px-4 py-3 lg:table-cell">Category</th>
+                          <th className="px-4 py-3">When</th>
+                          <th className="px-4 py-3">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {!clinicBookings.length && !loading ? (
+                          <tr>
+                            <td colSpan={5} className="px-4 py-10 text-center text-[var(--ink-soft)]">
+                              No recent requests at this clinic.
+                            </td>
+                          </tr>
+                        ) : (
+                          groupBookingsByTime(clinicBookingsMore.visible, now).map((group) => (
+                            <Fragment key={group.label}>
+                              <tr className="bg-[var(--ivory)]/40">
+                                <td
+                                  colSpan={5}
+                                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]"
+                                >
+                                  {group.label}
+                                </td>
+                              </tr>
+                              {group.items.map((b) => {
+                                const patient = b.patients?.profiles?.full_name || "Patient";
+                                return (
+                                  <tr
+                                    key={b.id}
+                                    className="border-b border-black/[0.04] last:border-none hover:bg-[var(--ivory)]/70"
+                                  >
+                                    <td className="px-4 py-3">
+                                      <div className="flex items-center gap-2.5">
+                                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--saffron)]/15 text-[10px] font-bold text-[var(--saffron-deep)]">
+                                          {initials(patient)}
+                                        </span>
+                                        <span className="font-semibold text-[var(--ink)]">{patient}</span>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-3 text-[var(--ink-soft)]">
+                                      {displayStaffLabel(b.physiotherapists?.profiles?.full_name || "Unassigned")}
+                                    </td>
+                                    <td className="hidden px-4 py-3 text-[var(--ink-soft)] lg:table-cell">
+                                      {b.physiotherapy_categories?.name || "—"}
+                                    </td>
+                                    <td className="px-4 py-3 text-[var(--ink-soft)]">{formatApptWhen(b)}</td>
+                                    <td className="px-4 py-3">
+                                      <span
+                                        className={cn(
+                                          "inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold capitalize",
+                                          statusBadgeClass(b.status),
+                                        )}
+                                      >
+                                        {adminVisitStatusLabel(b.status)}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </Fragment>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  {!loading && clinicBookings.length ? (
+                    <ShowMoreButton
+                      hiddenCount={clinicBookingsMore.hiddenCount}
+                      expanded={clinicBookingsMore.expanded}
+                      onClick={clinicBookingsMore.toggle}
+                    />
+                  ) : null}
+                </>
+              ) : null}
 
-        {/* Desktop table */}
-        <div className="hidden overflow-x-auto rounded-[28px] bg-white shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] md:block">
-          <table className="min-w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-black/[0.06] text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
-                <th className="px-4 py-3 sm:px-5">Patient</th>
-                <th className="px-4 py-3">Clinic</th>
-                <th className="hidden px-4 py-3 md:table-cell">Doctor</th>
-                <th className="hidden px-4 py-3 lg:table-cell">Category</th>
-                <th className="px-4 py-3">When</th>
-                <th className="px-4 py-3 sm:px-5">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {!(bookingTab === "recent" ? data?.bookings : data?.upcoming_bookings)?.length && !loading ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-[var(--ink-soft)]">
-                    No bookings yet.
-                  </td>
-                </tr>
-              ) : (
-                (bookingTab === "recent"
-                  ? groupBookingsByTime(data?.bookings || [], now)
-                  : groupUpcomingByTime(data?.upcoming_bookings || [], now)
-                ).map((group) => (
-                  <Fragment key={group.label}>
-                    <tr className="bg-[var(--ivory)]/40">
-                      <td
-                        colSpan={6}
-                        className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:px-5"
-                      >
-                        {group.label}
-                      </td>
-                    </tr>
-                    {group.items.map((b) => {
-                      const patient = b.patients?.profiles?.full_name || "Patient";
-                      return (
-                        <tr
-                          key={b.id}
-                          className="border-b border-black/[0.04] transition hover:bg-[var(--ivory)]/70 last:border-none"
-                        >
-                          <td className="px-4 py-3 sm:px-5">
-                            <div className="flex items-center gap-2.5">
-                              <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--sage)]/15 text-[10px] font-bold text-[var(--sage-deep)]">
-                                {initials(patient)}
-                              </span>
-                              <span className="font-semibold text-[var(--ink)]">{patient}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-[var(--ink-soft)]">{b.clinics?.name || "—"}</td>
-                          <td className="hidden px-4 py-3 text-[var(--ink-soft)] md:table-cell">
-                            {b.physiotherapists?.profiles?.full_name || "Unassigned"}
-                          </td>
-                          <td className="hidden px-4 py-3 text-[var(--ink-soft)] lg:table-cell">
-                            {b.physiotherapy_categories?.name || "—"}
-                          </td>
-                          <td className="px-4 py-3 text-[var(--ink-soft)]">{formatApptWhen(b)}</td>
-                          <td className="px-4 py-3 sm:px-5">
-                            <span
-                              className={cn(
-                                "inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold capitalize",
-                                statusBadgeClass(b.status),
-                              )}
-                            >
-                              {b.status.replace(/_/g, " ")}
-                            </span>
+              {clinicTab === "upcoming" ? (
+                <>
+                  <div className="md:hidden">
+                    {!clinicUpcoming.length && !loading ? (
+                      <div className="rounded-2xl bg-[var(--ivory)] px-5 py-10 text-center text-sm text-[var(--ink-soft)]">
+                        No upcoming appointments at this clinic.
+                      </div>
+                    ) : (
+                      groupUpcomingByTime(clinicUpcomingMore.visible, now).map((group) => (
+                        <div key={group.label} className="mb-6 last:mb-0">
+                          <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                            {group.label}
+                          </div>
+                          <div className="space-y-3">
+                            {group.items.map((b) => {
+                              const patient = b.patients?.profiles?.full_name || "Patient";
+                              return (
+                                <div
+                                  key={b.id}
+                                  className="rounded-2xl bg-[var(--ivory)]/80 p-4 ring-1 ring-black/[0.04]"
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="font-extrabold text-[var(--ink)]">{patient}</div>
+                                    <span
+                                      className={cn(
+                                        "rounded-full px-2.5 py-1 text-[10px] font-bold capitalize",
+                                        statusBadgeClass(b.status),
+                                      )}
+                                    >
+                                      {adminVisitStatusLabel(b.status)}
+                                    </span>
+                                  </div>
+                                  <div className="mt-2 text-xs text-[var(--ink-soft)]">
+                                    {formatApptWhen(b)} · {displayStaffLabel(b.physiotherapists?.profiles?.full_name || "Unassigned")}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <div className="hidden overflow-x-auto md:block">
+                    <table className="min-w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-black/[0.06] text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                          <th className="px-4 py-3">Patient</th>
+                          <th className="px-4 py-3">Doctor</th>
+                          <th className="px-4 py-3">When</th>
+                          <th className="px-4 py-3">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {!clinicUpcoming.length && !loading ? (
+                          <tr>
+                            <td colSpan={4} className="px-4 py-10 text-center text-[var(--ink-soft)]">
+                              No upcoming appointments at this clinic.
+                            </td>
+                          </tr>
+                        ) : (
+                          groupUpcomingByTime(clinicUpcomingMore.visible, now).map((group) => (
+                            <Fragment key={group.label}>
+                              <tr className="bg-[var(--ivory)]/40">
+                                <td
+                                  colSpan={4}
+                                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]"
+                                >
+                                  {group.label}
+                                </td>
+                              </tr>
+                              {group.items.map((b) => {
+                                const patient = b.patients?.profiles?.full_name || "Patient";
+                                return (
+                                  <tr
+                                    key={b.id}
+                                    className="border-b border-black/[0.04] last:border-none hover:bg-[var(--ivory)]/70"
+                                  >
+                                    <td className="px-4 py-3 font-semibold text-[var(--ink)]">{patient}</td>
+                                    <td className="px-4 py-3 text-[var(--ink-soft)]">
+                                      {displayStaffLabel(b.physiotherapists?.profiles?.full_name || "Unassigned")}
+                                    </td>
+                                    <td className="px-4 py-3 text-[var(--ink-soft)]">{formatApptWhen(b)}</td>
+                                    <td className="px-4 py-3">
+                                      <span
+                                        className={cn(
+                                          "inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold capitalize",
+                                          statusBadgeClass(b.status),
+                                        )}
+                                      >
+                                        {adminVisitStatusLabel(b.status)}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </Fragment>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  {!loading && clinicUpcoming.length ? (
+                    <ShowMoreButton
+                      hiddenCount={clinicUpcomingMore.hiddenCount}
+                      expanded={clinicUpcomingMore.expanded}
+                      onClick={clinicUpcomingMore.toggle}
+                    />
+                  ) : null}
+                </>
+              ) : null}
+
+              {clinicTab === "assessments" ? (
+                <div className="overflow-x-auto">
+                  <p className="mb-4 text-sm text-[var(--ink-soft)]">
+                    Unlock or lock assessment editing for patients at {formatClinicName(selectedClinic.clinic_name)} only.
+                  </p>
+                  <table className="min-w-full text-left text-sm">
+                    <thead>
+                      <tr className="border-b border-black/[0.06] text-[11px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                        <th className="px-4 py-3">Patient</th>
+                        <th className="hidden px-4 py-3 md:table-cell">Diagnosis</th>
+                        <th className="px-4 py-3">Started</th>
+                        <th className="px-4 py-3">Edit access</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {!clinicAssessments.length ? (
+                        <tr>
+                          <td colSpan={4} className="px-4 py-10 text-center text-[var(--ink-soft)]">
+                            No assessments at this clinic yet.
                           </td>
                         </tr>
-                      );
-                    })}
-                  </Fragment>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                      ) : (
+                        clinicAssessmentsMore.visible.map((row) => {
+                          const lock = assessmentEditState(row, false);
+                          const patient =
+                            row.appointments?.patients?.profiles?.full_name || "Patient";
+                          return (
+                            <tr
+                              key={row.id}
+                              className="border-b border-black/[0.04] last:border-none hover:bg-[var(--ivory)]/70"
+                            >
+                              <td className="px-4 py-3 font-semibold text-[var(--ink)]">
+                                {patient}
+                                <div className="text-xs font-normal text-[var(--ink-soft)]">
+                                  {row.appointments?.appointment_code}
+                                </div>
+                              </td>
+                              <td className="hidden px-4 py-3 text-[var(--ink-soft)] md:table-cell">
+                                {row.diagnosis || "—"}
+                              </td>
+                              <td className="px-4 py-3 text-[var(--ink-soft)]">
+                                {new Date(row.started_at || row.created_at).toLocaleString("en-IN", {
+                                  day: "numeric",
+                                  month: "short",
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                })}
+                              </td>
+                              <td className="px-4 py-3">
+                                <button
+                                  type="button"
+                                  disabled={assessBusy === row.id}
+                                  onClick={() => {
+                                    const next = !row.admin_edit_unlocked;
+                                    setAssessBusy(row.id);
+                                    void setAssessmentAdminEditUnlocked(row.id, next).then((res) => {
+                                      setAssessBusy(null);
+                                      if (res.error) {
+                                        toast.error(res.error);
+                                        return;
+                                      }
+                                      setAssessments((prev) =>
+                                        prev.map((item) =>
+                                          item.id === row.id
+                                            ? { ...item, admin_edit_unlocked: next }
+                                            : item,
+                                        ),
+                                      );
+                                      toast.success(
+                                        next ? "Assessment editing enabled" : "Assessment editing locked",
+                                      );
+                                    });
+                                  }}
+                                  className={cn(
+                                    "rounded-full px-3 py-1.5 text-xs font-bold ring-1",
+                                    row.admin_edit_unlocked
+                                      ? "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/20"
+                                      : lock.editable
+                                        ? "bg-sky-50 text-sky-800 ring-sky-100"
+                                        : "bg-slate-100 text-slate-600 ring-slate-200",
+                                  )}
+                                >
+                                  {row.admin_edit_unlocked
+                                    ? "Unlocked by admin"
+                                    : lock.editable
+                                      ? "Within 24h window"
+                                      : "Locked — tap to unlock"}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                  {!loading && clinicAssessments.length ? (
+                    <ShowMoreButton
+                      hiddenCount={clinicAssessmentsMore.hiddenCount}
+                      expanded={clinicAssessmentsMore.expanded}
+                      onClick={clinicAssessmentsMore.toggle}
+                    />
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

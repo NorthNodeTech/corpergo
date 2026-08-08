@@ -52,12 +52,13 @@ export type RecentBooking = {
   id: string;
   appointment_code: string;
   status: string;
+  clinic_id: string;
   preferred_date: string;
   preferred_time: string | null;
   scheduled_date: string | null;
   scheduled_time: string | null;
   created_at: string;
-  clinics?: { name: string } | null;
+  clinics?: { id: string; name: string } | null;
   physiotherapy_categories?: { name: string } | null;
   patients?: {
     profiles?: { full_name: string | null } | null;
@@ -101,7 +102,7 @@ export type AdminDashboardBundle = {
 };
 
 const BOOKING_SELECT =
-  "id,appointment_code,status,preferred_date,preferred_time,scheduled_date,scheduled_time,created_at,clinics(name),physiotherapy_categories(name),patients(profiles(full_name)),physiotherapists(profiles(full_name))";
+  "id,appointment_code,status,clinic_id,preferred_date,preferred_time,scheduled_date,scheduled_time,created_at,clinics(id,name),physiotherapy_categories(name),patients(profiles(full_name)),physiotherapists(profiles(full_name))";
 
 function isoDate(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;

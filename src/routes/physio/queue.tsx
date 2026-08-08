@@ -1,13 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Camera, ScanLine, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
+import {
+  fetchSavedAssessmentAppointmentIds,
+  isVisitDocumented,
+} from "@/lib/assessment-data";
 import { formatTimeLabel } from "@/lib/clinic-data";
 import {
-  ageFromDob,
   fetchTodayQueue,
   setConsultationStatus,
   type PhysioAppointment,
@@ -19,6 +24,7 @@ export const Route = createFileRoute("/physio/queue")({
 
 function TodayQueuePage() {
   const [items, setItems] = useState<PhysioAppointment[]>([]);
+  const [assessedIds, setAssessedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -26,7 +32,10 @@ function TodayQueuePage() {
     setLoading(true);
     const { data, error } = await fetchTodayQueue();
     if (error) toast.error(error);
-    setItems(data || []);
+    const queue = data || [];
+    setItems(queue);
+    const saved = await fetchSavedAssessmentAppointmentIds(queue.map((item) => item.id));
+    setAssessedIds(new Set(saved.data || []));
     setLoading(false);
   }
 
@@ -35,12 +44,10 @@ function TodayQueuePage() {
   }, []);
 
   const groups = useMemo(() => {
-    return {
-      waiting: items.filter((a) => a.status === "checked_in"),
-      accepted: items.filter((a) => a.status === "accepted"),
-      completed: items.filter((a) => a.status === "completed"),
-    };
-  }, [items]);
+    const inProgress = items.filter((a) => !isVisitDocumented(a, assessedIds));
+    const completed = items.filter((a) => isVisitDocumented(a, assessedIds));
+    return { inProgress, completed };
+  }, [items, assessedIds]);
 
   async function complete(id: string) {
     setBusy(true);
@@ -62,8 +69,10 @@ function TodayQueuePage() {
     title: string;
     list: PhysioAppointment[];
     empty: string;
-    actions?: (a: PhysioAppointment) => React.ReactNode;
+    actions?: (a: PhysioAppointment) => ReactNode;
   }) {
+    const listMore = useShowMore(list);
+
     return (
       <section className="rounded-3xl bg-white p-5 ring-1 ring-black/[0.05]">
         <h2 className="text-lg font-extrabold text-[var(--ink)]">
@@ -73,28 +82,34 @@ function TodayQueuePage() {
         {list.length === 0 ? (
           <p className="mt-3 text-sm text-[var(--ink-soft)]">{empty}</p>
         ) : (
-          <ul className="mt-4 space-y-3">
-            {list.map((a) => (
-              <li key={a.id} className="rounded-2xl bg-[var(--ivory)] px-4 py-3">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <div className="font-bold text-[var(--ink)]">
-                      {a.patients?.profiles?.full_name || a.appointment_code}
-                      {ageFromDob(a.patients?.date_of_birth) != null
-                        ? ` · ${ageFromDob(a.patients?.date_of_birth)} yrs`
-                        : ""}
+          <>
+            <ul className="mt-4 space-y-3">
+              {listMore.visible.map((a) => (
+                <li key={a.id} className="rounded-2xl bg-[var(--ivory)] px-4 py-3">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="font-bold text-[var(--ink)]">
+                        {a.patients?.profiles?.full_name || a.appointment_code}
+                      </div>
+                      <div className="text-xs text-[var(--ink-soft)]">
+                        {formatTimeLabel(a.scheduled_time || a.preferred_time)} -{" "}
+                        {a.physiotherapy_categories?.name}
+                      </div>
                     </div>
-                    <div className="text-xs text-[var(--ink-soft)]">
-                      {formatTimeLabel(a.scheduled_time || a.preferred_time)} ·{" "}
-                      {a.physiotherapy_categories?.name}
-                    </div>
+                    <StatusBadge
+                      status={isVisitDocumented(a, assessedIds) ? "completed" : "checked_in"}
+                    />
                   </div>
-                  <StatusBadge status={a.status} />
-                </div>
-                {actions ? <div className="mt-3 flex flex-wrap gap-2">{actions(a)}</div> : null}
-              </li>
-            ))}
-          </ul>
+                  {actions ? <div className="mt-3 portal-card-actions">{actions(a)}</div> : null}
+                </li>
+              ))}
+            </ul>
+            <ShowMoreButton
+              hiddenCount={listMore.hiddenCount}
+              expanded={listMore.expanded}
+              onClick={listMore.toggle}
+            />
+          </>
         )}
       </section>
     );
@@ -104,12 +119,12 @@ function TodayQueuePage() {
     <div>
       <PortalPageHeader
         eyebrow="Floor"
-        title="Today’s queue"
+        title="Today's queue"
         description="Scan the patient QR on arrival, then continue to assessment from the waiting list."
         actions={
           <Link
             to="/physio/scan"
-            className="inline-flex items-center gap-2 rounded-full bg-[var(--sage)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-soft)]"
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-3 text-sm font-bold text-white shadow-[var(--shadow-soft)]"
           >
             <Camera className="h-4 w-4" /> Scan QR
           </Link>
@@ -118,7 +133,7 @@ function TodayQueuePage() {
 
       <Link
         to="/physio/scan"
-        className="mb-6 flex items-center gap-4 rounded-[2rem] bg-gradient-to-br from-[var(--structure-maroon)] via-[#8B3439] to-[var(--accent-orange)] p-5 text-white shadow-md"
+        className="mb-6 flex items-center gap-4 rounded-[2rem] bg-gradient-to-br from-black via-neutral-800 to-[var(--saffron)] p-5 text-white shadow-md"
       >
         <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/15">
           <ScanLine className="h-7 w-7" />
@@ -142,55 +157,70 @@ function TodayQueuePage() {
           action={
             <Link
               to="/physio/scan"
-              className="rounded-full bg-[var(--sage)] px-5 py-2.5 text-sm font-bold text-white"
+              className="rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white"
             >
               Open scanner
             </Link>
           }
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2">
           <QueueSection
-            title="Waiting"
-            list={groups.waiting}
-            empty="No checked-in patients yet."
-            actions={(a) => (
-              <>
+            title="In progress"
+            list={groups.inProgress}
+            empty="No visits in progress today."
+            actions={(a) =>
+              !isVisitDocumented(a, assessedIds) ? (
+                <>
+                  <Link
+                    to="/physio/assessments/$appointmentId"
+                    params={{ appointmentId: a.id }}
+                    className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800"
+                  >
+                    {a.status === "checked_in" ? "Open assessment" : "Start assessment"}
+                  </Link>
+                  {a.status === "checked_in" ? (
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void complete(a.id)}
+                      className="rounded-full bg-[var(--saffron)] px-3 py-1.5 text-xs font-bold text-white"
+                    >
+                      Complete
+                    </button>
+                  ) : (
+                    <Link
+                      to="/physio/scan"
+                      className="rounded-full bg-[var(--saffron)]/10 px-3 py-1.5 text-xs font-bold text-[var(--saffron-deep)]"
+                    >
+                      Scan to check in
+                    </Link>
+                  )}
+                </>
+              ) : (
                 <Link
                   to="/physio/assessments/$appointmentId"
                   params={{ appointmentId: a.id }}
-                  className="rounded-full bg-sky-50 px-3 py-1.5 text-xs font-bold text-sky-800"
+                  className="rounded-full bg-[var(--saffron-light)] px-3 py-1.5 text-xs font-bold text-[var(--saffron-deep)]"
                 >
-                  Open assessment
+                  View assessment
                 </Link>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void complete(a.id)}
-                  className="rounded-full bg-[var(--sage)] px-3 py-1.5 text-xs font-bold text-white"
-                >
-                  Complete
-                </button>
-              </>
-            )}
-          />
-          <QueueSection
-            title="Accepted (not checked in)"
-            list={groups.accepted}
-            empty="No accepted visits waiting for arrival."
-            actions={() => (
-              <Link
-                to="/physio/scan"
-                className="rounded-full bg-[var(--sage)]/10 px-3 py-1.5 text-xs font-bold text-[var(--sage-deep)]"
-              >
-                Scan to check in
-              </Link>
-            )}
+              )
+            }
           />
           <QueueSection
             title="Completed"
             list={groups.completed}
             empty="No completed visits yet today."
+            actions={(a) => (
+              <Link
+                to="/physio/assessments/$appointmentId"
+                params={{ appointmentId: a.id }}
+                className="rounded-full bg-[var(--saffron-light)] px-3 py-1.5 text-xs font-bold text-[var(--saffron-deep)]"
+              >
+                View assessment
+              </Link>
+            )}
           />
         </div>
       )}
