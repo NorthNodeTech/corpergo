@@ -35,7 +35,8 @@
   --destructive-foreground: #ffffff;
 
   --border: #d4d4d4;
-  --card-border-strong: color-mix(in srgb, var(--ink) 14%, var(--border));
+  --card-border-width: 1px;
+  --card-border-strong: rgba(0, 0, 0, 0.08);
   --input: #d4d4d4;
   --ring: var(--saffron);
 
@@ -85,7 +86,8 @@
   --accent-foreground: #000000;
 
   --border: #262626;
-  --card-border-strong: color-mix(in srgb, var(--ink) 18%, var(--border));
+  --card-border-width: 1px;
+  --card-border-strong: rgba(255, 255, 255, 0.1);
   --input: #262626;
   --ring: var(--saffron);
 

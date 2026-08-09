@@ -3,21 +3,21 @@ import { Camera, ScanLine, Users } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toast } from "sonner";
-import { EmptyState } from "@/components/portal/EmptyState";
-import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
-import { StatusBadge } from "@/components/portal/StatusBadge";
-import { LoadingState } from "@/components/ui/loading-spinner";
+import { EmptyState } from "@/shared/components/layout/EmptyState";
+import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/shared/components/layout/ShowMoreList";
+import { StatusBadge } from "@/shared/components/layout/StatusBadge";
+import { LoadingState } from "@/shared/components/ui/loading-spinner";
 import {
   fetchSavedAssessmentAppointmentIds,
   isVisitDocumented,
-} from "@/lib/assessment-data";
-import { formatTimeLabel } from "@/lib/clinic-data";
+} from "@/lib/physio/assessment-data";
+import { formatTimeLabel } from "@/lib/patient/clinic-data";
 import {
   fetchTodayQueue,
   setConsultationStatus,
   type PhysioAppointment,
-} from "@/lib/physio-data";
+} from "@/lib/physio/physio-data";
 
 export const Route = createFileRoute("/physio/queue")({
   component: TodayQueuePage,

@@ -1,7 +1,7 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
-import { PortalShell } from "@/components/portal/PortalShell";
-import { PortalGuard } from "@/hooks/use-portal-guard";
+import { PortalShell } from "@/shared/components/layout/PortalShell";
+import { PortalGuard } from "@/shared/hooks/use-portal-guard";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,

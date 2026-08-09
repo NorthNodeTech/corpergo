@@ -1,18 +1,11 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import {
-  ClipboardCheck,
-  ClipboardList,
-  FileBarChart,
-  Home,
-  LayoutDashboard,
-  PhoneCall,
-  ScanLine,
-} from "lucide-react";
+import { PhoneCall, ScanLine } from "lucide-react";
 import { useState } from "react";
-import { InstantBookingModal } from "@/components/physio/InstantBookingModal";
-import { InstantBookingProvider } from "@/components/physio/instant-booking-context";
-import { PortalShell, type PortalNavItem } from "@/components/portal/PortalShell";
-import { PortalGuard } from "@/hooks/use-portal-guard";
+import { physioFooterNav, physioHeaderNav } from "@/features/physio/config/navigation";
+import { InstantBookingModal } from "@/features/physio/components/InstantBookingModal";
+import { InstantBookingProvider } from "@/features/physio/components/instant-booking-context";
+import { PortalShell } from "@/shared/components/layout/PortalShell";
+import { PortalGuard } from "@/shared/hooks/use-portal-guard";
 
 export const Route = createFileRoute("/physio")({
   component: PhysioLayout,
@@ -26,22 +19,6 @@ export const Route = createFileRoute("/physio")({
   }),
 });
 
-const NAV: PortalNavItem[] = [
-  { to: "/physio/dashboard", label: "Workspace", icon: LayoutDashboard },
-  { to: "/physio/scan", label: "Scan QR", icon: ScanLine },
-  { to: "/physio/queue", label: "Today's Queue", icon: ClipboardCheck },
-  { to: "/physio/requests", label: "Requests", icon: ClipboardList },
-  { to: "/physio/assessments", label: "Assessments", icon: FileBarChart },
-];
-
-/** Side tabs only — Scan sits in the elevated center action */
-const FOOTER_NAV: PortalNavItem[] = [
-  { to: "/physio/dashboard", label: "Workspace", shortLabel: "Home", icon: Home },
-  { to: "/physio/queue", label: "Queue", shortLabel: "Queue", icon: ClipboardCheck },
-  { to: "/physio/requests", label: "Requests", shortLabel: "Requests", icon: ClipboardList },
-  { to: "/physio/assessments", label: "Assess", shortLabel: "Assess", icon: FileBarChart },
-];
-
 function PhysioLayout() {
   const [instantOpen, setInstantOpen] = useState(false);
 
@@ -52,8 +29,8 @@ function PhysioLayout() {
           <PortalShell
             title="Clinical Workspace"
             subtitle="Patient-first care floor"
-            nav={NAV}
-            footerNav={FOOTER_NAV}
+            nav={physioHeaderNav}
+            footerNav={physioFooterNav}
             desktopNav="header"
             headerNavMode="full"
             centerAction={{

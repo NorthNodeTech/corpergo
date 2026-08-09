@@ -1,19 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
+import { GoogleMapsIcon } from "@/shared/components/icons/BrandIcons";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { EmptyState } from "@/components/portal/EmptyState";
-import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
-import { StatusBadge } from "@/components/portal/StatusBadge";
-import { LoadingState } from "@/components/ui/loading-spinner";
+import { EmptyState } from "@/shared/components/layout/EmptyState";
+import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/shared/components/layout/ShowMoreList";
+import { StatusBadge } from "@/shared/components/layout/StatusBadge";
+import { LoadingState } from "@/shared/components/ui/loading-spinner";
 import {
   cancelAppointment,
   fetchMyAppointments,
   formatDateLabel,
   formatTimeLabel,
   type Appointment,
-} from "@/lib/clinic-data";
+} from "@/lib/patient/clinic-data";
 
 export const Route = createFileRoute("/patient/appointments")({
   component: MyAppointmentsPage,
@@ -143,7 +144,7 @@ function MyAppointmentsPage() {
                 </span>
                 {a.clinics?.address ? (
                   <span className="inline-flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[var(--bronze)]" />
+                    <GoogleMapsIcon className="h-4 w-4" />
                     {a.clinics.address}
                   </span>
                 ) : null}

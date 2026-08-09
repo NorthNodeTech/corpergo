@@ -1,16 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, MapPin, Phone, ShieldCheck } from "lucide-react";
-import { CorpErgoLogo } from "@/components/CorpErgoLogo";
+import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
+import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
+import { GoogleMapsIcon, PhoneAppIcon } from "@/shared/components/icons/BrandIcons";
 import {
   createDirectBookingRequest,
   fetchPublicClinics,
   type DirectBookingGender,
-} from "@/lib/direct-booking-data";
-import type { Clinic } from "@/lib/clinic-data";
-import { cn } from "@/lib/utils";
-import { LoadingSpinner, LoadingSpinnerLabel } from "@/components/ui/loading-spinner";
+} from "@/lib/booking/direct-booking-data";
+import type { Clinic } from "@/lib/patient/clinic-data";
+import { cn } from "@/lib/core/utils";
+import { LoadingSpinner, LoadingSpinnerLabel } from "@/shared/components/ui/loading-spinner";
 
 export const Route = createFileRoute("/direct-booking")({
   component: DirectBookingPage,
@@ -109,19 +110,19 @@ function DirectBookingPage() {
         <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:py-12">
           <section>
             <CorpErgoLogo size="lg" />
-            <p className="mt-7 text-xs font-black uppercase tracking-[0.22em] text-[var(--bronze)]">
+            <p className="type-eyebrow mt-7 font-black text-[var(--bronze)]">
               Direct booking
             </p>
-            <h1 className="mt-3 max-w-xl text-4xl font-extrabold tracking-tight text-balance sm:text-5xl">
+            <h1 className="type-h1 mt-3 max-w-xl font-extrabold tracking-tight text-balance">
               Request a visit in under a minute.
             </h1>
-            <p className="mt-4 max-w-lg text-base leading-relaxed text-[var(--ink-soft)]">
+            <p className="type-lead mt-4 max-w-lg text-[var(--ink-soft)]">
               No login needed. Share only the details the clinic needs to call you and confirm the
               appointment.
             </p>
             <div className="mt-6 grid gap-3 text-sm text-[var(--ink-soft)] sm:grid-cols-2 lg:grid-cols-1">
               <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-black/5">
-                <Phone className="h-4 w-4 text-[var(--sage)]" />
+                <PhoneAppIcon className="h-4 w-4" />
                 Staff confirms by phone
               </div>
               <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-black/5">
@@ -137,8 +138,8 @@ function DirectBookingPage() {
                 <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sage)]/10 text-[var(--sage-deep)]">
                   <CheckCircle2 className="h-7 w-7" />
                 </div>
-                <h2 className="mt-5 text-2xl font-extrabold tracking-tight">Request sent</h2>
-                <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-[var(--ink-soft)]">
+                <h2 className="type-h2 mt-5 font-extrabold tracking-tight">Request sent</h2>
+                <p className="type-body-sm mx-auto mt-2 max-w-sm text-[var(--ink-soft)]">
                   {submittedClinic.name} has received your request. A clinician will call{" "}
                   {phone.trim()} to confirm whether the appointment is booked.
                 </p>
@@ -167,8 +168,8 @@ function DirectBookingPage() {
             ) : (
               <>
                 <div>
-                  <h2 className="text-2xl font-extrabold tracking-tight">Quick details</h2>
-                  <p className="mt-1 text-sm text-[var(--ink-soft)]">
+                  <h2 className="type-h2 font-extrabold tracking-tight">Quick details</h2>
+                  <p className="type-body-sm mt-1 text-[var(--ink-soft)]">
                     The clinic will call this number before confirming the visit.
                   </p>
                 </div>
@@ -225,7 +226,7 @@ function DirectBookingPage() {
 
                   <Field label="Clinic">
                     <div className="relative">
-                      <MapPin className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ink-soft)]" />
+                      <GoogleMapsIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" />
                       <select
                         value={clinicId}
                         onChange={(e) => setClinicId(e.target.value)}
@@ -296,7 +297,7 @@ const inputClass =
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block text-sm font-semibold text-[var(--ink)]">
-      <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+      <span className="type-label font-bold text-[var(--ink-soft)]">
         {label}
       </span>
       {children}

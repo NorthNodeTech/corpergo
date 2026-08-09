@@ -8,11 +8,11 @@ import {
   QrCode,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { EmptyState } from "@/components/portal/EmptyState";
-import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
-import { StatusBadge } from "@/components/portal/StatusBadge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/shared/components/layout/EmptyState";
+import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/shared/components/layout/ShowMoreList";
+import { StatusBadge } from "@/shared/components/layout/StatusBadge";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { fetchMyProfile } from "@/lib/auth";
 import {
   fetchMyAppointments,
@@ -20,8 +20,8 @@ import {
   formatDateLabel,
   formatTimeLabel,
   type Appointment,
-} from "@/lib/clinic-data";
-import { isPatientIntakeComplete, normalizePatient } from "@/lib/patient-intake";
+} from "@/lib/patient/clinic-data";
+import { isPatientIntakeComplete, normalizePatient } from "@/lib/patient/patient-intake";
 
 export const Route = createFileRoute("/patient/dashboard")({
   component: PatientDashboardPage,

@@ -2,14 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { LoadingSpinner, LoadingSpinnerLabel, LoadingState } from "@/components/ui/loading-spinner";
+import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
+import { LoadingSpinner, LoadingSpinnerLabel, LoadingState } from "@/shared/components/ui/loading-spinner";
 import {
   FollowUpSchedulerModal,
   nextBookableDate,
   type FollowUpSlot,
-} from "@/components/physio/FollowUpSchedulerModal";
-import { PatientVisitSidebar } from "@/components/physio/PatientVisitSidebar";
+} from "@/features/physio/components/FollowUpSchedulerModal";
+import { PatientVisitSidebar } from "@/features/physio/components/PatientVisitSidebar";
 import { fetchMyProfile, supabaseRest } from "@/lib/auth";
 import {
   assessmentFromRow,
@@ -24,16 +24,16 @@ import {
   type AssessmentForm,
   type AssessmentRow,
   type PatientVisitSummary,
-} from "@/lib/assessment-data";
-import { formatDateLabel, uniqueSlotTimes } from "@/lib/clinic-data";
+} from "@/lib/physio/assessment-data";
+import { formatDateLabel, uniqueSlotTimes } from "@/lib/patient/clinic-data";
 import {
   ageFromPatient,
   fetchAvailableSlots,
   fetchMyPhysioId,
   formatPatientGender,
   type PhysioAppointment,
-} from "@/lib/physio-data";
-import { cn } from "@/lib/utils";
+} from "@/lib/physio/physio-data";
+import { cn } from "@/lib/core/utils";
 
 export const Route = createFileRoute("/physio/assessments/$appointmentId")({
   component: AssessmentEditorPage,

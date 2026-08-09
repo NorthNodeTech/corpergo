@@ -3,23 +3,23 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, ClipboardList, ScanLine, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { PatientIntakeForm, type PatientIntakeValues } from "@/components/portal/PatientIntakeForm";
-import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { LoadingSpinner, LoadingSpinnerLabel } from "@/components/ui/loading-spinner";
-import { QrCameraScanner } from "@/components/portal/QrCameraScanner";
+import { PatientIntakeForm, type PatientIntakeValues } from "@/shared/components/layout/PatientIntakeForm";
+import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
+import { LoadingSpinner, LoadingSpinnerLabel } from "@/shared/components/ui/loading-spinner";
+import { QrCameraScanner } from "@/shared/components/layout/QrCameraScanner";
 import { supabaseRest } from "@/lib/auth";
 import {
   fetchPatientById,
   formatDateLabel,
   formatTimeLabel,
   updateMyPatient,
-} from "@/lib/clinic-data";
+} from "@/lib/patient/clinic-data";
 import {
   emptyMedicalConditions,
   isPatientIntakeComplete,
   normalizePatient,
-} from "@/lib/patient-intake";
-import { scanQrToken, type PhysioAppointment } from "@/lib/physio-data";
+} from "@/lib/patient/patient-intake";
+import { scanQrToken, type PhysioAppointment } from "@/lib/physio/physio-data";
 
 export const Route = createFileRoute("/physio/scan")({
   component: QrScanPage,

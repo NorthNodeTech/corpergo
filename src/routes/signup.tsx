@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { FormEvent, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
-import { CorpErgoLogo } from "@/components/CorpErgoLogo";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
+import { LoadingSpinner } from "@/shared/components/ui/loading-spinner";
 import { getStoredSession, signUpPatient } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({
@@ -105,16 +105,16 @@ function SignupPage() {
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold ring-1 ring-white/20 backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Patient registration
             </div>
-            <h1 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-balance xl:text-5xl">
+            <h1 className="type-display mt-6 font-extrabold leading-[1.1] tracking-tight text-balance">
               Start your recovery with CorpErgo.
             </h1>
-            <p className="mt-5 max-w-md text-lg text-white/85">
+            <p className="type-lead mt-4 max-w-md text-white/85">
               Create a patient account to book assessments, view prescriptions, and follow your
               progress across our Bengaluru clinics.
             </p>
           </div>
 
-          <CorpErgoLogo size="xl" frameClassName="shadow-md ring-white/20" />
+          <CorpErgoLogo size="xl" background="dark" frameClassName="shadow-md ring-white/20" />
         </div>
       </div>
 
@@ -138,17 +138,17 @@ function SignupPage() {
                 </div>
               </div>
 
-              <h2 className="text-2xl font-extrabold tracking-tight text-[var(--ink)] sm:text-3xl">
+              <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)]">
                 Create patient account
               </h2>
-              <p className="mt-2 text-sm text-[var(--ink-soft)] sm:text-base">
+              <p className="type-body-sm mt-2 text-[var(--ink-soft)]">
                 Physiotherapist and admin accounts are issued by CorpErgo — only patients can
                 self-register. Your mobile number is collected when you book your first visit.
               </p>
 
               <form className="mt-6 space-y-3 sm:mt-8 sm:space-y-4" onSubmit={onSubmit}>
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                  <label className="type-label font-bold text-[var(--ink-soft)]">
                     Full name
                   </label>
                   <input
@@ -162,7 +162,7 @@ function SignupPage() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                  <label className="type-label font-bold text-[var(--ink-soft)]">
                     Email
                   </label>
                   <input
@@ -177,7 +177,7 @@ function SignupPage() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                  <label className="type-label font-bold text-[var(--ink-soft)]">
                     Password
                   </label>
                   <div className="relative mt-1.5 sm:mt-2">
@@ -201,7 +201,7 @@ function SignupPage() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
+                  <label className="type-label font-bold text-[var(--ink-soft)]">
                     Confirm password
                   </label>
                   <div className="relative mt-1.5 sm:mt-2">

@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar";
-import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { LoadingSpinner, LoadingSpinnerLabel } from "@/components/ui/loading-spinner";
+import { Calendar } from "@/shared/components/ui/calendar";
+import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
+import { LoadingSpinner, LoadingSpinnerLabel } from "@/shared/components/ui/loading-spinner";
 import { fetchMyProfile, isValidPhone, normalizePhone } from "@/lib/auth";
 import {
   createAppointment,
@@ -29,9 +29,9 @@ import {
   updateMyProfile,
   type Category,
   type Clinic,
-} from "@/lib/clinic-data";
-import type { DirectBookingGender } from "@/lib/direct-booking-data";
-import { cn } from "@/lib/utils";
+} from "@/lib/patient/clinic-data";
+import type { DirectBookingGender } from "@/lib/booking/direct-booking-data";
+import { cn } from "@/lib/core/utils";
 
 export const Route = createFileRoute("/patient/book")({
   component: BookAppointmentPage,

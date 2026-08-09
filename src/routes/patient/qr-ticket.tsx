@@ -1,18 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { QRCodeSVG } from "qrcode.react";
-import { Calendar, Clock, MapPin, QrCode, UserRound } from "lucide-react";
+import { Calendar, Clock, QrCode, UserRound } from "lucide-react";
+import { GoogleMapsIcon } from "@/shared/components/icons/BrandIcons";
 import { useEffect, useState } from "react";
-import { EmptyState } from "@/components/portal/EmptyState";
-import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { LoadingState } from "@/components/ui/loading-spinner";
-import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
+import { EmptyState } from "@/shared/components/layout/EmptyState";
+import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
+import { LoadingState } from "@/shared/components/ui/loading-spinner";
+import { ShowMoreButton, useShowMore } from "@/shared/components/layout/ShowMoreList";
 import {
   fetchAcceptedTickets,
   formatDateLabel,
   formatTimeLabel,
   type Appointment,
   type QrTicket,
-} from "@/lib/clinic-data";
+} from "@/lib/patient/clinic-data";
 
 export const Route = createFileRoute("/patient/qr-ticket")({
   component: QrTicketPage,
@@ -87,7 +88,7 @@ function QrTicketPage() {
                 <div className="grid gap-6 p-6 sm:grid-cols-[1fr_auto] items-center">
                   <div className="space-y-3 text-sm">
                     <div className="flex items-start gap-2">
-                      <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-white/80" />
+                      <GoogleMapsIcon className="mt-0.5 h-4 w-4 shrink-0" />
                       <div>
                         <div className="text-white/70 text-xs uppercase tracking-wider font-bold">
                           Clinic

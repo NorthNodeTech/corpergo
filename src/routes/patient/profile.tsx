@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import type { PatientIntakeValues } from "@/components/portal/PatientIntakeForm";
-import { PremiumPatientProfile } from "@/components/portal/premium-profile/PremiumPatientProfile";
-import { LoadingState } from "@/components/ui/loading-spinner";
+import type { PatientIntakeValues } from "@/shared/components/layout/PatientIntakeForm";
+import { PremiumPatientProfile } from "@/features/patient/components/profile/PremiumPatientProfile";
+import { LoadingState } from "@/shared/components/ui/loading-spinner";
 import { fetchMyProfile } from "@/lib/auth";
 import {
   fetchMyAppointments,
@@ -11,8 +11,8 @@ import {
   updateMyPatient,
   updateMyProfile,
   type Appointment,
-} from "@/lib/clinic-data";
-import { emptyMedicalConditions, normalizePatient } from "@/lib/patient-intake";
+} from "@/lib/patient/clinic-data";
+import { emptyMedicalConditions, normalizePatient } from "@/lib/patient/patient-intake";
 
 export const Route = createFileRoute("/patient/profile")({
   component: PatientProfilePage,

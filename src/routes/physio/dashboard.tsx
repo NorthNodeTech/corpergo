@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ClinicalWorkspace } from "@/components/physio/ClinicalWorkspace";
+import { ClinicalWorkspace } from "@/features/physio/components/ClinicalWorkspace";
 
 export const Route = createFileRoute("/physio/dashboard")({
   component: PhysioDashboardPage,

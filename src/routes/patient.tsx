@@ -1,14 +1,7 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import {
-  CalendarPlus,
-  ClipboardList,
-  Home,
-  LayoutDashboard,
-  QrCode,
-  UserRound,
-} from "lucide-react";
-import { PortalShell, type PortalNavItem } from "@/components/portal/PortalShell";
-import { PortalGuard } from "@/hooks/use-portal-guard";
+import { patientFooterNav, patientHeaderNav } from "@/features/patient/config/navigation";
+import { PortalShell } from "@/shared/components/layout/PortalShell";
+import { PortalGuard } from "@/shared/hooks/use-portal-guard";
 
 export const Route = createFileRoute("/patient")({
   component: PatientLayout,
@@ -28,21 +21,6 @@ export const Route = createFileRoute("/patient")({
   }),
 });
 
-const NAV: PortalNavItem[] = [
-  { to: "/patient/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/patient/book", label: "Book Appointment", icon: CalendarPlus },
-  { to: "/patient/appointments", label: "My Appointments", icon: ClipboardList },
-  { to: "/patient/qr-ticket", label: "QR Ticket", icon: QrCode },
-];
-
-const FOOTER_NAV: PortalNavItem[] = [
-  { to: "/patient/dashboard", label: "Home", shortLabel: "Home", icon: Home },
-  { to: "/patient/book", label: "Book", shortLabel: "Book", icon: CalendarPlus },
-  { to: "/patient/appointments", label: "Visits", shortLabel: "Visits", icon: ClipboardList },
-  { to: "/patient/qr-ticket", label: "QR Ticket", shortLabel: "QR", icon: QrCode },
-  { to: "/patient/profile", label: "Profile", shortLabel: "Profile", icon: UserRound },
-];
-
 function PatientLayout() {
   return (
     <PortalGuard pathPrefix="/patient">
@@ -50,8 +28,8 @@ function PatientLayout() {
         <PortalShell
           title="Patient Portal"
           subtitle="Your care, simplified"
-          nav={NAV}
-          footerNav={FOOTER_NAV}
+          nav={patientHeaderNav}
+          footerNav={patientFooterNav}
           desktopNav="header"
           headerNavMode="full"
           staticNav

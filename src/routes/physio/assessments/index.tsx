@@ -1,17 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ClipboardList, FileBarChart } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { EmptyState } from "@/components/portal/EmptyState";
-import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
-import { StatusBadge } from "@/components/portal/StatusBadge";
-import { LoadingState } from "@/components/ui/loading-spinner";
+import { EmptyState } from "@/shared/components/layout/EmptyState";
+import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
+import { ShowMoreButton, useShowMore } from "@/shared/components/layout/ShowMoreList";
+import { StatusBadge } from "@/shared/components/layout/StatusBadge";
+import { LoadingState } from "@/shared/components/ui/loading-spinner";
 import {
   fetchAllAssessmentSessions,
   type AssessmentSessionRow,
-} from "@/lib/assessment-data";
-import { formatDateLabel, formatTimeLabel } from "@/lib/clinic-data";
-import { cn } from "@/lib/utils";
+} from "@/lib/physio/assessment-data";
+import { formatDateLabel, formatTimeLabel } from "@/lib/patient/clinic-data";
+import { cn } from "@/lib/core/utils";
 
 export const Route = createFileRoute("/physio/assessments/")({
   component: AssessmentsListPage,
