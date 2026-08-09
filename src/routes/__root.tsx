@@ -31,7 +31,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/shared/components/ui/sonner";
 import appCss from "../styles.css?url";
-import faviconUrl from "@/assets/corpergo-logo.webp?url";
+import faviconUrl from "@/assets/corpergo-logo-white.webp?url";
 import { reportLovableError } from "@/lib/core/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -117,7 +117,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: faviconUrl, type: "image/png" },
+      { rel: "icon", href: faviconUrl, type: "image/webp" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

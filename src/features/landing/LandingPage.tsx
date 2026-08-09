@@ -60,7 +60,7 @@ const SUPPORT_PHONE = "+911234567890";
 const SUPPORT_PHONE_DISPLAY = "+91 12345 67890";
 
 const LANDING_NAV_LINK =
-  "landing-nav__link inline-flex items-center justify-center rounded-full bg-[var(--ink)] px-3.5 py-2 text-sm font-semibold leading-snug text-white shadow-sm transition-colors hover:bg-[var(--saffron)] hover:!text-white";
+  "landing-nav__link inline-flex items-center justify-center rounded-full bg-[var(--ink)] px-2.5 py-1.5 text-xs font-semibold leading-snug text-white shadow-sm transition-colors hover:bg-[var(--saffron)] hover:!text-white";
 
 /* ------------------------------ helpers ------------------------------ */
 
@@ -244,12 +244,12 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
             <button
               type="button"
               onClick={onBookClick}
-              className="group hidden sm:inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[var(--saffron)] px-3.5 py-2 text-sm font-semibold leading-snug text-white shadow-sm transition-colors hover:bg-[var(--saffron-deep)] hover:text-white cursor-pointer focus:outline-none"
+              className="group hidden sm:inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--saffron)] px-2.5 py-1.5 text-xs font-semibold leading-snug text-white shadow-sm transition-colors hover:bg-[var(--saffron-deep)] hover:text-white cursor-pointer focus:outline-none"
             >
               <span>
                 Book<span className="hidden md:inline"> Appointment</span>
               </span>
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </button>
             <button
               type="button"
