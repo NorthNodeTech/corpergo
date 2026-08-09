@@ -1,18 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
-  head: () => ({
-    meta: [
-      { title: "Login — CorpErgo Physiotherapy" },
-      {
-        name: "description",
-        content:
-          "Secure sign-in for patients and clinic staff at CorpErgo. Administrators use staff login.",
-      },
-    ],
-  }),
+  head: () =>
+    privateRouteHead(
+      "/login",
+      "Login - CorpErgo Physiotherapy",
+      "Secure sign-in for CorpErgo patients, physiotherapists and clinic administrators.",
+    ),
 });
 
 function LoginPage() {

@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /patient
+Disallow: /patient/
+Disallow: /physio
+Disallow: /physio/
+Disallow: /login
+Disallow: /signup
+
+Sitemap: https://corpergo.in/sitemap.xml
+Sitemap: https://corpergo.in/image-sitemap.xml

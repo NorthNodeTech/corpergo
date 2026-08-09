@@ -123,9 +123,7 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
                 <div className="corpergo-brand-title mt-3 text-base text-[var(--ink)] sm:text-lg">
                   <span className="text-[var(--saffron)]">Corp</span>Ergo
                 </div>
-                <div className="corpergo-brand-tagline">
-                  Physiotherapy &amp; Rehabilitation
-                </div>
+                <div className="corpergo-brand-tagline">Physiotherapy &amp; Rehabilitation</div>
               </div>
 
               <h2 className="type-h2 mt-4 text-center font-extrabold tracking-tight text-[var(--ink)]">
@@ -164,14 +162,20 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
 
               <form className="mt-4 space-y-2.5 sm:space-y-3" onSubmit={onSubmit}>
                 <div>
-                  <label className="type-label font-bold text-[var(--ink-soft)]">
+                  <label
+                    htmlFor="login-email"
+                    className="type-label font-bold text-[var(--ink-soft)]"
+                  >
                     Email <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="login-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={portal === "patient" ? "you@email.com" : "physio.chansandra@corpergo.in"}
+                    placeholder={
+                      portal === "patient" ? "you@email.com" : "physio.chansandra@corpergo.in"
+                    }
                     autoComplete="email"
                     required
                     className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
@@ -179,11 +183,15 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
                 </div>
 
                 <div>
-                  <label className="type-label font-bold text-[var(--ink-soft)]">
+                  <label
+                    htmlFor="login-password"
+                    className="type-label font-bold text-[var(--ink-soft)]"
+                  >
                     Password
                   </label>
                   <div className="relative mt-1.5">
                     <input
+                      id="login-password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -211,13 +219,19 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
                     <input type="checkbox" className="rounded accent-[var(--pink-main)]" /> Remember
                     me
                   </label>
-                  <a href="#" className="font-semibold text-[var(--sage)] hover:underline">
+                  <a
+                    href="mailto:care@corpergo.in?subject=Password%20reset%20help"
+                    className="font-semibold text-[var(--sage)] hover:underline"
+                  >
                     Forgot password?
                   </a>
                 </div>
 
                 {error ? (
-                  <p className="text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2 ring-1 ring-red-100">
+                  <p
+                    role="alert"
+                    className="text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2 ring-1 ring-red-100"
+                  >
                     {error}
                   </p>
                 ) : null}

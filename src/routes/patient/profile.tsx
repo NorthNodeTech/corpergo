@@ -13,9 +13,16 @@ import {
   type Appointment,
 } from "@/lib/patient/clinic-data";
 import { emptyMedicalConditions, normalizePatient } from "@/lib/patient/patient-intake";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/patient/profile")({
   component: PatientProfilePage,
+  head: () =>
+    privateRouteHead(
+      "/patient/profile",
+      "Health Profile - CorpErgo Patient Portal",
+      "Manage private patient details, medical history and contact information for CorpErgo visits.",
+    ),
 });
 
 function PatientProfilePage() {
@@ -69,10 +76,10 @@ function PatientProfilePage() {
     if (!values) return;
     setSaving(true);
     const [a, b] = await Promise.all([
-      updateMyProfile({ 
-        full_name: values.full_name, 
+      updateMyProfile({
+        full_name: values.full_name,
         phone: values.phone || null,
-        avatar_url: values.avatar_url || null
+        avatar_url: values.avatar_url || null,
       }),
       updateMyPatient(values.patient.id, values.patient),
     ]);
@@ -90,11 +97,7 @@ function PatientProfilePage() {
 
   if (!values) {
     return (
-      <LoadingState
-        label="Loading your health record…"
-        variant="plain"
-        minHeight="min-h-[40vh]"
-      />
+      <LoadingState label="Loading your health record…" variant="plain" minHeight="min-h-[40vh]" />
     );
   }
 

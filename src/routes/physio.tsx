@@ -6,6 +6,7 @@ import { InstantBookingModal } from "@/features/physio/components/InstantBooking
 import { InstantBookingProvider } from "@/features/physio/components/instant-booking-context";
 import { PortalShell } from "@/shared/components/layout/PortalShell";
 import { PortalGuard } from "@/shared/hooks/use-portal-guard";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/physio")({
   component: PhysioLayout,
@@ -14,9 +15,12 @@ export const Route = createFileRoute("/physio")({
       throw redirect({ to: "/physio/dashboard" });
     }
   },
-  head: () => ({
-    meta: [{ title: "Physiotherapist Portal — CorpErgo" }],
-  }),
+  head: () =>
+    privateRouteHead(
+      "/physio",
+      "Physiotherapist Portal - CorpErgo",
+      "Private CorpErgo clinical workspace for physiotherapists and clinic staff.",
+    ),
 });
 
 function PhysioLayout() {

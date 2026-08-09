@@ -3,7 +3,10 @@ import { motion } from "framer-motion";
 import { ArrowRight, Check, ClipboardList, ScanLine, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { PatientIntakeForm, type PatientIntakeValues } from "@/shared/components/layout/PatientIntakeForm";
+import {
+  PatientIntakeForm,
+  type PatientIntakeValues,
+} from "@/shared/components/layout/PatientIntakeForm";
 import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
 import { LoadingSpinner, LoadingSpinnerLabel } from "@/shared/components/ui/loading-spinner";
 import { QrCameraScanner } from "@/shared/components/layout/QrCameraScanner";
@@ -20,12 +23,16 @@ import {
   normalizePatient,
 } from "@/lib/patient/patient-intake";
 import { scanQrToken, type PhysioAppointment } from "@/lib/physio/physio-data";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/physio/scan")({
   component: QrScanPage,
-  head: () => ({
-    meta: [{ title: "Scan QR — CorpErgo Physio" }],
-  }),
+  head: () =>
+    privateRouteHead(
+      "/physio/scan",
+      "Scan QR - CorpErgo Physio Portal",
+      "Private CorpErgo QR scanner for patient check-in and registration chart review.",
+    ),
 });
 
 type CheckedInPatient = {
@@ -261,7 +268,11 @@ function QrScanPage() {
             <div className="font-extrabold text-[var(--ink)]">Live camera scanner</div>
             <div className="text-sm text-[var(--ink-soft)]">
               {busy ? (
-                <LoadingSpinnerLabel label="Verifying ticket…" size="sm" className="justify-start" />
+                <LoadingSpinnerLabel
+                  label="Verifying ticket…"
+                  size="sm"
+                  className="justify-start"
+                />
               ) : (
                 "Ready to scan"
               )}

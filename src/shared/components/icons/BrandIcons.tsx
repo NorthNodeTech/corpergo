@@ -1,9 +1,5 @@
 import type { SimpleIcon } from "simple-icons";
-import {
-  siFacebook,
-  siInstagram,
-  siYoutube,
-} from "simple-icons";
+import { siFacebook, siInstagram, siYoutube } from "simple-icons";
 import gmailLogo from "@/assets/icons/gmail-logo.webp";
 import googleMapsLogo from "@/assets/icons/google-maps-logo.webp";
 import googlePhoneLogo from "@/assets/icons/google-phone-logo.webp";
@@ -14,11 +10,7 @@ type BrandIconProps = {
   title?: string;
 };
 
-function SimpleBrandIcon({
-  icon,
-  className,
-  title,
-}: BrandIconProps & { icon: SimpleIcon }) {
+function SimpleBrandIcon({ icon, className, title }: BrandIconProps & { icon: SimpleIcon }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -32,17 +24,16 @@ function SimpleBrandIcon({
   );
 }
 
-function BrandImageIcon({
-  src,
-  className,
-  title,
-}: BrandIconProps & { src: string }) {
+function BrandImageIcon({ src, className, title }: BrandIconProps & { src: string }) {
   return (
     <img
       src={src}
       alt={title ?? ""}
       className={cn("shrink-0 object-contain", className)}
       decoding="async"
+      loading="lazy"
+      width={24}
+      height={24}
       draggable={false}
     />
   );
@@ -52,12 +43,7 @@ function BrandImageIcon({
 export function InstagramIcon({ className, title = "Instagram" }: BrandIconProps) {
   const gradientId = "corpergo-instagram-gradient";
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={cn("shrink-0", className)}
-      role="img"
-      aria-label={title}
-    >
+    <svg viewBox="0 0 24 24" className={cn("shrink-0", className)} role="img" aria-label={title}>
       <title>{title}</title>
       <defs>
         <radialGradient id={gradientId} cx="0.35" cy="1.05" r="1.4">

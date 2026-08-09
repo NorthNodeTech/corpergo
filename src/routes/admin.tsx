@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { Bell } from "lucide-react";
 import { PortalShell } from "@/shared/components/layout/PortalShell";
 import { PortalGuard } from "@/shared/hooks/use-portal-guard";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -10,9 +11,12 @@ export const Route = createFileRoute("/admin")({
       throw redirect({ to: "/admin/dashboard" });
     }
   },
-  head: () => ({
-    meta: [{ title: "Admin Portal — CorpErgo" }],
-  }),
+  head: () =>
+    privateRouteHead(
+      "/admin",
+      "Admin Portal - CorpErgo",
+      "Private CorpErgo administration workspace for clinic operations and reporting.",
+    ),
 });
 
 function AdminLayout() {

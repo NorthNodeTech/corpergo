@@ -15,7 +15,9 @@ import { Route as DirectBookingRouteImport } from './routes/direct-booking'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PatientRouteImport } from './routes/patient'
 import { Route as PhysioRouteImport } from './routes/physio'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
 import { Route as PatientBookRouteImport } from './routes/patient/book'
@@ -63,9 +65,19 @@ const PhysioRoute = PhysioRouteImport.update({
   path: '/physio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
@@ -157,7 +169,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
+  '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/book': typeof PatientBookRoute
@@ -182,7 +196,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
+  '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/book': typeof PatientBookRoute
@@ -207,7 +223,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
+  '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/book': typeof PatientBookRoute
@@ -234,7 +252,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/patient'
     | '/physio'
+    | '/privacy'
     | '/signup'
+    | '/terms'
     | '/admin/dashboard'
     | '/patient/appointments'
     | '/patient/book'
@@ -259,7 +279,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/patient'
     | '/physio'
+    | '/privacy'
     | '/signup'
+    | '/terms'
     | '/admin/dashboard'
     | '/patient/appointments'
     | '/patient/book'
@@ -283,7 +305,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/patient'
     | '/physio'
+    | '/privacy'
     | '/signup'
+    | '/terms'
     | '/admin/dashboard'
     | '/patient/appointments'
     | '/patient/book'
@@ -309,7 +333,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PatientRoute: typeof PatientRouteWithChildren
   PhysioRoute: typeof PhysioRouteWithChildren
+  PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
+  TermsRoute: typeof TermsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -356,11 +382,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhysioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/dashboard': {
@@ -562,7 +602,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PatientRoute: PatientRouteWithChildren,
   PhysioRoute: PhysioRouteWithChildren,
+  PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
+  TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

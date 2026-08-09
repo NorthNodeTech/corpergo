@@ -50,14 +50,25 @@ function LogoImage({
     return (
       <img
         src={logoWhiteImg}
-        alt="CorpErgo"
+        alt="CorpErgo Physiotherapy logo"
         className={imageClass}
         decoding="async"
+        width={256}
+        height={256}
       />
     );
   }
 
-  return <img src={logoImg} alt="CorpErgo" className={imageClass} decoding="async" />;
+  return (
+    <img
+      src={logoImg}
+      alt="CorpErgo Physiotherapy logo"
+      className={imageClass}
+      decoding="async"
+      width={256}
+      height={256}
+    />
+  );
 }
 
 export function CorpErgoLogo({
@@ -83,5 +94,3 @@ export function CorpErgoLogo({
     </div>
   );
 }
-
-export { logoImg as corpergoLogoUrl, logoWhiteImg as corpergoLogoWhiteUrl };

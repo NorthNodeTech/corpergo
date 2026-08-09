@@ -18,9 +18,16 @@ import {
   setConsultationStatus,
   type PhysioAppointment,
 } from "@/lib/physio/physio-data";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/physio/queue")({
   component: TodayQueuePage,
+  head: () =>
+    privateRouteHead(
+      "/physio/queue",
+      "Today's Queue - CorpErgo Physio Portal",
+      "Manage checked-in and completed CorpErgo physiotherapy visits for today.",
+    ),
 });
 
 function TodayQueuePage() {

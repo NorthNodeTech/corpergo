@@ -32,19 +32,19 @@ import {
 } from "@/lib/patient/clinic-data";
 import type { DirectBookingGender } from "@/lib/booking/direct-booking-data";
 import { cn } from "@/lib/core/utils";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/patient/book")({
   component: BookAppointmentPage,
+  head: () =>
+    privateRouteHead(
+      "/patient/book",
+      "Book Appointment - CorpErgo Patient Portal",
+      "Book a CorpErgo physiotherapy appointment through the private patient portal.",
+    ),
 });
 
-const STEPS = [
-  "Clinic",
-  "Category",
-  "About you",
-  "Problem",
-  "Date & time",
-  "Confirm",
-] as const;
+const STEPS = ["Clinic", "Category", "About you", "Problem", "Date & time", "Confirm"] as const;
 
 const CATEGORY_ICONS: Record<string, string> = {
   orthopaedic: "🦴",
@@ -70,9 +70,9 @@ function BookAppointmentPage() {
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState<string | null>(null);
-  const [slots, setSlots] = useState<{ start_time: string; end_time: string; available: boolean; remaining_slots?: number }[]>(
-    [],
-  );
+  const [slots, setSlots] = useState<
+    { start_time: string; end_time: string; available: boolean; remaining_slots?: number }[]
+  >([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -148,13 +148,7 @@ function BookAppointmentPage() {
     if (step === 1) return !!categoryId;
     if (step === 2) {
       const age = Number(ageYears);
-      return (
-        !!gender &&
-        Number.isFinite(age) &&
-        age >= 0 &&
-        age <= 120 &&
-        isValidPhone(phone)
-      );
+      return !!gender && Number.isFinite(age) && age >= 0 && age <= 120 && isValidPhone(phone);
     }
     if (step === 3) return symptoms.trim().length >= 10;
     if (step === 4) return !!dateIso && !!time;
@@ -235,8 +229,10 @@ function BookAppointmentPage() {
           </div>
           <h1 className="mt-6 text-3xl font-extrabold text-[var(--ink)]">Request submitted</h1>
           <p className="mt-3 text-[var(--ink-soft)] leading-relaxed">
-            Your booking request has been sent to <strong>{selectedClinic?.name || "the clinic"}</strong>.
-            Once the {selectedClinic?.name || "clinic"} portal reviews and accepts your request, your booking will be <strong>confirmed</strong> and your QR boarding pass will be ready.
+            Your booking request has been sent to{" "}
+            <strong>{selectedClinic?.name || "the clinic"}</strong>. Once the{" "}
+            {selectedClinic?.name || "clinic"} portal reviews and accepts your request, your booking
+            will be <strong>confirmed</strong> and your QR boarding pass will be ready.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
@@ -266,7 +262,9 @@ function BookAppointmentPage() {
       />
 
       {loadError ? (
-        <div className="mb-6 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-800">{loadError}</div>
+        <div className="mb-6 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          {loadError}
+        </div>
       ) : null}
 
       <div className="mb-8 flex flex-wrap gap-2">
@@ -457,8 +455,8 @@ function BookAppointmentPage() {
                   <CalendarDays className="h-5 w-5 text-[var(--bronze)]" /> Choose date & time
                 </h2>
                 <p className="mt-1 text-sm text-[var(--ink-soft)]">
-                  Pick a day, then select an available slot at {selectedClinic?.name || "your clinic"}.
-                  Sundays and past dates are unavailable.
+                  Pick a day, then select an available slot at{" "}
+                  {selectedClinic?.name || "your clinic"}. Sundays and past dates are unavailable.
                 </p>
                 <div className="mt-6 grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start">
                   <div className="flex justify-center rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:justify-start">

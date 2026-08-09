@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { patientFooterNav, patientHeaderNav } from "@/features/patient/config/navigation";
 import { PortalShell } from "@/shared/components/layout/PortalShell";
 import { PortalGuard } from "@/shared/hooks/use-portal-guard";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/patient")({
   component: PatientLayout,
@@ -10,15 +11,12 @@ export const Route = createFileRoute("/patient")({
       throw redirect({ to: "/patient/dashboard" });
     }
   },
-  head: () => ({
-    meta: [
-      { title: "Patient Portal — CorpErgo" },
-      {
-        name: "description",
-        content: "Book appointments, track visits, and manage your CorpErgo care.",
-      },
-    ],
-  }),
+  head: () =>
+    privateRouteHead(
+      "/patient",
+      "Patient Portal - CorpErgo",
+      "Book appointments, track visits and manage your private CorpErgo physiotherapy care.",
+    ),
 });
 
 function PatientLayout() {

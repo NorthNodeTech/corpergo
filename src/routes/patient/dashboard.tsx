@@ -1,12 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Calendar,
-  CalendarPlus,
-  CheckCircle2,
-  Clock,
-  QrCode,
-} from "lucide-react";
+import { ArrowRight, Calendar, CalendarPlus, CheckCircle2, Clock, QrCode } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/shared/components/layout/EmptyState";
 import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
@@ -22,9 +15,16 @@ import {
   type Appointment,
 } from "@/lib/patient/clinic-data";
 import { isPatientIntakeComplete, normalizePatient } from "@/lib/patient/patient-intake";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/patient/dashboard")({
   component: PatientDashboardPage,
+  head: () =>
+    privateRouteHead(
+      "/patient/dashboard",
+      "Patient Dashboard - CorpErgo",
+      "View upcoming CorpErgo appointments, recent visits and recovery reminders.",
+    ),
 });
 
 function CareSnapshot({
@@ -253,52 +253,52 @@ function PatientDashboardPage() {
       </div>
 
       <section className="mt-8 flex flex-col gap-3">
-          <div className="flex h-8 items-center gap-2 px-1">
-            <h2 className="text-lg font-extrabold text-[var(--ink)]">Recent visits</h2>
-          </div>
-          {loading ? (
-            <div className="space-y-3">
-              {[1, 2].map((i) => (
-                <Skeleton
-                  key={i}
-                  className="h-16 rounded-2xl bg-[var(--card)] ring-1 ring-[var(--border)]"
-                />
-              ))}
-            </div>
-          ) : recentVisits.length === 0 ? (
-            <div className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex h-32 flex-col items-center justify-center text-center p-5 shadow-sm">
-              <p className="text-sm font-bold text-[var(--ink)]">No recent visits</p>
-              <p className="mt-1 text-xs text-[var(--ink-soft)]">
-                Completed visits will appear here after your sessions.
-              </p>
-            </div>
-          ) : (
-            <>
-              <ul className="space-y-3">
-                {recentVisitsMore.visible.map((a) => (
-                  <li
-                    key={a.id}
-                    className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-between gap-3 p-4 shadow-sm"
-                  >
-                    <div>
-                      <div className="font-bold text-[var(--ink)] text-sm sm:text-base">
-                        {a.clinics?.name} · {a.physiotherapy_categories?.name}
-                      </div>
-                      <div className="text-xs text-[var(--ink-soft)] mt-0.5">
-                        {formatDateLabel(a.scheduled_date || a.preferred_date)}
-                      </div>
-                    </div>
-                    <StatusBadge status={a.status} />
-                  </li>
-                ))}
-              </ul>
-              <ShowMoreButton
-                hiddenCount={recentVisitsMore.hiddenCount}
-                expanded={recentVisitsMore.expanded}
-                onClick={recentVisitsMore.toggle}
+        <div className="flex h-8 items-center gap-2 px-1">
+          <h2 className="text-lg font-extrabold text-[var(--ink)]">Recent visits</h2>
+        </div>
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <Skeleton
+                key={i}
+                className="h-16 rounded-2xl bg-[var(--card)] ring-1 ring-[var(--border)]"
               />
-            </>
-          )}
+            ))}
+          </div>
+        ) : recentVisits.length === 0 ? (
+          <div className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex h-32 flex-col items-center justify-center text-center p-5 shadow-sm">
+            <p className="text-sm font-bold text-[var(--ink)]">No recent visits</p>
+            <p className="mt-1 text-xs text-[var(--ink-soft)]">
+              Completed visits will appear here after your sessions.
+            </p>
+          </div>
+        ) : (
+          <>
+            <ul className="space-y-3">
+              {recentVisitsMore.visible.map((a) => (
+                <li
+                  key={a.id}
+                  className="rounded-2xl bg-[var(--card)] border border-[var(--border)] flex items-center justify-between gap-3 p-4 shadow-sm"
+                >
+                  <div>
+                    <div className="font-bold text-[var(--ink)] text-sm sm:text-base">
+                      {a.clinics?.name} · {a.physiotherapy_categories?.name}
+                    </div>
+                    <div className="text-xs text-[var(--ink-soft)] mt-0.5">
+                      {formatDateLabel(a.scheduled_date || a.preferred_date)}
+                    </div>
+                  </div>
+                  <StatusBadge status={a.status} />
+                </li>
+              ))}
+            </ul>
+            <ShowMoreButton
+              hiddenCount={recentVisitsMore.hiddenCount}
+              expanded={recentVisitsMore.expanded}
+              onClick={recentVisitsMore.toggle}
+            />
+          </>
+        )}
       </section>
     </div>
   );

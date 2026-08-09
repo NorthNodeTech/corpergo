@@ -12,9 +12,16 @@ import {
 } from "@/lib/physio/assessment-data";
 import { formatDateLabel, formatTimeLabel } from "@/lib/patient/clinic-data";
 import { cn } from "@/lib/core/utils";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/physio/assessments/")({
   component: AssessmentsListPage,
+  head: () =>
+    privateRouteHead(
+      "/physio/assessments",
+      "Assessment Sessions - CorpErgo Physio Portal",
+      "Open private CorpErgo assessment sessions and review completed clinical notes.",
+    ),
 });
 
 type SessionFilter = "all" | "incomplete" | "completed";
@@ -48,10 +55,11 @@ function AssessmentsListPage() {
   }, [filter, items]);
 
   const listMore = useShowMore(filtered);
+  const { collapse } = listMore;
 
   useEffect(() => {
-    listMore.collapse();
-  }, [filter, listMore.collapse]);
+    collapse();
+  }, [filter, collapse]);
 
   const counts = useMemo(
     () => ({

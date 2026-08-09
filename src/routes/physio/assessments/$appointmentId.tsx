@@ -3,7 +3,11 @@ import { Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
-import { LoadingSpinner, LoadingSpinnerLabel, LoadingState } from "@/shared/components/ui/loading-spinner";
+import {
+  LoadingSpinner,
+  LoadingSpinnerLabel,
+  LoadingState,
+} from "@/shared/components/ui/loading-spinner";
 import {
   FollowUpSchedulerModal,
   nextBookableDate,
@@ -34,9 +38,16 @@ import {
   type PhysioAppointment,
 } from "@/lib/physio/physio-data";
 import { cn } from "@/lib/core/utils";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/physio/assessments/$appointmentId")({
   component: AssessmentEditorPage,
+  head: () =>
+    privateRouteHead(
+      "/physio/assessments/$appointmentId",
+      "Assessment Editor - CorpErgo Physio Portal",
+      "Private CorpErgo clinical assessment editor for physiotherapy sessions.",
+    ),
 });
 
 const field =

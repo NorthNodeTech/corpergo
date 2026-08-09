@@ -8,14 +8,7 @@
  * Also writes SPA shells under known routes so hard navigations
  * (sign-out → /login, refresh on /physio/scan) do not 404.
  */
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const root = process.cwd();
@@ -44,6 +37,8 @@ const SPA_SHELL_PATHS = [
   "/physio/requests",
   "/physio/scan",
   "/physio/assessments",
+  "/privacy",
+  "/terms",
 ];
 
 if (!existsSync(indexPath)) {
@@ -89,7 +84,26 @@ rmSync(buildDir, { recursive: true, force: true });
 mkdirSync(buildDir, { recursive: true });
 
 // Copy only static publishables (not dist/server)
-for (const name of ["index.html", "assets", "favicon.ico", "favicon.png", "_redirects", "404.html"]) {
+for (const name of [
+  "index.html",
+  "assets",
+  "favicon.ico",
+  "favicon-16x16.png",
+  "favicon-32x32.png",
+  "apple-touch-icon.png",
+  "icon-192.png",
+  "icon-512.png",
+  "maskable-icon-512.png",
+  "og-image.png",
+  "site.webmanifest",
+  "robots.txt",
+  "sitemap.xml",
+  "image-sitemap.xml",
+  "llms.txt",
+  "_headers",
+  "_redirects",
+  "404.html",
+]) {
   const from = join(distDir, name);
   if (!existsSync(from)) continue;
   cpSync(from, join(buildDir, name), { recursive: true });

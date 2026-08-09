@@ -61,7 +61,12 @@
   --gradient-sage: linear-gradient(135deg, #000000 0%, var(--saffron) 100%);
   --gradient-pink: linear-gradient(135deg, #000000 0%, var(--saffron) 100%);
   --gradient-warm: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
-  --page-background: radial-gradient(circle at top, color-mix(in srgb, var(--saffron) 8%, transparent) 0%, transparent 55%, #ffffff 100%);
+  --page-background: radial-gradient(
+    circle at top,
+    color-mix(in srgb, var(--saffron) 8%, transparent) 0%,
+    transparent 55%,
+    #ffffff 100%
+  );
 }
 
 @layer base {
@@ -84,7 +89,10 @@
     max-width: 100%;
     overflow-x: hidden;
   }
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
@@ -230,7 +238,8 @@
   [role="button"],
   summary,
   .group {
-    transition-property: transform, box-shadow, background-color, color, opacity, border-color, filter;
+    transition-property:
+      transform, box-shadow, background-color, color, opacity, border-color, filter;
     transition-duration: 0.28s;
     transition-timing-function: var(--hover-ease);
   }
@@ -312,7 +321,7 @@
 }
 
 @utility glass-dark {
-  background: color-mix(in oklab, #1B2320 40%, transparent);
+  background: color-mix(in oklab, #1b2320 40%, transparent);
   backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid color-mix(in oklab, white 12%, transparent);
 }
@@ -335,12 +344,21 @@
 }
 
 @keyframes float-slow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
 }
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 @utility animate-float {
   animation: float-slow 6s ease-in-out infinite;
@@ -400,8 +418,6 @@
   line-height: 1.1;
   letter-spacing: -0.02em;
 }
-
-
 
 .hero-fit__body {
   margin-top: clamp(0.5rem, 1.2vh, 1rem);
@@ -738,38 +754,87 @@
 
 /* ---- Living page motion ---- */
 @keyframes alive-drift-a {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(4%, 6%, 0) scale(1.08); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(4%, 6%, 0) scale(1.08);
+  }
 }
 @keyframes alive-drift-b {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(-5%, -4%, 0) scale(1.1); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-5%, -4%, 0) scale(1.1);
+  }
 }
 @keyframes alive-drift-c {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(3%, -7%, 0); }
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(3%, -7%, 0);
+  }
 }
 @keyframes alive-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 @keyframes alive-kenburns {
-  0% { transform: scale(1) translate3d(0, 0, 0); }
-  100% { transform: scale(1.06) translate3d(-1.5%, 1%, 0); }
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.06) translate3d(-1.5%, 1%, 0);
+  }
 }
 @keyframes alive-scroll-line {
-  0% { transform: scaleY(0); transform-origin: top; opacity: 0.2; }
-  40% { transform: scaleY(1); transform-origin: top; opacity: 1; }
-  60% { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
-  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0.2; }
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+    opacity: 0.2;
+  }
+  40% {
+    transform: scaleY(1);
+    transform-origin: top;
+    opacity: 1;
+  }
+  60% {
+    transform: scaleY(1);
+    transform-origin: bottom;
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+    opacity: 0.2;
+  }
 }
 @keyframes alive-nudge {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(5px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(5px);
+  }
 }
 @keyframes alive-cta-glow {
-  0%, 100% { box-shadow: 0 8px 24px rgba(255, 153, 51, 0.22); }
-  50% { box-shadow: 0 12px 34px rgba(255, 153, 51, 0.38); }
+  0%,
+  100% {
+    box-shadow: 0 8px 24px rgba(255, 153, 51, 0.22);
+  }
+  50% {
+    box-shadow: 0 12px 34px rgba(255, 153, 51, 0.38);
+  }
 }
 
 .alive-orb {
@@ -835,6 +900,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .alive-orb,
   .alive-orb--a,
   .alive-orb--b,
@@ -864,8 +933,16 @@
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(circle at 20% 20%, color-mix(in oklab, var(--saffron) 6%, transparent), transparent 40%),
-    radial-gradient(circle at 80% 10%, color-mix(in oklab, #000000 4%, transparent), transparent 35%);
+    radial-gradient(
+      circle at 20% 20%,
+      color-mix(in oklab, var(--saffron) 6%, transparent),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 10%,
+      color-mix(in oklab, #000000 4%, transparent),
+      transparent 35%
+    );
   opacity: 0.9;
 }
 
@@ -912,7 +989,9 @@
   backdrop-filter: blur(16px) saturate(140%) !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
   border-radius: 24px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.02) !important;
 }
 
 /* Portal panels — light shadow, no thick outline */
@@ -926,11 +1005,13 @@
   backdrop-filter: blur(16px) saturate(140%) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 24px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
 
 .dashboard-bg-container {
-  background-color: #FFFFFF !important;
+  background-color: #ffffff !important;
 }
 
 .dark .dashboard-bg-container {
@@ -1004,7 +1085,9 @@
 
 .portal-glass-chip {
   border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 4px 14px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
 @keyframes portal-scan-pulse {
@@ -1169,4 +1252,13 @@
   margin-top: 0.25rem;
   font-size: clamp(0.7rem, 0.5vw + 0.55rem, 1.075rem);
   line-height: 1.2;
+}
+
+:where(a, button, input, select, textarea, [role="button"]):focus-visible {
+  outline: 2px solid var(--saffron) !important;
+  outline-offset: 3px !important;
+}
+
+:where(section[id]) {
+  scroll-margin-top: 5.25rem;
 }

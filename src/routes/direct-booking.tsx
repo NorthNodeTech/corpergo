@@ -12,19 +12,18 @@ import {
 import type { Clinic } from "@/lib/patient/clinic-data";
 import { cn } from "@/lib/core/utils";
 import { LoadingSpinner, LoadingSpinnerLabel } from "@/shared/components/ui/loading-spinner";
+import { directBookingStructuredData, publicRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/direct-booking")({
   component: DirectBookingPage,
-  head: () => ({
-    meta: [
-      { title: "Direct booking - CorpErgo Physiotherapy" },
-      {
-        name: "description",
-        content:
-          "Book a quick physiotherapy appointment request without logging in. CorpErgo clinic staff will call to confirm.",
-      },
-    ],
-  }),
+  head: () =>
+    publicRouteHead({
+      path: "/direct-booking",
+      title: "Direct Physiotherapy Booking - CorpErgo Bengaluru",
+      description:
+        "Request a physiotherapy appointment at a CorpErgo Bengaluru clinic without logging in. Clinic staff will call to confirm your visit.",
+      structuredData: directBookingStructuredData(),
+    }),
 });
 
 function DirectBookingPage() {
@@ -110,9 +109,7 @@ function DirectBookingPage() {
         <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:py-12">
           <section>
             <CorpErgoLogo size="lg" />
-            <p className="type-eyebrow mt-7 font-black text-[var(--bronze)]">
-              Direct booking
-            </p>
+            <p className="type-eyebrow mt-7 font-black text-[var(--bronze)]">Direct booking</p>
             <h1 className="type-h1 mt-3 max-w-xl font-extrabold tracking-tight text-balance">
               Request a visit in under a minute.
             </h1>
@@ -182,6 +179,7 @@ function DirectBookingPage() {
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="Patient name"
                       autoComplete="name"
+                      required
                       className={inputClass}
                     />
                   </Field>
@@ -193,6 +191,8 @@ function DirectBookingPage() {
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+91 9876543210"
                       autoComplete="tel"
+                      inputMode="tel"
+                      required
                       className={inputClass}
                     />
                   </Field>
@@ -202,6 +202,7 @@ function DirectBookingPage() {
                       <select
                         value={gender}
                         onChange={(e) => setGender(e.target.value as DirectBookingGender | "")}
+                        required
                         className={inputClass}
                       >
                         <option value="">Choose</option>
@@ -219,6 +220,7 @@ function DirectBookingPage() {
                         onChange={(e) => setAge(e.target.value)}
                         placeholder="Age"
                         inputMode="numeric"
+                        required
                         className={inputClass}
                       />
                     </Field>
@@ -231,11 +233,12 @@ function DirectBookingPage() {
                         value={clinicId}
                         onChange={(e) => setClinicId(e.target.value)}
                         disabled={loadingClinics}
+                        required
                         className={cn(inputClass, "pl-10")}
                       >
-                    {loadingClinics ? (
-                      <option>Loading clinics…</option>
-                    ) : (
+                        {loadingClinics ? (
+                          <option>Loading clinics…</option>
+                        ) : (
                           clinics.map((clinic) => (
                             <option key={clinic.id} value={clinic.id}>
                               {clinic.name}
@@ -259,7 +262,10 @@ function DirectBookingPage() {
                   </Field>
 
                   {error ? (
-                    <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100">
+                    <p
+                      role="alert"
+                      className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100"
+                    >
                       {error}
                     </p>
                   ) : null}
@@ -297,9 +303,7 @@ const inputClass =
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block text-sm font-semibold text-[var(--ink)]">
-      <span className="type-label font-bold text-[var(--ink-soft)]">
-        {label}
-      </span>
+      <span className="type-label font-bold text-[var(--ink-soft)]">{label}</span>
       {children}
     </label>
   );

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://corpergo.in/</loc>
+    <image:image>
+      <image:loc>https://corpergo.in/og-image.png</image:loc>
+      <image:title>CorpErgo Physiotherapy and Rehabilitation</image:title>
+      <image:caption>CorpErgo physiotherapy clinics in Bengaluru for pain relief, sports rehab and post-surgery recovery.</image:caption>
+    </image:image>
+  </url>
+</urlset>

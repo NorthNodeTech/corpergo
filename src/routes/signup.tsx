@@ -5,18 +5,16 @@ import { ArrowLeft, ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
 import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
 import { LoadingSpinner } from "@/shared/components/ui/loading-spinner";
 import { getStoredSession, signUpPatient } from "@/lib/auth";
+import { privateRouteHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/signup")({
   component: SignupPage,
-  head: () => ({
-    meta: [
-      { title: "Create account — CorpErgo Physiotherapy" },
-      {
-        name: "description",
-        content: "Create your CorpErgo patient account to book appointments and track recovery.",
-      },
-    ],
-  }),
+  head: () =>
+    privateRouteHead(
+      "/signup",
+      "Create Patient Account - CorpErgo Physiotherapy",
+      "Create a CorpErgo patient account to book appointments and track physiotherapy visits.",
+    ),
 });
 
 function SignupPage() {
@@ -148,10 +146,14 @@ function SignupPage() {
 
               <form className="mt-6 space-y-3 sm:mt-8 sm:space-y-4" onSubmit={onSubmit}>
                 <div>
-                  <label className="type-label font-bold text-[var(--ink-soft)]">
+                  <label
+                    htmlFor="signup-full-name"
+                    className="type-label font-bold text-[var(--ink-soft)]"
+                  >
                     Full name
                   </label>
                   <input
+                    id="signup-full-name"
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -162,10 +164,14 @@ function SignupPage() {
                 </div>
 
                 <div>
-                  <label className="type-label font-bold text-[var(--ink-soft)]">
+                  <label
+                    htmlFor="signup-email"
+                    className="type-label font-bold text-[var(--ink-soft)]"
+                  >
                     Email
                   </label>
                   <input
+                    id="signup-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -177,11 +183,15 @@ function SignupPage() {
                 </div>
 
                 <div>
-                  <label className="type-label font-bold text-[var(--ink-soft)]">
+                  <label
+                    htmlFor="signup-password"
+                    className="type-label font-bold text-[var(--ink-soft)]"
+                  >
                     Password
                   </label>
                   <div className="relative mt-1.5 sm:mt-2">
                     <input
+                      id="signup-password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -201,11 +211,15 @@ function SignupPage() {
                 </div>
 
                 <div>
-                  <label className="type-label font-bold text-[var(--ink-soft)]">
+                  <label
+                    htmlFor="signup-confirm-password"
+                    className="type-label font-bold text-[var(--ink-soft)]"
+                  >
                     Confirm password
                   </label>
                   <div className="relative mt-1.5 sm:mt-2">
                     <input
+                      id="signup-confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -229,12 +243,18 @@ function SignupPage() {
                 </div>
 
                 {error ? (
-                  <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100">
+                  <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100"
+                  >
                     {error}
                   </p>
                 ) : null}
                 {success ? (
-                  <p className="rounded-xl bg-[var(--sage)]/10 px-4 py-3 text-sm text-[var(--sage-deep)] ring-1 ring-[var(--sage)]/20">
+                  <p
+                    aria-live="polite"
+                    className="rounded-xl bg-[var(--sage)]/10 px-4 py-3 text-sm text-[var(--sage-deep)] ring-1 ring-[var(--sage)]/20"
+                  >
                     {success}
                   </p>
                 ) : null}

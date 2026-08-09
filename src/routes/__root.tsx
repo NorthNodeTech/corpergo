@@ -9,10 +9,10 @@ if (typeof window !== "undefined") {
 
   if (isIOS && "BarcodeDetector" in window) {
     try {
-      // @ts-ignore
+      // @ts-expect-error - BarcodeDetector is not always configurable in WebKit.
       delete window.BarcodeDetector;
     } catch (e) {
-      // @ts-ignore
+      // @ts-expect-error - Fallback assignment forces QR libraries onto JS decoding.
       window.BarcodeDetector = undefined;
     }
   }
@@ -31,8 +31,8 @@ import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/shared/components/ui/sonner";
 import appCss from "../styles.css?url";
-import faviconUrl from "@/assets/corpergo-logo-white.webp?url";
 import { reportLovableError } from "@/lib/core/lovable-error-reporting";
+import { analyticsHeadScripts, rootLinks, rootMeta } from "@/lib/seo";
 
 function NotFoundComponent() {
   return (
@@ -96,35 +96,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CorpErgo Physiotherapy — Relieve pain. Restore movement." },
-      {
-        name: "description",
-        content:
-          "Premium physiotherapy in Bengaluru. Orthopaedic, neuro, sports & post-surgery rehabilitation across 5 CorpErgo clinics. Evidence-based, personalized care.",
-      },
-      { name: "author", content: "CorpErgo Physiotherapy" },
-      { property: "og:title", content: "CorpErgo Physiotherapy — Relieve pain. Restore movement." },
-      {
-        property: "og:description",
-        content:
-          "Premium physiotherapy in Bengaluru across 5 clinics. Certified physiotherapists, evidence-based care, personalized recovery plans.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: faviconUrl, type: "image/webp" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap",
-      },
-    ],
+    meta: rootMeta(),
+    links: rootLinks(appCss),
+    scripts: analyticsHeadScripts(),
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -136,8 +110,6 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         {/* Helps production HTTPS hosts (e.g. Render) allow getUserMedia for QR scan */}
         <meta httpEquiv="Permissions-Policy" content="camera=(self)" />
         <HeadContent />
