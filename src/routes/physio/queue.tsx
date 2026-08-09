@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
 import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import {
   fetchSavedAssessmentAppointmentIds,
   isVisitDocumented,
@@ -148,7 +149,7 @@ function TodayQueuePage() {
       </Link>
 
       {loading ? (
-        <div className="h-48 animate-pulse rounded-3xl bg-white" />
+        <LoadingState label="Loading queue…" minHeight="min-h-[12rem]" />
       ) : items.length === 0 ? (
         <EmptyState
           icon={Users}

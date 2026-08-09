@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { PatientIntakeForm, type PatientIntakeValues } from "@/components/portal/PatientIntakeForm";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
+import { LoadingSpinner, LoadingSpinnerLabel } from "@/components/ui/loading-spinner";
 import { QrCameraScanner } from "@/components/portal/QrCameraScanner";
 import { supabaseRest } from "@/lib/auth";
 import {
@@ -194,7 +195,14 @@ function QrScanPage() {
               onClick={() => void saveChart()}
               className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--ivory)] px-6 py-3 text-sm font-bold text-[var(--ink)] ring-1 ring-black/5 disabled:opacity-50"
             >
-              {savingChart ? "Saving…" : "Save patient chart"}
+              {savingChart ? (
+                <>
+                  <LoadingSpinner size="sm" />
+                  Saving…
+                </>
+              ) : (
+                "Save patient chart"
+              )}
             </button>
             <button
               type="button"
@@ -252,7 +260,11 @@ function QrScanPage() {
           <div>
             <div className="font-extrabold text-[var(--ink)]">Live camera scanner</div>
             <div className="text-sm text-[var(--ink-soft)]">
-              {busy ? "Verifying ticket…" : "Ready to scan"}
+              {busy ? (
+                <LoadingSpinnerLabel label="Verifying ticket…" size="sm" className="justify-start" />
+              ) : (
+                "Ready to scan"
+              )}
             </div>
           </div>
         </div>
@@ -260,8 +272,13 @@ function QrScanPage() {
         <QrCameraScanner onScan={(text) => void handleDecoded(text)} paused={paused || busy} />
 
         {busy ? (
-          <div className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-            Checking ticket and loading patient registration chart…
+          <div className="mt-4 rounded-2xl bg-amber-50 px-4 py-3">
+            <LoadingSpinnerLabel
+              label="Checking ticket and loading patient registration chart…"
+              size="sm"
+              labelClassName="text-amber-900"
+              className="justify-start"
+            />
           </div>
         ) : null}
       </div>

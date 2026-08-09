@@ -11,17 +11,15 @@ export const ACTIVE_DIRECT_BOOKING_STATUSES: DirectBookingStatus[] = [
   "ready_for_session",
 ];
 
-export function filterActiveDirectRequests(
-  requests: DirectBookingRequest[],
-  documentedAppointmentIds?: Iterable<string>,
-) {
-  const documented = new Set(documentedAppointmentIds || []);
+export function filterActiveDirectRequests(requests: DirectBookingRequest[]) {
   return requests.filter(
     (request) =>
-      (request.booking_source || "web") === "web" &&
-      ACTIVE_DIRECT_BOOKING_STATUSES.includes(request.status) &&
-      (!request.appointment_id || !documented.has(request.appointment_id)),
+      ACTIVE_DIRECT_BOOKING_STATUSES.includes(request.status) && !request.appointment_id,
   );
+}
+
+export function directBookingSourceLabel(source?: DirectBookingRequest["booking_source"]) {
+  return source === "instant" ? "Phone booking" : "Direct booking";
 }
 
 export function instantWalkInAppointments(

@@ -1,13 +1,15 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Save } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
+import { LoadingSpinner, LoadingSpinnerLabel, LoadingState } from "@/components/ui/loading-spinner";
 import {
   FollowUpSchedulerModal,
   nextBookableDate,
   type FollowUpSlot,
 } from "@/components/physio/FollowUpSchedulerModal";
+import { PatientVisitSidebar } from "@/components/physio/PatientVisitSidebar";
 import { fetchMyProfile, supabaseRest } from "@/lib/auth";
 import {
   assessmentFromRow,
@@ -15,10 +17,13 @@ import {
   emptyAssessment,
   fetchAssessmentForAppointment,
   fetchPatientAssessments,
+  fetchPatientVisitSummaries,
+  isPriorVisitAppointment,
   saveAssessment,
   scheduleFollowUp,
   type AssessmentForm,
   type AssessmentRow,
+  type PatientVisitSummary,
 } from "@/lib/assessment-data";
 import { formatDateLabel, uniqueSlotTimes } from "@/lib/clinic-data";
 import {
@@ -39,13 +44,13 @@ const field =
 
 function AssessmentEditorPage() {
   const { appointmentId } = Route.useParams();
-  const navigate = useNavigate();
   const [appt, setAppt] = useState<PhysioAppointment | null>(null);
   const [assessmentRow, setAssessmentRow] = useState<AssessmentRow | null>(null);
   const [form, setForm] = useState<AssessmentForm | null>(null);
   const [timeline, setTimeline] = useState<
     NonNullable<Awaited<ReturnType<typeof fetchPatientAssessments>>["data"]>
   >([]);
+  const [visitSummaries, setVisitSummaries] = useState<PatientVisitSummary[]>([]);
   const [physioId, setPhysioId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
@@ -64,7 +69,7 @@ function AssessmentEditorPage() {
     async function load() {
       const [apptRes, assessRes, me] = await Promise.all([
         supabaseRest<PhysioAppointment[]>(
-          `appointments?id=eq.${appointmentId}&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,medical_history,profiles(full_name,phone))&limit=1`,
+          `appointments?id=eq.${appointmentId}&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,visit_type,parent_appointment_id,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,medical_history,profiles(full_name,phone))&limit=1`,
         ),
         fetchAssessmentForAppointment(appointmentId),
         fetchMyPhysioId(),
@@ -88,8 +93,14 @@ function AssessmentEditorPage() {
       setForm(base);
       setDirty(false);
       if (a?.patient_id) {
-        const tl = await fetchPatientAssessments(a.patient_id);
-        if (!cancelled) setTimeline(tl.data || []);
+        const [tl, visits] = await Promise.all([
+          fetchPatientAssessments(a.patient_id),
+          fetchPatientVisitSummaries(a.patient_id),
+        ]);
+        if (!cancelled) {
+          setTimeline(tl.data || []);
+          setVisitSummaries(visits.data || []);
+        }
       }
     }
     void load();
@@ -153,18 +164,8 @@ function AssessmentEditorPage() {
     return true;
   }
 
-  async function onSaveAndFollow() {
-    const ok = await persist(false);
-    if (!ok) return;
-    if (formRef.current?.next_visit_needed) {
-      setFollowOpen(true);
-      return;
-    }
-    void navigate({ to: "/physio/assessments" });
-  }
-
-  function closeAfterSave() {
-    void navigate({ to: "/physio/assessments" });
+  async function onSave() {
+    await persist(false);
   }
 
   async function confirmFollowUp() {
@@ -191,7 +192,14 @@ function AssessmentEditorPage() {
     else {
       toast.success("Follow-up booked — patient notified");
       setFollowOpen(false);
-      closeAfterSave();
+      if (appt.patient_id) {
+        const [tl, visits] = await Promise.all([
+          fetchPatientAssessments(appt.patient_id),
+          fetchPatientVisitSummaries(appt.patient_id),
+        ]);
+        setTimeline(tl.data || []);
+        setVisitSummaries(visits.data || []);
+      }
     }
   }
 
@@ -202,21 +210,31 @@ function AssessmentEditorPage() {
   }
 
   if (!appt || !form) {
-    return <div className="text-[var(--ink-soft)]">Loading assessment…</div>;
+    return <LoadingState label="Loading assessment…" variant="plain" minHeight="min-h-[30vh]" />;
   }
 
   const patientName = appt.patients?.profiles?.full_name || "Patient";
   const age = ageFromPatient(appt.patients);
   const gender = formatPatientGender(appt.patients?.gender);
-  const editState = assessmentEditState(assessmentRow, !form.id);
+  const isPriorVisit = isPriorVisitAppointment(appointmentId, visitSummaries);
+  const editState = assessmentEditState(assessmentRow, !form.id, { isPriorVisit });
   const editable = editState.editable;
+  const visitLabel = appt.visit_type === "follow_up" ? "Follow-up session" : "Assessment session";
+  const upcomingVisits = visitSummaries.filter(
+    (v) =>
+      v.id !== appointmentId &&
+      !v.has_assessment &&
+      ["accepted", "checked_in", "pending"].includes(v.status),
+  );
+  const pastAssessments = timeline.filter((t) => t.appointment_id !== appointmentId);
+  const isCurrentVisit = !isPriorVisit;
 
   return (
     <div>
       <PortalPageHeader
         eyebrow={appt.appointment_code}
         title={`Assess ${patientName}`}
-        description={`${appt.clinics?.name} · ${appt.physiotherapy_categories?.name} · ${formatDateLabel(appt.scheduled_date || appt.preferred_date)}`}
+        description={`${appt.clinics?.name} · ${appt.physiotherapy_categories?.name} · ${formatDateLabel(appt.scheduled_date || appt.preferred_date)} · ${visitLabel}`}
       />
 
       {editState.locked ? (
@@ -408,16 +426,6 @@ function AssessmentEditorPage() {
                   }
                 />
               </label>
-              <label className="flex items-center gap-3 pt-6 text-sm font-semibold">
-                <input
-                  type="checkbox"
-                  checked={form.next_visit_needed}
-                  disabled={!editable}
-                  onChange={(e) => patch("next_visit_needed", e.target.checked)}
-                  className="h-5 w-5 rounded border-[var(--sage)]"
-                />
-                Schedule follow-up after save
-              </label>
             </div>
           </section>
 
@@ -426,7 +434,12 @@ function AssessmentEditorPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm text-[var(--ink-soft)]">
                 {saving ? (
-                  <span className="font-semibold text-[var(--saffron-deep)]">Saving…</span>
+                  <LoadingSpinnerLabel
+                    label="Saving…"
+                    size="sm"
+                    className="justify-start"
+                    labelClassName="font-semibold text-[var(--saffron-deep)]"
+                  />
                 ) : dirty ? (
                   <span className="font-semibold text-amber-800">Unsaved changes</span>
                 ) : lastSaved ? (
@@ -434,60 +447,49 @@ function AssessmentEditorPage() {
                 ) : (
                   <span>Fill the form, then save when ready.</span>
                 )}
+                {isCurrentVisit && !form.id ? (
+                  <span className="mt-1 block text-xs">
+                    Schedule a follow-up from the panel on the right after saving.
+                  </span>
+                ) : null}
               </div>
               <button
                 type="button"
                 disabled={saving || !dirty || !editable}
-                onClick={() => void onSaveAndFollow()}
+                onClick={() => void onSave()}
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--saffron)] px-6 py-3.5 text-sm font-bold text-white disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                {saving ? "Saving…" : form.next_visit_needed ? "Save & schedule follow-up" : "Save assessment"}
+                {saving ? (
+                  <>
+                    <LoadingSpinner size="sm" className="text-white" />
+                    Saving…
+                  </>
+                ) : (
+                  "Save assessment"
+                )}
               </button>
             </div>
           </div>
         </div>
 
-        <aside className="space-y-4">
-          <section className="rounded-3xl bg-white p-5 ring-1 ring-black/[0.05]">
-            <h2 className="font-extrabold text-[var(--ink)]">Patient timeline</h2>
-            <p className="mt-1 text-xs text-[var(--ink-soft)]">
-              Previous assessments for comparison.
-            </p>
-            {!timeline.length ? (
-              <p className="mt-4 text-sm text-[var(--ink-soft)]">No prior assessments.</p>
-            ) : (
-              <ul className="mt-4 max-h-[70vh] space-y-3 overflow-y-auto pr-1">
-                {timeline.map((t) => (
-                  <li key={t.id} className="rounded-2xl bg-[var(--ivory)] p-3 text-sm">
-                    <div className="font-bold text-[var(--ink)]">{t.diagnosis || "Assessment"}</div>
-                    <div className="text-xs text-[var(--ink-soft)]">
-                      {formatDateLabel(
-                        t.appointments?.scheduled_date ||
-                          t.appointments?.preferred_date ||
-                          t.created_at.slice(0, 10),
-                      )}
-                      {t.pain_score != null ? ` · Pain ${t.pain_score}/10` : ""}
-                    </div>
-                    {t.treatment_given ? (
-                      <p className="mt-1 line-clamp-3 text-xs text-[var(--ink-soft)]">
-                        {t.treatment_given}
-                      </p>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        </aside>
+        <PatientVisitSidebar
+          patientName={patientName}
+          appointmentId={appointmentId}
+          visitLabel={visitLabel}
+          visitDate={appt.scheduled_date || appt.preferred_date}
+          isCurrentVisit={isCurrentVisit}
+          assessmentSaved={Boolean(form.id)}
+          upcomingVisits={upcomingVisits}
+          history={pastAssessments}
+          onScheduleFollowUp={() => setFollowOpen(true)}
+          followUpDisabled={saving}
+        />
       </div>
 
       <FollowUpSchedulerModal
         open={followOpen}
-        onOpenChange={(open) => {
-          setFollowOpen(open);
-          if (!open) closeAfterSave();
-        }}
+        onOpenChange={setFollowOpen}
         patientName={patientName}
         clinicName={appt.clinics?.name}
         followDate={followDate}
@@ -498,7 +500,7 @@ function AssessmentEditorPage() {
         slotsLoading={followSlotsLoading}
         saving={saving}
         onConfirm={() => void confirmFollowUp()}
-        onSkip={closeAfterSave}
+        onSkip={() => setFollowOpen(false)}
       />
     </div>
   );

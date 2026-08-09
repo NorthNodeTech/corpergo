@@ -2,6 +2,8 @@ import { cn } from "@/lib/utils";
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/30",
+  accepted: "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/30",
+  checked_in: "bg-neutral-100 text-black ring-neutral-300",
   progress: "bg-neutral-100 text-black ring-neutral-300",
   completed: "bg-black text-white ring-black",
   cancelled: "bg-neutral-100 text-neutral-600 ring-neutral-200",
@@ -11,6 +13,8 @@ const STATUS_STYLES: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "pending",
+  accepted: "confirmed",
+  checked_in: "checked in",
   progress: "progress",
   completed: "completed",
   cancelled: "cancelled",
@@ -19,7 +23,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function resolveVisitStatus(status: string) {
-  if (status === "accepted" || status === "checked_in") return "progress";
+  if (status === "accepted") return "accepted";
+  if (status === "checked_in") return "checked_in";
   return status;
 }
 

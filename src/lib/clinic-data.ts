@@ -22,6 +22,8 @@ export type Category = {
   sort_order: number;
 };
 
+export type VisitType = "initial" | "follow_up";
+
 export type Appointment = {
   id: string;
   created_at: string;
@@ -32,6 +34,8 @@ export type Appointment = {
   scheduled_time: string | null;
   symptoms: string;
   status: string;
+  visit_type?: VisitType;
+  parent_appointment_id?: string | null;
   rejection_reason: string | null;
   cancellation_reason?: string | null;
   cancelled_at?: string | null;

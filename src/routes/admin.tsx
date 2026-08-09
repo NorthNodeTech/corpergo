@@ -1,12 +1,6 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
-import {
-  Activity,
-  Bell,
-  Building2,
-  ClipboardList,
-  LayoutDashboard,
-} from "lucide-react";
-import { PortalShell, type PortalNavItem } from "@/components/portal/PortalShell";
+import { Bell } from "lucide-react";
+import { PortalShell } from "@/components/portal/PortalShell";
 import { PortalGuard } from "@/hooks/use-portal-guard";
 
 export const Route = createFileRoute("/admin")({
@@ -21,40 +15,6 @@ export const Route = createFileRoute("/admin")({
   }),
 });
 
-/** Desktop sidebar — admin command sections on one dashboard */
-const NAV: PortalNavItem[] = [
-  { to: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
-  { to: "/admin/dashboard", label: "Network", icon: Building2, hash: "admin-network" },
-  { to: "/admin/dashboard", label: "Analytics", icon: Activity, hash: "admin-analytics" },
-  { to: "/admin/dashboard", label: "Clinics", icon: ClipboardList, hash: "admin-clinic-detail" },
-];
-
-/** Mobile footer — executive sections (not clinical Scan/Queue) */
-const FOOTER_NAV: PortalNavItem[] = [
-  { to: "/admin/dashboard", label: "Overview", shortLabel: "Home", icon: LayoutDashboard },
-  {
-    to: "/admin/dashboard",
-    label: "Network",
-    shortLabel: "Network",
-    icon: Building2,
-    hash: "admin-network",
-  },
-  {
-    to: "/admin/dashboard",
-    label: "Analytics",
-    shortLabel: "Stats",
-    icon: Activity,
-    hash: "admin-analytics",
-  },
-  {
-    to: "/admin/dashboard",
-    label: "Clinics",
-    shortLabel: "Clinics",
-    icon: ClipboardList,
-    hash: "admin-clinic-detail",
-  },
-];
-
 function AdminLayout() {
   return (
     <PortalGuard pathPrefix="/admin">
@@ -62,8 +22,8 @@ function AdminLayout() {
         <PortalShell
           title="Admin Portal"
           subtitle="Executive command center"
-          nav={NAV}
-          footerNav={FOOTER_NAV}
+          nav={[]}
+          footerNav={[]}
           desktopNav="header"
           centerAction={{
             to: "/admin/dashboard",

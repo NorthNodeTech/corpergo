@@ -10,6 +10,7 @@ import {
 } from "@/lib/direct-booking-data";
 import type { Clinic } from "@/lib/clinic-data";
 import { cn } from "@/lib/utils";
+import { LoadingSpinner, LoadingSpinnerLabel } from "@/components/ui/loading-spinner";
 
 export const Route = createFileRoute("/direct-booking")({
   component: DirectBookingPage,
@@ -231,9 +232,9 @@ function DirectBookingPage() {
                         disabled={loadingClinics}
                         className={cn(inputClass, "pl-10")}
                       >
-                        {loadingClinics ? (
-                          <option>Loading clinics...</option>
-                        ) : (
+                    {loadingClinics ? (
+                      <option>Loading clinics…</option>
+                    ) : (
                           clinics.map((clinic) => (
                             <option key={clinic.id} value={clinic.id}>
                               {clinic.name}
@@ -242,6 +243,13 @@ function DirectBookingPage() {
                         )}
                       </select>
                     </div>
+                    {loadingClinics ? (
+                      <LoadingSpinnerLabel
+                        label="Loading clinics…"
+                        size="sm"
+                        className="mt-2 justify-start"
+                      />
+                    ) : null}
                     {selectedClinic ? (
                       <p className="mt-2 text-xs text-[var(--ink-soft)]">
                         {selectedClinic.address}
@@ -260,7 +268,14 @@ function DirectBookingPage() {
                     disabled={submitting || loadingClinics}
                     className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--pink-main)] px-5 py-3.5 text-sm font-bold text-white shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:bg-[var(--pink-hover)] disabled:pointer-events-none disabled:opacity-60"
                   >
-                    {submitting ? "Sending request..." : "Direct book"}
+                    {submitting ? (
+                      <>
+                        <LoadingSpinner size="sm" className="text-white" />
+                        Sending request…
+                      </>
+                    ) : (
+                      "Direct book"
+                    )}
                     {!submitting ? (
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     ) : null}

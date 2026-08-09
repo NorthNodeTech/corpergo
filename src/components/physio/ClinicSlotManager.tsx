@@ -10,6 +10,7 @@ import {
 } from "@/lib/clinic-data";
 import { blockClinicTimeSlot, unblockClinicTimeSlot } from "@/lib/physio-data";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ClinicSlotManagerProps {
   clinicId: string;
@@ -103,9 +104,9 @@ export function ClinicSlotManager({ clinicId, clinicName = "Clinic" }: ClinicSlo
       </div>
 
       {loading ? (
-        <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+        <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
           {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="h-14 animate-pulse rounded-2xl bg-[var(--ivory)]" />
+            <Skeleton key={i} className="h-14 bg-[var(--ivory)]" />
           ))}
         </div>
       ) : slots.length === 0 ? (

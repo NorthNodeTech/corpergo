@@ -13,9 +13,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useOpenInstantBooking } from "@/components/physio/instant-booking-context";
 import { StatusBadge } from "@/components/portal/StatusBadge";
 import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateLabel, formatTimeLabel } from "@/lib/clinic-data";
 import { isVisitDocumented } from "@/lib/assessment-data";
 import type { DirectBookingRequest } from "@/lib/direct-booking-data";
+import { directBookingSourceLabel } from "@/lib/direct-booking-data";
 import {
   fetchPhysioWorkspace,
   patientName,
@@ -38,10 +40,6 @@ function initials(name: string) {
   const p = name.trim().split(/\s+/);
   if (p.length === 1) return p[0]!.slice(0, 2).toUpperCase();
   return `${p[0]![0] ?? ""}${p[p.length - 1]![0] ?? ""}`.toUpperCase();
-}
-
-function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-2xl bg-black/[0.06]", className)} />;
 }
 
 function EmptyPanel({ title, body }: { title: string; body: string }) {
@@ -165,7 +163,7 @@ function DirectBookingCard({ request }: { request: DirectBookingRequest }) {
         </span>
       </div>
       <div className="mt-2 inline-flex rounded-full bg-[var(--saffron-light)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--saffron-deep)]">
-        Direct booking
+        {directBookingSourceLabel(request.booking_source)}
       </div>
       <a
         href={`tel:${request.phone}`}
@@ -269,8 +267,8 @@ export function ClinicalWorkspace() {
 
   const walkInEntries = useMemo(
     () => [
-      ...(data?.instantWalkIns || []).map((appt) => ({ kind: "instant" as const, appt })),
-      ...(data?.directRequestsActive || []).map((request) => ({ kind: "direct" as const, request })),
+      ...(data?.directRequestsActive || []).map((request) => ({ kind: "request" as const, request })),
+      ...(data?.instantWalkIns || []).map((appt) => ({ kind: "legacy-instant" as const, appt })),
     ],
     [data?.directRequestsActive, data?.instantWalkIns],
   );
@@ -298,7 +296,7 @@ export function ClinicalWorkspace() {
           {greeting(now.getHours())},
         </div>
         <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-[var(--ink)] sm:text-[2rem]">
-          {loading ? "…" : displayName}
+          {loading ? <Skeleton className="h-9 w-48 max-w-full rounded-xl" /> : displayName}
         </h1>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-black/5 px-3 py-1 text-xs font-bold text-black ring-1 ring-black/10">
@@ -328,7 +326,7 @@ export function ClinicalWorkspace() {
                 {item.label}
               </div>
               <div className="mt-1 text-2xl font-extrabold text-[var(--ink)]">
-                {loading ? "—" : item.value}
+                {loading ? <Skeleton className="mx-auto h-8 w-10 rounded-lg sm:mx-0" /> : item.value}
               </div>
             </div>
           ))}
@@ -401,7 +399,7 @@ export function ClinicalWorkspace() {
             ) : walkInEntries.length ? (
               <>
                 {walkInMore.visible.map((entry) =>
-                  entry.kind === "instant" ? (
+                  entry.kind === "legacy-instant" ? (
                     <InstantWalkInCard key={entry.appt.id} appt={entry.appt} />
                   ) : (
                     <DirectBookingCard key={entry.request.id} request={entry.request} />
@@ -416,7 +414,7 @@ export function ClinicalWorkspace() {
             ) : (
               <EmptyPanel
                 title="No walk-in patients waiting"
-                body="Direct web requests and phone instant bookings appear here until the session is completed."
+                body="Phone and web walk-in leads appear here until the session is completed."
               />
             )}
           </div>

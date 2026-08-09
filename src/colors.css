@@ -34,8 +34,9 @@
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
-  --border: #e5e5e5;
-  --input: #e5e5e5;
+  --border: #d4d4d4;
+  --card-border-strong: color-mix(in srgb, var(--ink) 14%, var(--border));
+  --input: #d4d4d4;
   --ring: var(--saffron);
 
   --radius: 16px;
@@ -84,6 +85,7 @@
   --accent-foreground: #000000;
 
   --border: #262626;
+  --card-border-strong: color-mix(in srgb, var(--ink) 18%, var(--border));
   --input: #262626;
   --ring: var(--saffron);
 

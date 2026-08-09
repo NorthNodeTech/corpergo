@@ -70,6 +70,28 @@ export type RecentBooking = {
 
 export type DayPoint = { day: string; label: string; count: number };
 
+export type ClinicComparisonRange = "7d" | "28d" | "90d";
+
+export type ClinicComparisonClinic = {
+  id: string;
+  name: string;
+  shortName: string;
+  total: number;
+  color: string;
+};
+
+export type ClinicComparisonPoint = {
+  day: string;
+  label: string;
+} & Record<string, number | string>;
+
+export type ClinicComparisonSeries = {
+  points: ClinicComparisonPoint[];
+  clinics: ClinicComparisonClinic[];
+};
+
+export const CLINIC_CHART_COLORS = ["#4285f4", "#9334e6", "#f28c28", "#0d9488", "#dc2626"];
+
 export type ClinicStatus = "normal" | "busy" | "attention";
 
 export type Insight = {
@@ -241,6 +263,65 @@ function buildSeries7d(
     points.push({ day: key, label, count });
   }
   return points;
+}
+
+function comparisonRangeDays(range: ClinicComparisonRange) {
+  if (range === "28d") return 28;
+  if (range === "90d") return 90;
+  return 7;
+}
+
+function shortClinicLabel(name: string) {
+  const cleaned = name.replace(/ CorpErgo.*/i, "").trim();
+  if (cleaned.length <= 10) return cleaned;
+  return `${cleaned.slice(0, 9)}…`;
+}
+
+function visitDate(row: { scheduled_date: string | null; preferred_date: string }) {
+  return row.scheduled_date || row.preferred_date;
+}
+
+export async function fetchClinicCompletedComparison(
+  clinics: ClinicOverview[],
+  range: ClinicComparisonRange,
+): Promise<ClinicComparisonSeries> {
+  const days = comparisonRangeDays(range);
+  const since = isoDate(daysAgo(days - 1));
+
+  const res = await supabaseRest<
+    { clinic_id: string; scheduled_date: string | null; preferred_date: string }[]
+  >(
+    `appointments?deleted_at=is.null&status=eq.completed&or=(scheduled_date.gte.${since},and(scheduled_date.is.null,preferred_date.gte.${since}))&select=clinic_id,scheduled_date,preferred_date&limit=5000`,
+  );
+
+  const rows = res.data || [];
+  const clinicMeta: ClinicComparisonClinic[] = clinics.map((c, index) => ({
+    id: c.clinic_id,
+    name: c.clinic_name,
+    shortName: shortClinicLabel(c.clinic_name),
+    total: rows.filter((row) => row.clinic_id === c.clinic_id).length,
+    color: CLINIC_CHART_COLORS[index % CLINIC_CHART_COLORS.length]!,
+  }));
+
+  const points: ClinicComparisonPoint[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = daysAgo(i);
+    const key = isoDate(d);
+    const label =
+      range === "90d"
+        ? d.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+        : d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+
+    const point: ClinicComparisonPoint = { day: key, label };
+    for (const clinic of clinicMeta) {
+      point[clinic.id] = rows.filter(
+        (row) => row.clinic_id === clinic.id && visitDate(row) === key,
+      ).length;
+    }
+    points.push(point);
+  }
+
+  return { points, clinics: clinicMeta };
 }
 
 export async function fetchAdminDashboard(): Promise<AdminDashboardBundle> {

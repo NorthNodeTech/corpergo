@@ -190,14 +190,11 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         <div
           className={cn(
-            "landing-nav__shell flex min-h-12 min-w-0 items-center justify-between gap-2 rounded-2xl px-2.5 py-2 transition-all duration-300 sm:min-h-[3.35rem] sm:gap-3 sm:px-3",
+            "landing-nav__shell relative flex min-h-12 min-w-0 items-center justify-between gap-2 overflow-hidden rounded-2xl px-2.5 py-2 transition-all duration-300 sm:min-h-[3.35rem] sm:gap-3 sm:px-3",
             "lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-x-3 xl:gap-x-4",
-            scrolled &&
-              "border border-black/[0.08] bg-white/92 shadow-[0_8px_32px_rgba(15,23,42,0.08)] backdrop-blur-md",
-            !scrolled &&
-              onHero &&
-              "border border-white/22 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-md",
-            !scrolled && !onHero && "border border-black/[0.07] bg-white/88 shadow-sm backdrop-blur-sm",
+            scrolled && "landing-nav__shell--light",
+            !scrolled && onHero && "landing-nav__shell--hero",
+            !scrolled && !onHero && "landing-nav__shell--light",
           )}
         >
           <Link
@@ -208,6 +205,7 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
             <CorpErgoLogo
               size="xs"
               withFrame={false}
+              eTone={onHero ? "light" : "dark"}
               className="h-10 w-10 shrink-0 object-cover object-top transition-transform duration-300 group-hover:scale-[1.03] sm:h-11 sm:w-11"
             />
             <div className="min-w-0 leading-none">
@@ -277,7 +275,7 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:hidden mt-2 rounded-2xl border border-black/[0.08] bg-white/95 p-1.5 shadow-[0_8px_32px_rgba(15,23,42,0.08)] backdrop-blur-md"
+            className="lg:hidden mt-2 landing-nav__shell landing-nav__shell--light rounded-2xl p-1.5"
           >
             {items.map(([label, href]) => (
               <a
@@ -1497,16 +1495,18 @@ function BookingChoiceModal({
             <button
               type="button"
               onClick={onDirectBook}
-              className="group flex min-h-44 flex-col rounded-3xl bg-[var(--ivory)] p-5 text-left ring-1 ring-black/5 transition-all hover:-translate-y-0.5 hover:bg-white hover:shadow-[var(--shadow-soft)]"
+              className="group flex min-h-44 flex-col rounded-3xl border-[3px] border-[var(--card-border-strong)] bg-[var(--ivory)] p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--saffron)] hover:bg-[var(--saffron-light)] hover:shadow-[0_12px_32px_rgba(255,152,0,0.18)]"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--pink-main)] text-white">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--pink-main)] text-white transition-transform duration-200 group-hover:scale-105">
                 <Phone className="h-5 w-5" />
               </span>
-              <span className="mt-4 text-lg font-extrabold text-[var(--ink)]">Book directly</span>
-              <span className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
+              <span className="mt-4 text-lg font-extrabold text-[var(--ink)] transition-colors duration-200 group-hover:text-[var(--ink)]">
+                Book directly
+              </span>
+              <span className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)] transition-colors duration-200 group-hover:text-[var(--ink)]/85">
                 Name, mobile, gender, age and clinic. The clinic will call to confirm.
               </span>
-              <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-bold text-[var(--pink-main)]">
+              <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-bold text-[var(--pink-main)] transition-colors duration-200 group-hover:text-[var(--saffron-deep)]">
                 Continue{" "}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </span>
@@ -1515,18 +1515,18 @@ function BookingChoiceModal({
             <button
               type="button"
               onClick={onLoginFirst}
-              className="group flex min-h-44 flex-col rounded-3xl bg-white p-5 text-left ring-1 ring-black/[0.08] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]"
+              className="group flex min-h-44 flex-col rounded-3xl border-[3px] border-[var(--card-border-strong)] bg-white p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--sage-deep)] hover:bg-[var(--sage)]/12 hover:shadow-[0_12px_32px_rgba(255,152,0,0.14)]"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--sage)] text-white">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--sage)] text-white transition-transform duration-200 group-hover:scale-105">
                 <LogIn className="h-5 w-5" />
               </span>
-              <span className="mt-4 text-lg font-extrabold text-[var(--ink)]">
+              <span className="mt-4 text-lg font-extrabold text-[var(--ink)] transition-colors duration-200 group-hover:text-[var(--ink)]">
                 Login first and book
               </span>
-              <span className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">
+              <span className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)] transition-colors duration-200 group-hover:text-[var(--ink)]/85">
                 Get dashboard tracking, QR ticket updates, reports and assessments.
               </span>
-              <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-bold text-[var(--sage-deep)]">
+              <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-bold text-[var(--sage-deep)] transition-colors duration-200 group-hover:text-[var(--saffron-deep)]">
                 Login and continue{" "}
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </span>

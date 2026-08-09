@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, User, Stethoscope, Eye, EyeOff } from "lucide-react";
 import { CorpErgoLogo } from "@/components/CorpErgoLogo";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { signInWithPassword, resolvePostLoginPath } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +38,6 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
   const [portal, setPortal] = useState<PortalId>("patient");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,7 +48,6 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
     if (!isOpen) {
       setFullName("");
       setEmail("");
-      setPhone("");
       setPassword("");
       setError(null);
       setLoading(false);
@@ -64,10 +63,6 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
     if (isPatient) {
       if (!fullName.trim()) {
         setError("Enter your full name.");
-        return;
-      }
-      if (!phone.trim()) {
-        setError("Enter your mobile number.");
         return;
       }
       if (!email.trim() || !email.includes("@")) {
@@ -175,66 +170,36 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
 
               <form className="mt-4 space-y-2.5 sm:space-y-3" onSubmit={onSubmit}>
                 {portal === "patient" ? (
-                  <>
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                        Full Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Enter your full name"
-                        autoComplete="name"
-                        required
-                        className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                        Mobile Number <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+91 9876543210"
-                        autoComplete="tel"
-                        required
-                        className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                        Email <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@email.com"
-                        autoComplete="email"
-                        required
-                        className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
-                      />
-                    </div>
-                  </>
-                ) : (
                   <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
-                      Email <span className="text-red-500">*</span>
+                      Full name <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="physio.chansandra@corpergo.in"
-                      autoComplete="email"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Enter your full name"
+                      autoComplete="name"
                       required
-                      className="mt-1.5 w-full rounded-2xl bg-white ring-1 ring-black/[0.08] px-4 py-3 text-sm text-[var(--ink)] placeholder:text-[var(--ink-soft)]/60 focus:ring-2 focus:ring-[var(--sage)] focus:outline-none transition-all"
+                      className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
                     />
                   </div>
-                )}
+                ) : null}
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={portal === "patient" ? "you@email.com" : "physio.chansandra@corpergo.in"}
+                    autoComplete="email"
+                    required
+                    className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                  />
+                </div>
 
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
@@ -285,7 +250,14 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
                   disabled={loading}
                   className="group w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] px-4 py-2.5 text-sm font-semibold text-white transition-all shadow-sm hover:-translate-y-0.5 disabled:opacity-60 disabled:pointer-events-none cursor-pointer focus:outline-none"
                 >
-                  {loading ? "Signing in…" : `Sign in as ${active.buttonLabel}`}
+                  {loading ? (
+                    <>
+                      <LoadingSpinner size="sm" className="text-white" />
+                      Signing in…
+                    </>
+                  ) : (
+                    `Sign in as ${active.buttonLabel}`
+                  )}
                   {!loading ? (
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   ) : null}

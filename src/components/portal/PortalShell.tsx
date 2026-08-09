@@ -148,10 +148,12 @@ function GlassFooterNav({
   items,
   centerAction,
   layoutKey,
+  staticNav = false,
 }: {
   items: PortalNavItem[];
   centerAction?: PortalCenterAction;
   layoutKey: string;
+  staticNav?: boolean;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const hash = useRouterState({ select: (s) => s.location.hash });
@@ -194,6 +196,68 @@ function GlassFooterNav({
     const key = item.hash ? `${item.to}#${item.hash}` : item.to;
     const active = activeKey === key && !centerActive;
     const Icon = item.icon;
+
+    const tabInner = staticNav ? (
+      <div className="relative flex w-full max-w-[4.5rem] flex-col items-center justify-center gap-0.5">
+        <div className="relative grid h-10 w-full place-items-center">
+          {active ? (
+            <span className="absolute inset-x-1 inset-y-0 rounded-2xl bg-[var(--saffron-light)]" />
+          ) : null}
+          <div
+            className={cn(
+              "relative z-[1] flex items-center justify-center",
+              active ? "text-[var(--saffron-deep)]" : "text-[var(--ink-soft)]",
+            )}
+          >
+            <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.5 : 2} />
+          </div>
+        </div>
+        <span
+          className={cn(
+            "relative z-[1] max-w-full truncate text-[10px] tracking-wide",
+            active ? "font-bold text-[var(--saffron-deep)]" : "font-semibold text-[var(--ink-soft)]",
+          )}
+        >
+          {item.shortLabel || item.label}
+        </span>
+      </div>
+    ) : (
+      <motion.div
+        whileTap={{ scale: 0.88, y: 2 }}
+        transition={{ type: "spring", stiffness: 450, damping: 25 }}
+        className="relative flex w-full max-w-[4.5rem] flex-col items-center justify-center gap-0.5"
+      >
+        <div className="relative grid h-10 w-full place-items-center">
+          {active ? (
+            <motion.span
+              layoutId={`portal-tab-pill-${layoutKey}`}
+              className="absolute inset-x-1 inset-y-0 rounded-2xl bg-[var(--saffron-light)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
+              transition={{ type: "spring", stiffness: 450, damping: 30, mass: 0.8 }}
+            />
+          ) : null}
+          <motion.div
+            animate={{
+              scale: active ? 1.05 : 1,
+              color: active ? "var(--saffron-deep)" : "var(--ink-soft)",
+            }}
+            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+            className="relative z-[1] flex items-center justify-center"
+          >
+            <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.5 : 2} />
+          </motion.div>
+        </div>
+        <motion.span
+          animate={{
+            color: active ? "var(--saffron-deep)" : "var(--ink-soft)",
+          }}
+          transition={{ duration: 0.2 }}
+          className={`relative z-[1] max-w-full truncate text-[10px] tracking-wide ${active ? "font-bold" : "font-semibold"}`}
+        >
+          {item.shortLabel || item.label}
+        </motion.span>
+      </motion.div>
+    );
+
     return (
       <Link
         to={item.to}
@@ -202,120 +266,102 @@ function GlassFooterNav({
         className="relative flex min-w-0 flex-1 flex-col items-center justify-center px-1 py-1"
         onClick={() => {
           if (!item.hash) return;
-          // Smooth scroll after navigation settles
           requestAnimationFrame(() => {
             const el = document.getElementById(item.hash!);
             el?.scrollIntoView({ behavior: "smooth", block: "start" });
           });
         }}
       >
-        <motion.div
-          whileTap={{ scale: 0.88, y: 2 }}
-          transition={{ type: "spring", stiffness: 450, damping: 25 }}
-          className="relative flex w-full max-w-[4.5rem] flex-col items-center justify-center gap-0.5"
-        >
-          <div className="relative grid h-10 w-full place-items-center">
-            {active ? (
-              <motion.span
-                layoutId={`portal-tab-pill-${layoutKey}`}
-                className="absolute inset-x-1 inset-y-0 rounded-2xl bg-[var(--saffron-light)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
-                transition={{ type: "spring", stiffness: 450, damping: 30, mass: 0.8 }}
-              />
-            ) : null}
-            <motion.div
-              animate={{ 
-                scale: active ? 1.05 : 1,
-                color: active ? "var(--saffron-deep)" : "var(--ink-soft)"
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 28 }}
-              className="relative z-[1] flex items-center justify-center"
-            >
-              <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.5 : 2} />
-            </motion.div>
-          </div>
-          <motion.span
-            animate={{
-              color: active ? "var(--saffron-deep)" : "var(--ink-soft)"
-            }}
-            transition={{ duration: 0.2 }}
-            className={`relative z-[1] max-w-full truncate text-[10px] tracking-wide ${active ? "font-bold" : "font-semibold"}`}
-          >
-            {item.shortLabel || item.label}
-          </motion.span>
-        </motion.div>
+        {tabInner}
       </Link>
     );
   };
+
+  const dockShell = (
+    <div className="portal-glass-dock relative flex items-end gap-0.5 rounded-[32px] px-1.5 pb-2 pt-2">
+      {left.map((item) => (
+        <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
+      ))}
+
+      {centerAction ? (
+        <div className="relative flex w-[4.75rem] shrink-0 flex-col items-center justify-end">
+          {centerAction.onClick ? (
+            <button
+              type="button"
+              aria-label={centerAction.label}
+              onClick={centerAction.onClick}
+              className="group relative -mt-8 mb-0.5"
+            >
+              {staticNav ? (
+                <span className="relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full bg-[var(--saffron)] text-white shadow-md ring-[4px] ring-white/60">
+                  {CenterIcon ? <CenterIcon className="h-7 w-7" strokeWidth={2.25} /> : null}
+                </span>
+              ) : (
+                <motion.span
+                  whileTap={{ scale: 0.88, y: 4 }}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                  className="relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full bg-[var(--saffron)] text-white shadow-[0_12px_32px_rgba(242,140,40,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md"
+                >
+                  <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
+                  {CenterIcon ? <CenterIcon className="h-7 w-7" strokeWidth={2.25} /> : null}
+                </motion.span>
+              )}
+            </button>
+          ) : (
+            <Link
+              to={centerAction.to}
+              hash={centerAction.hash}
+              aria-label={centerAction.label}
+              aria-current={centerActive ? "page" : undefined}
+              className="group relative -mt-8 mb-0.5"
+            >
+              {staticNav ? (
+                <span className="relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full bg-[var(--saffron)] text-white shadow-md ring-[4px] ring-white/60">
+                  {CenterIcon ? <CenterIcon className="h-7 w-7" strokeWidth={2.25} /> : null}
+                </span>
+              ) : (
+                <motion.span
+                  whileTap={{ scale: 0.88, y: 4 }}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 450, damping: 25 }}
+                  className="relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full bg-[var(--saffron)] text-white shadow-[0_12px_32px_rgba(242,140,40,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md"
+                >
+                  <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
+                  <span className="portal-scan-pulse absolute inset-0 rounded-full" />
+                  {CenterIcon ? <CenterIcon className="h-7 w-7" strokeWidth={2.25} /> : null}
+                </motion.span>
+              )}
+            </Link>
+          )}
+          <span
+            className={`text-[10px] font-semibold tracking-wide ${
+              centerActive ? "text-[var(--saffron-deep)]" : "text-[var(--ink-soft)]"
+            }`}
+          >
+            {centerAction.label}
+          </span>
+        </div>
+      ) : null}
+
+      {right.map((item) => (
+        <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
+      ))}
+    </div>
+  );
 
   return (
     <nav
       aria-label="Primary"
       className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-2 pb-[max(0.65rem,env(safe-area-inset-bottom))] sm:px-4 lg:hidden"
     >
-      <motion.div style={{ y: dockY, scale: dockScale }} className="pointer-events-auto mx-auto max-w-md sm:max-w-lg">
-        <div className="portal-glass-dock relative flex items-end gap-0.5 rounded-[32px] px-1.5 pb-2 pt-2">
-          {left.map((item) => (
-            <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
-          ))}
-
-          {centerAction ? (
-            <div className="relative flex w-[4.75rem] shrink-0 flex-col items-center justify-end">
-              {centerAction.onClick ? (
-                <button
-                  type="button"
-                  aria-label={centerAction.label}
-                  onClick={centerAction.onClick}
-                  className="group relative -mt-8 mb-0.5"
-                >
-                  <motion.span
-                    whileTap={{ scale: 0.88, y: 4 }}
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 25 }}
-                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full bg-[var(--saffron)] text-white shadow-[0_12px_32px_rgba(242,140,40,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md`}
-                  >
-                    <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
-                    {CenterIcon ? (
-                      <CenterIcon className="relative z-[1] h-7 w-7" strokeWidth={2.25} />
-                    ) : null}
-                  </motion.span>
-                </button>
-              ) : (
-                <Link
-                  to={centerAction.to}
-                  hash={centerAction.hash}
-                  aria-label={centerAction.label}
-                  aria-current={centerActive ? "page" : undefined}
-                  className="group relative -mt-8 mb-0.5"
-                >
-                  <motion.span
-                    whileTap={{ scale: 0.88, y: 4 }}
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 450, damping: 25 }}
-                    className={`relative grid h-[3.85rem] w-[3.85rem] place-items-center rounded-full bg-[var(--saffron)] text-white shadow-[0_12px_32px_rgba(242,140,40,0.35),inset_0_2px_4px_rgba(255,255,255,0.4)] ring-[4px] ring-white/60 backdrop-blur-md`}
-                  >
-                    <span className="absolute inset-0 rounded-full bg-white/15 opacity-0 transition-opacity group-hover:opacity-100" />
-                    <span className="portal-scan-pulse absolute inset-0 rounded-full" />
-                    {CenterIcon ? (
-                      <CenterIcon className="relative z-[1] h-7 w-7" strokeWidth={2.25} />
-                    ) : null}
-                  </motion.span>
-                </Link>
-              )}
-              <span
-                className={`text-[10px] font-semibold tracking-wide ${
-                  centerActive ? "text-[var(--saffron-deep)]" : "text-[var(--ink-soft)]"
-                }`}
-              >
-                {centerAction.label}
-              </span>
-            </div>
-          ) : null}
-
-          {right.map((item) => (
-            <Tab key={item.hash ? `${item.to}#${item.hash}` : item.to} item={item} />
-          ))}
-        </div>
-      </motion.div>
+      {staticNav ? (
+        <div className="pointer-events-auto mx-auto max-w-md sm:max-w-lg">{dockShell}</div>
+      ) : (
+        <motion.div style={{ y: dockY, scale: dockScale }} className="pointer-events-auto mx-auto max-w-md sm:max-w-lg">
+          {dockShell}
+        </motion.div>
+      )}
     </nav>
   );
 }
@@ -323,9 +369,11 @@ function GlassFooterNav({
 function DesktopHeaderNav({
   items,
   mode = "full",
+  staticNav = false,
 }: {
   items: PortalNavItem[];
   mode?: "full" | "expandable";
+  staticNav?: boolean;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const hash = useRouterState({ select: (s) => s.location.hash });
@@ -348,7 +396,7 @@ function DesktopHeaderNav({
     return matches.sort((a, b) => b.to.length - a.to.length)[0]?.to ?? null;
   }, [items, pathname, hash]);
 
-  const expandable = mode === "expandable";
+  const expandable = mode === "expandable" && !staticNav;
 
   return (
     <nav
@@ -379,7 +427,8 @@ function DesktopHeaderNav({
               });
             }}
             className={cn(
-              "inline-flex items-center rounded-full py-2 text-sm font-semibold transition-all duration-200",
+              "inline-flex items-center rounded-full py-2 text-sm font-semibold",
+              !staticNav && "transition-all duration-200",
               expandable
                 ? cn(
                     "gap-0 px-2.5 group-hover/header-nav:gap-2 group-hover/header-nav:px-3",
@@ -388,13 +437,16 @@ function DesktopHeaderNav({
                 : "gap-2 px-3.5",
               active
                 ? "bg-[var(--saffron)] text-white shadow-sm"
-                : "text-[var(--ink-soft)] hover:bg-[var(--saffron-light)] hover:text-[var(--ink)]",
+                : staticNav
+                  ? "text-[var(--ink-soft)]"
+                  : "text-[var(--ink-soft)] hover:bg-[var(--saffron-light)] hover:text-[var(--ink)]",
             )}
           >
             <Icon className="h-4 w-4 shrink-0" strokeWidth={active ? 2.25 : 2} />
             <span
               className={cn(
-                "overflow-hidden whitespace-nowrap transition-all duration-200",
+                "overflow-hidden whitespace-nowrap",
+                !staticNav && "transition-all duration-200",
                 expandable && !showLabel
                   ? "max-w-0 opacity-0 group-hover/header-nav:max-w-[11rem] group-hover/header-nav:opacity-100"
                   : "max-w-[11rem] opacity-100",
@@ -422,6 +474,7 @@ export function PortalShell({
   headerActions,
   desktopNav = "sidebar",
   headerNavMode = "full",
+  staticNav = false,
 }: {
   title: string;
   subtitle: string;
@@ -439,6 +492,8 @@ export function PortalShell({
   desktopNav?: "sidebar" | "header";
   /** Header nav label style — full labels, or icons until logo area is hovered */
   headerNavMode?: "full" | "expandable";
+  /** Disable nav hover/tap motion — used for patient portal */
+  staticNav?: boolean;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -446,9 +501,10 @@ export function PortalShell({
     settingsPath ||
     nav.find((item) => /settings/i.test(item.label) || item.to.includes("/settings"))?.to;
   const hasFooter = Boolean(footerNav?.length);
+  const hasNav = nav.length > 0;
   const layoutKey = title.replace(/\s+/g, "-").toLowerCase();
   const useHeaderNav = desktopNav === "header";
-  const expandableHeaderNav = useHeaderNav && headerNavMode === "expandable";
+  const expandableHeaderNav = useHeaderNav && headerNavMode === "expandable" && !staticNav;
   const showSidebar = !useHeaderNav && sidebarOpen;
 
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
@@ -507,10 +563,14 @@ export function PortalShell({
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 className="portal-glass-sidebar sticky top-0 z-30 hidden h-screen max-h-screen shrink-0 lg:flex lg:flex-col border-r border-black/10 overflow-hidden whitespace-nowrap"
               >
-                <div className="border-b border-black/[0.06] px-5 py-5 flex items-start justify-between bg-white mb-2">
+                <div className="border-b border-black/[0.06] px-5 py-4 flex items-start justify-between bg-white mb-2">
                   <div>
-                    <Link to="/" className="flex items-center gap-3">
-                      <CorpErgoLogo size="lg" />
+                    <Link to="/" className="inline-flex items-center">
+                      <CorpErgoLogo
+                        size="nav"
+                        frameClassName="rounded-lg ring-black/[0.08]"
+                        className="object-cover object-top"
+                      />
                     </Link>
                     <div className="mt-4">
                       <div className="text-sm font-extrabold text-[var(--ink)]">{title}</div>
@@ -557,10 +617,11 @@ export function PortalShell({
                   <PanelLeftOpen className="h-5 w-5" />
                 </button>
               ) : null}
-              <Link to="/" className="shrink-0" aria-label="CorpErgo home">
+              <Link to="/" className="flex shrink-0 items-center self-center" aria-label="CorpErgo home">
                 <CorpErgoLogo
-                  size="md"
-                  frameClassName={cn("rounded-xl shrink-0", !useHeaderNav && "lg:hidden")}
+                  size="nav"
+                  frameClassName={cn("rounded-lg ring-black/[0.08]", !useHeaderNav && "lg:hidden")}
+                  className="object-cover object-top"
                 />
               </Link>
               <div className="min-w-0 flex-1">
@@ -571,12 +632,14 @@ export function PortalShell({
                   {userName?.trim() || subtitle}
                 </div>
               </div>
-              {expandableHeaderNav ? <DesktopHeaderNav items={nav} mode="expandable" /> : null}
+              {expandableHeaderNav && hasNav ? (
+                <DesktopHeaderNav items={nav} mode="expandable" />
+              ) : null}
             </div>
 
-            {useHeaderNav && !expandableHeaderNav ? (
+            {useHeaderNav && !expandableHeaderNav && hasNav ? (
               <div className="order-last w-full min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] lg:order-none lg:w-auto lg:flex-1 lg:overflow-visible [&::-webkit-scrollbar]:hidden">
-                <DesktopHeaderNav items={nav} mode="full" />
+                <DesktopHeaderNav items={nav} mode="full" staticNav={staticNav} />
               </div>
             ) : null}
 
@@ -586,7 +649,10 @@ export function PortalShell({
               {pathname.includes("/patient") && (
                 <Link
                   to="/patient/profile"
-                  className="hidden sm:flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--ink-soft)] hover:bg-black/5 hover:text-black transition-colors"
+                  className={cn(
+                    "hidden sm:flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--ink-soft)]",
+                    !staticNav && "hover:bg-black/5 hover:text-black transition-colors",
+                  )}
                 >
                   <UserRound className="h-4 w-4" />
                   Health Profile
@@ -618,7 +684,12 @@ export function PortalShell({
       </div>
 
       {hasFooter && footerNav ? (
-        <GlassFooterNav items={footerNav} centerAction={centerAction} layoutKey={layoutKey} />
+        <GlassFooterNav
+          items={footerNav}
+          centerAction={centerAction}
+          layoutKey={layoutKey}
+          staticNav={staticNav}
+        />
       ) : null}
     </div>
   );

@@ -238,7 +238,7 @@ export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
   const assessedAppointmentIds = savedAssessments.data || [];
   const assessedIds = new Set(assessedAppointmentIds);
 
-  const directRequests = filterActiveDirectRequests(allDirect, assessedIds);
+  const directRequests = filterActiveDirectRequests(allDirect);
   const directRequestsActive = directRequests;
   const instantWalkIns = instantWalkInAppointments(allDirect, all, assessedIds);
   const directAppointmentIds = [...new Set(directApptIds.filter((id) => {

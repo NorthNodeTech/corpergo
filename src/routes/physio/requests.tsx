@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
 import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
+import { LoadingSpinner, LoadingState } from "@/components/ui/loading-spinner";
 import { Calendar } from "@/components/ui/calendar";
 import {
   fetchCategories,
@@ -19,14 +20,19 @@ import {
   defaultDirectBookingCategory,
   defaultDirectBookingEmail,
   defaultDirectBookingPassword,
+  directBookingSourceLabel,
   fetchDirectBookingRequests,
   filterActiveDirectRequests,
   updateDirectBookingRequest,
   type DirectBookingRequest,
   type DirectBookingStatus,
 } from "@/lib/direct-booking-data";
-import { fetchSavedAssessmentAppointmentIds } from "@/lib/assessment-data";
 import { fetchMyProfile } from "@/lib/auth";
+import {
+  fetchLatestCompletedAppointmentId,
+  fetchPatientCompletedVisitCount,
+} from "@/lib/assessment-data";
+import { type VisitType } from "@/lib/clinic-data";
 import {
   acceptAppointment,
   fetchAvailableSlots,
@@ -91,6 +97,10 @@ function AppointmentRequestsPage() {
   const [convertDate, setConvertDate] = useState(todayIsoDate());
   const [convertTime, setConvertTime] = useState(currentTimeValue());
   const [convertCategoryId, setConvertCategoryId] = useState<string | null>(null);
+  const [acceptVisitType, setAcceptVisitType] = useState<VisitType>("initial");
+  const [priorVisitCount, setPriorVisitCount] = useState(0);
+  const [priorAppointmentId, setPriorAppointmentId] = useState<string | null>(null);
+  const [acceptPriorLoading, setAcceptPriorLoading] = useState(false);
   const itemsMore = useShowMore(items);
 
   useEffect(() => {
@@ -117,11 +127,7 @@ function AppointmentRequestsPage() {
       const rejected = rejectedRes.data || [];
       const fetchedDirect = directRes.data || [];
       const fetchedCategories = categoryRes.data || [];
-      const directApptIds = fetchedDirect
-        .map((request) => request.appointment_id)
-        .filter((id): id is string => Boolean(id));
-      const saved = await fetchSavedAssessmentAppointmentIds(directApptIds);
-      const activeDirect = filterActiveDirectRequests(fetchedDirect, saved.data || []);
+      const activeDirect = filterActiveDirectRequests(fetchedDirect);
 
       setInboxCounts({
         pending: pending.length,
@@ -210,6 +216,21 @@ function AppointmentRequestsPage() {
     setReason("");
     setDate(undefined);
     setTime(null);
+    setAcceptVisitType("initial");
+    setPriorVisitCount(0);
+    setPriorAppointmentId(null);
+    setAcceptPriorLoading(true);
+    void (async () => {
+      const [countRes, latestRes] = await Promise.all([
+        fetchPatientCompletedVisitCount(a.patient_id, a.id),
+        fetchLatestCompletedAppointmentId(a.patient_id, a.id),
+      ]);
+      const count = countRes.data || 0;
+      setPriorVisitCount(count);
+      setPriorAppointmentId(latestRes.data);
+      setAcceptVisitType(count > 0 ? "follow_up" : "initial");
+      setAcceptPriorLoading(false);
+    })();
   }
 
   function openReschedule(a: PhysioAppointment) {
@@ -282,6 +303,9 @@ function AppointmentRequestsPage() {
       scheduledDate: active.preferred_date,
       scheduledTime: active.preferred_time.slice(0, 5),
       clinicId: active.clinic_id,
+      visitType: acceptVisitType,
+      parentAppointmentId:
+        acceptVisitType === "follow_up" ? priorAppointmentId : null,
     });
     setBusy(false);
 
@@ -389,7 +413,7 @@ function AppointmentRequestsPage() {
         title="Appointment requests"
         description={
           tab === "direct"
-            ? `Call direct-booking patients and create an account only when the session starts.`
+            ? `Call walk-in patients (phone or web) and create an account only when the session starts.`
             : `Review pending bookings and track cancelled or rejected visits for ${clinicName}.`
         }
       />
@@ -421,11 +445,7 @@ function AppointmentRequestsPage() {
       </div>
 
       {loading ? (
-        <div className="grid gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 animate-pulse rounded-3xl bg-white" />
-          ))}
-        </div>
+        <LoadingState label="Loading requests…" minHeight="min-h-[14rem]" />
       ) : tab === "direct" ? (
         <DirectRequestsList
           items={directItems}
@@ -556,6 +576,55 @@ function AppointmentRequestsPage() {
               </p>
             </div>
 
+            {acceptPriorLoading ? (
+              <div className="mt-5 flex items-center gap-2 text-sm text-[var(--ink-soft)]">
+                <LoadingSpinner size="sm" />
+                Checking patient history…
+              </div>
+            ) : priorVisitCount > 0 ? (
+              <div className="mt-5 space-y-3 rounded-2xl bg-[var(--ivory)] px-4 py-4 ring-1 ring-black/5">
+                <p className="text-sm font-bold text-[var(--ink)]">
+                  Returning patient ({priorVisitCount} prior visit{priorVisitCount === 1 ? "" : "s"})
+                </p>
+                <p className="text-xs text-[var(--ink-soft)]">
+                  Same profile — choose whether this booking is a follow-up or a fresh assessment
+                  session.
+                </p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setAcceptVisitType("follow_up")}
+                    className={cn(
+                      "rounded-2xl px-4 py-3 text-left text-sm ring-1 transition-colors",
+                      acceptVisitType === "follow_up"
+                        ? "bg-[var(--saffron-light)] font-bold text-[var(--ink)] ring-[var(--saffron)]"
+                        : "bg-white text-[var(--ink-soft)] ring-black/5 hover:ring-black/10",
+                    )}
+                  >
+                    <span className="block font-extrabold text-[var(--ink)]">Follow-up session</span>
+                    <span className="mt-1 block text-xs">
+                      Continue care on the same profile. Previous assessments stay read-only.
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAcceptVisitType("initial")}
+                    className={cn(
+                      "rounded-2xl px-4 py-3 text-left text-sm ring-1 transition-colors",
+                      acceptVisitType === "initial"
+                        ? "bg-[var(--saffron-light)] font-bold text-[var(--ink)] ring-[var(--saffron)]"
+                        : "bg-white text-[var(--ink-soft)] ring-black/5 hover:ring-black/10",
+                    )}
+                  >
+                    <span className="block font-extrabold text-[var(--ink)]">New assessment</span>
+                    <span className="mt-1 block text-xs">
+                      Treat as a new evaluation while keeping all history on this account.
+                    </span>
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             <div className="mt-6 flex justify-end gap-2">
               <button
                 type="button"
@@ -566,11 +635,18 @@ function AppointmentRequestsPage() {
               </button>
               <button
                 type="button"
-                disabled={busy}
+                disabled={busy || acceptPriorLoading}
                 onClick={() => void confirmAccept()}
-                className="rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
               >
-                {busy ? "Accepting..." : "Confirm accept"}
+                {busy ? (
+                  <>
+                    <LoadingSpinner size="sm" className="text-white" />
+                    Accepting…
+                  </>
+                ) : (
+                  "Confirm accept"
+                )}
               </button>
             </div>
           </div>
@@ -680,9 +756,16 @@ function AppointmentRequestsPage() {
                 type="button"
                 disabled={busy || !time}
                 onClick={() => void confirmReschedule()}
-                className="rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
               >
-                {busy ? "Saving..." : "Confirm reschedule"}
+                {busy ? (
+                  <>
+                    <LoadingSpinner size="sm" className="text-white" />
+                    Saving…
+                  </>
+                ) : (
+                  "Confirm reschedule"
+                )}
               </button>
             </div>
           </div>
@@ -772,7 +855,14 @@ function AppointmentRequestsPage() {
                 className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50"
               >
                 <UserPlus className="h-4 w-4" />
-                {busy ? "Creating..." : "Create account & start"}
+                {busy ? (
+                  <>
+                    <LoadingSpinner size="sm" className="text-white" />
+                    Creating…
+                  </>
+                ) : (
+                  "Create account & start"
+                )}
               </button>
             </div>
           </div>
@@ -822,6 +912,9 @@ function DirectRequestsList({
               </div>
               <h3 className="mt-1 text-xl font-extrabold text-[var(--ink)]">{request.full_name}</h3>
               <p className="text-sm text-[var(--ink-soft)]">{formatClinicName(request.clinics?.name || "Clinic")}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[var(--saffron-deep)]">
+                {directBookingSourceLabel(request.booking_source)}
+              </p>
             </div>
             <DirectStatusBadge status={request.status} />
           </div>

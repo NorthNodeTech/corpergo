@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
 import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import {
   fetchAllAssessmentSessions,
   type AssessmentSessionRow,
@@ -96,11 +97,7 @@ function AssessmentsListPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-3xl bg-white" />
-          ))}
-        </div>
+        <LoadingState label="Loading assessments…" minHeight="min-h-[12rem]" />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={FileBarChart}
@@ -145,6 +142,11 @@ function AssessmentsListPage() {
                   <div>
                     <div className="font-extrabold text-[var(--ink)]">
                       {a.patients?.profiles?.full_name || a.appointment_code}
+                      {a.visit_type === "follow_up" ? (
+                        <span className="ml-2 rounded-full bg-[var(--saffron-light)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--saffron-deep)]">
+                          Follow-up
+                        </span>
+                      ) : null}
                     </div>
                     <div className="text-sm text-[var(--ink-soft)]">
                       {formatDateLabel(a.scheduled_date || a.preferred_date)} -{" "}

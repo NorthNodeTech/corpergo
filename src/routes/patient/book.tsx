@@ -13,7 +13,8 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
-import { fetchMyProfile } from "@/lib/auth";
+import { LoadingSpinner, LoadingSpinnerLabel } from "@/components/ui/loading-spinner";
+import { fetchMyProfile, isValidPhone, normalizePhone } from "@/lib/auth";
 import {
   createAppointment,
   ensureSlotsGenerated,
@@ -25,6 +26,7 @@ import {
   formatTimeLabel,
   uniqueSlotTimes,
   updateMyPatient,
+  updateMyProfile,
   type Category,
   type Clinic,
 } from "@/lib/clinic-data";
@@ -65,6 +67,7 @@ function BookAppointmentPage() {
   const [symptoms, setSymptoms] = useState("");
   const [gender, setGender] = useState<DirectBookingGender | "">("");
   const [ageYears, setAgeYears] = useState("");
+  const [phone, setPhone] = useState("");
   const [date, setDate] = useState<Date | undefined>();
   const [time, setTime] = useState<string | null>(null);
   const [slots, setSlots] = useState<{ start_time: string; end_time: string; available: boolean; remaining_slots?: number }[]>(
@@ -92,15 +95,17 @@ function BookAppointmentPage() {
 
   useEffect(() => {
     let cancelled = false;
-    void fetchMyPatient().then((res) => {
+    void Promise.all([fetchMyPatient(), fetchMyProfile()]).then(([patientRes, profileRes]) => {
       if (cancelled) return;
-      const patient = res.data?.[0];
-      if (!patient) return;
-      if (patient.gender) {
+      const patient = patientRes.data?.[0];
+      if (patient?.gender) {
         setGender(patient.gender as DirectBookingGender);
       }
-      if (patient.age_years != null) {
+      if (patient?.age_years != null) {
         setAgeYears(String(patient.age_years));
+      }
+      if (profileRes.data?.phone) {
+        setPhone(profileRes.data.phone);
       }
     });
     return () => {
@@ -143,7 +148,13 @@ function BookAppointmentPage() {
     if (step === 1) return !!categoryId;
     if (step === 2) {
       const age = Number(ageYears);
-      return !!gender && Number.isFinite(age) && age >= 0 && age <= 120;
+      return (
+        !!gender &&
+        Number.isFinite(age) &&
+        age >= 0 &&
+        age <= 120 &&
+        isValidPhone(phone)
+      );
     }
     if (step === 3) return symptoms.trim().length >= 10;
     if (step === 4) return !!dateIso && !!time;
@@ -155,6 +166,10 @@ function BookAppointmentPage() {
     const age = Number(ageYears);
     if (!Number.isFinite(age) || age < 0 || age > 120) {
       toast.error("Please enter a valid age.");
+      return;
+    }
+    if (!isValidPhone(phone)) {
+      toast.error("Please enter a valid mobile number.");
       return;
     }
 
@@ -175,6 +190,15 @@ function BookAppointmentPage() {
     if (patientUpdate.error) {
       setSubmitting(false);
       toast.error(patientUpdate.error);
+      return;
+    }
+
+    const profileUpdate = await updateMyProfile({
+      phone: normalizePhone(phone),
+    });
+    if (profileUpdate.error) {
+      setSubmitting(false);
+      toast.error(profileUpdate.error);
       return;
     }
 
@@ -365,9 +389,20 @@ function BookAppointmentPage() {
               <div>
                 <h2 className="text-xl font-extrabold text-[var(--ink)]">About you</h2>
                 <p className="mt-1 text-sm text-[var(--ink-soft)]">
-                  Help your physiotherapist prepare with basic details.
+                  Help your physiotherapist prepare with basic details and a contact number.
                 </p>
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <label className="block text-sm font-semibold text-[var(--ink)] sm:col-span-2">
+                    Mobile number
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+91 9876543210"
+                      autoComplete="tel"
+                      className="mt-1.5 w-full rounded-2xl bg-[var(--ivory)] px-4 py-3 text-[var(--ink)] ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                    />
+                  </label>
                   <label className="block text-sm font-semibold text-[var(--ink)]">
                     Age
                     <input
@@ -474,11 +509,11 @@ function BookAppointmentPage() {
                         Choose a date on the calendar first.
                       </p>
                     ) : slotsLoading ? (
-                      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                          <div key={i} className="h-12 animate-pulse rounded-2xl bg-white" />
-                        ))}
-                      </div>
+                      <LoadingSpinnerLabel
+                        label="Loading available slots…"
+                        size="sm"
+                        className="mt-4 w-full py-8"
+                      />
                     ) : slots.length === 0 ? (
                       <p className="mt-4 rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
                         No slots found for this day. Try another date.
@@ -548,6 +583,7 @@ function BookAppointmentPage() {
                     ["Category", selectedCategory?.name],
                     ["Age", ageYears ? `${ageYears} years` : "—"],
                     ["Gender", gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : "—"],
+                    ["Mobile", phone || "—"],
                     ["Problem", symptoms],
                     [
                       "Date & time",
@@ -607,7 +643,14 @@ function BookAppointmentPage() {
                       onClick={() => void submit()}
                       className="inline-flex items-center gap-2 rounded-full bg-[var(--sage)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--sage)]/20 disabled:opacity-40 hover:bg-[var(--sage-deep)]"
                     >
-                      {submitting ? "Submitting…" : "Request appointment"}
+                      {submitting ? (
+                        <>
+                          <LoadingSpinner size="sm" className="text-white" />
+                          Submitting…
+                        </>
+                      ) : (
+                        "Request appointment"
+                      )}
                     </button>
                   )}
                 </motion.div>

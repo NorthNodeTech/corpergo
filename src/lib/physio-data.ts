@@ -19,7 +19,7 @@ export type PhysioAppointment = Appointment & {
 };
 
 const SELECT =
-  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,cancellation_reason,cancelled_at,reschedule_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone))";
+  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,visit_type,parent_appointment_id,rejection_reason,cancellation_reason,cancelled_at,reschedule_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone))";
 
 export function ageFromDob(dob: string | null | undefined): number | null {
   if (!dob) return null;
@@ -114,6 +114,8 @@ export async function acceptAppointment(input: {
   scheduledDate: string;
   scheduledTime: string;
   clinicId: string;
+  visitType?: "initial" | "follow_up";
+  parentAppointmentId?: string | null;
 }) {
   const time = input.scheduledTime.length === 5 ? `${input.scheduledTime}:00` : input.scheduledTime;
 
@@ -130,6 +132,8 @@ export async function acceptAppointment(input: {
     };
   }
 
+  const visitType = input.visitType || "initial";
+
   const { data, error } = await supabaseRest<Appointment[]>(
     `appointments?id=eq.${input.appointmentId}`,
     {
@@ -139,6 +143,9 @@ export async function acceptAppointment(input: {
         physiotherapist_id: input.physiotherapistId,
         scheduled_date: input.scheduledDate,
         scheduled_time: time,
+        visit_type: visitType,
+        parent_appointment_id:
+          visitType === "follow_up" ? input.parentAppointmentId || null : null,
       }),
     },
   );
@@ -157,6 +164,22 @@ export async function acceptAppointment(input: {
         expires_at: expiresAt,
       }),
     });
+
+    if (visitType === "follow_up" && input.parentAppointmentId && appt.patient_id) {
+      await supabaseRest("follow_up_sessions", {
+        method: "POST",
+        body: JSON.stringify({
+          from_appointment_id: input.parentAppointmentId,
+          new_appointment_id: input.appointmentId,
+          patient_id: appt.patient_id,
+          clinic_id: input.clinicId,
+          physiotherapist_id: input.physiotherapistId,
+          next_visit_date: input.scheduledDate,
+          next_visit_time: time,
+          status: "booked",
+        }),
+      });
+    }
 
     if (appt.patient_id) {
       const patientRes = await supabaseRest<{ user_id: string }[]>(

@@ -66,27 +66,11 @@ async function authRequest<T>(
 export type PatientSignUpInput = {
   fullName: string;
   email: string;
-  phone: string;
   password: string;
 };
 
-/** Normalize phone for storage (+91XXXXXXXXXX). */
-export function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length === 10) return `+91${digits}`;
-  if (digits.length === 12 && digits.startsWith("91")) return `+${digits}`;
-  if (digits.length > 0) return `+${digits}`;
-  return phone.trim();
-}
-
-/** Create a patient account (role is always patient on the server). */
+/** Create a patient account (role is always patient on the server). Phone is collected at first booking. */
 export async function signUpPatient(input: PatientSignUpInput) {
-  const normalizedPhone = normalizePhone(input.phone);
-  const phoneDigits = normalizedPhone.replace(/\D/g, "");
-  if (phoneDigits.length < 10) {
-    return { data: null, error: "Please enter a valid mobile number." };
-  }
-
   const email = input.email.trim().toLowerCase();
   if (!email.includes("@")) {
     return { data: null, error: "Please enter a valid email address." };
@@ -102,7 +86,6 @@ export async function signUpPatient(input: PatientSignUpInput) {
     password: input.password,
     data: {
       full_name: input.fullName.trim(),
-      phone: normalizedPhone,
       role: "patient",
     },
   });
@@ -120,6 +103,19 @@ export async function signUpPatient(input: PatientSignUpInput) {
   }
 
   return { data: { user }, error: null as string | null };
+}
+
+/** Normalize phone for storage (+91XXXXXXXXXX). */
+export function normalizePhone(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) return `+91${digits}`;
+  if (digits.length === 12 && digits.startsWith("91")) return `+${digits}`;
+  if (digits.length > 0) return `+${digits}`;
+  return phone.trim();
+}
+
+export function isValidPhone(phone: string) {
+  return normalizePhone(phone).replace(/\D/g, "").length >= 10;
 }
 
 export async function signInWithPassword(identifier: string, password: string) {

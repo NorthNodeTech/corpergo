@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import type { PatientIntakeValues } from "@/components/portal/PatientIntakeForm";
 import { PremiumPatientProfile } from "@/components/portal/premium-profile/PremiumPatientProfile";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import { fetchMyProfile } from "@/lib/auth";
 import {
   fetchMyAppointments,
@@ -89,9 +90,11 @@ function PatientProfilePage() {
 
   if (!values) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center text-[var(--ink-soft)]">
-        Loading your health record…
-      </div>
+      <LoadingState
+        label="Loading your health record…"
+        variant="plain"
+        minHeight="min-h-[40vh]"
+      />
     );
   }
 

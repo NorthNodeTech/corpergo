@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
 import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import { StatusBadge } from "@/components/portal/StatusBadge";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import {
   cancelAppointment,
   fetchMyAppointments,
@@ -18,7 +19,8 @@ export const Route = createFileRoute("/patient/appointments")({
   component: MyAppointmentsPage,
 });
 
-const FILTERS = ["all", "pending", "accepted", "completed", "cancelled", "rejected"] as const;
+const FILTERS = ["all", "pending", "accepted", "completed"] as const;
+const QR_TICKET_STATUSES = new Set(["accepted", "checked_in"]);
 
 function MyAppointmentsPage() {
   const [items, setItems] = useState<Appointment[]>([]);
@@ -63,7 +65,7 @@ function MyAppointmentsPage() {
       <PortalPageHeader
         eyebrow="Appointments"
         title="My appointments"
-        description="Track pending, confirmed, completed, and cancelled visits in one place."
+        description="Track pending, confirmed, and completed visits. Cancelled and rejected appointments appear under All."
         actions={
           <Link
             to="/patient/book"
@@ -92,11 +94,7 @@ function MyAppointmentsPage() {
       </div>
 
       {loading ? (
-        <div className="grid gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-36 animate-pulse rounded-3xl bg-white ring-1 ring-black/5" />
-          ))}
-        </div>
+        <LoadingState label="Loading appointments…" minHeight="min-h-[14rem]" />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={Calendar}
@@ -153,17 +151,22 @@ function MyAppointmentsPage() {
 
               <p className="mt-3 text-sm text-[var(--ink-soft)] leading-relaxed">{a.symptoms}</p>
 
-              {a.status === "rejected" && a.rejection_reason ? (
+              {a.status === "cancelled" ? (
+                <p className="mt-3 rounded-2xl bg-neutral-100 px-3 py-2 text-sm font-semibold text-neutral-700">
+                  This appointment was cancelled.
+                </p>
+              ) : null}
+              {a.status === "rejected" ? (
                 <p className="mt-3 rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-800">
-                  Reason: {a.rejection_reason}
+                  {a.rejection_reason ? `Reason: ${a.rejection_reason}` : "This appointment was rejected."}
                 </p>
               ) : null}
 
               <div className="mt-4 portal-card-actions">
-                {a.status === "accepted" ? (
+                {QR_TICKET_STATUSES.has(a.status) ? (
                   <Link
                     to="/patient/qr-ticket"
-                    className="rounded-full bg-[var(--sage)] px-4 py-2 text-sm font-bold text-white"
+                    className="inline-flex items-center justify-center rounded-full bg-[var(--sage)] px-4 py-2 text-sm font-bold text-white"
                   >
                     Open QR ticket
                   </Link>

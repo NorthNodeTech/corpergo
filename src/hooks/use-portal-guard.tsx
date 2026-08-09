@@ -7,6 +7,7 @@ import {
   rolesAllowedForPath,
   type UserProfile,
 } from "@/lib/auth";
+import { LoadingState } from "@/components/ui/loading-spinner";
 
 export function usePortalGuard(pathPrefix: "/patient" | "/physio" | "/admin") {
   const navigate = useNavigate();
@@ -59,9 +60,12 @@ export function PortalGuard({
   if (loading || !profile) {
     return (
       fallback ?? (
-        <div className="min-h-screen grid place-items-center bg-[var(--ivory)] text-[var(--ink-soft)]">
-          Loading your portal…
-        </div>
+        <LoadingState
+          label="Loading your portal…"
+          variant="plain"
+          minHeight="min-h-screen"
+          className="bg-[var(--ivory)]"
+        />
       )
     );
   }

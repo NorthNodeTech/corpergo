@@ -54,7 +54,16 @@ const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 export function assessmentEditState(
   row: Pick<AssessmentRow, "started_at" | "created_at" | "admin_edit_unlocked"> | null | undefined,
   isNew: boolean,
+  options?: { isPriorVisit?: boolean },
 ) {
+  if (options?.isPriorVisit) {
+    return {
+      editable: false,
+      locked: true,
+      reason:
+        "This is a previous visit. Open the current session to record a new assessment on the same profile.",
+    };
+  }
   if (isNew || !row) {
     return { editable: true, locked: false, reason: null as string | null };
   }
@@ -74,6 +83,91 @@ export function assessmentEditState(
     locked: true,
     reason: "Editing closed after 24 hours. Ask admin to unlock this assessment.",
   };
+}
+
+export type PatientVisitSummary = {
+  id: string;
+  appointment_code: string;
+  status: string;
+  visit_type: "initial" | "follow_up";
+  preferred_date: string;
+  scheduled_date: string | null;
+  scheduled_time: string | null;
+  preferred_time: string;
+  created_at: string;
+  has_assessment: boolean;
+};
+
+export type FollowUpSessionRow = {
+  id: string;
+  from_appointment_id: string;
+  new_appointment_id: string | null;
+  next_visit_date: string;
+  next_visit_time: string | null;
+  status: string;
+  notes: string | null;
+  created_at: string;
+};
+
+function visitSortKey(
+  row: Pick<
+    PatientVisitSummary,
+    "scheduled_date" | "preferred_date" | "scheduled_time" | "preferred_time" | "created_at"
+  >,
+) {
+  const date = row.scheduled_date || row.preferred_date || row.created_at.slice(0, 10);
+  const time = row.scheduled_time || row.preferred_time || "00:00:00";
+  return `${date}T${time}`;
+}
+
+export function isPriorVisitAppointment(
+  appointmentId: string,
+  visits: PatientVisitSummary[],
+): boolean {
+  const active = visits.filter((v) => !["cancelled", "rejected"].includes(v.status));
+  if (active.length <= 1) return false;
+
+  const sorted = [...active].sort((a, b) => visitSortKey(b).localeCompare(visitSortKey(a)));
+  const currentVisit = sorted[0];
+  if (currentVisit.id === appointmentId) return false;
+
+  const target = active.find((v) => v.id === appointmentId);
+  return Boolean(target?.has_assessment && target.status === "completed");
+}
+
+export async function fetchPatientVisitSummaries(patientId: string, excludeAppointmentId?: string) {
+  const res = await supabaseRest<PatientVisitSummary[]>(
+    `appointments?patient_id=eq.${patientId}&deleted_at=is.null&status=not.in.(cancelled,rejected)&select=id,appointment_code,status,visit_type,preferred_date,scheduled_date,scheduled_time,preferred_time,created_at&order=scheduled_date.desc.nullslast,preferred_date.desc,created_at.desc&limit=50`,
+  );
+  const visits = (res.data || []).filter((v) => v.id !== excludeAppointmentId);
+  const ids = visits.map((v) => v.id);
+  const saved = await fetchSavedAssessmentAppointmentIds(ids);
+  const savedSet = new Set(saved.data || []);
+  return {
+    data: visits.map((v) => ({ ...v, has_assessment: savedSet.has(v.id) || v.status === "completed" })),
+    error: res.error,
+  };
+}
+
+export async function fetchPatientCompletedVisitCount(patientId: string, excludeAppointmentId?: string) {
+  const res = await fetchPatientVisitSummaries(patientId, excludeAppointmentId);
+  const count = (res.data || []).filter((v) => v.has_assessment && v.status === "completed").length;
+  return { data: count, error: res.error };
+}
+
+export async function fetchLatestCompletedAppointmentId(
+  patientId: string,
+  excludeAppointmentId?: string,
+) {
+  const res = await fetchPatientVisitSummaries(patientId, excludeAppointmentId);
+  const latest = (res.data || []).find((v) => v.has_assessment && v.status === "completed");
+  return { data: latest?.id ?? null, error: res.error };
+}
+
+export async function fetchPatientFollowUpSessions(patientId: string) {
+  return supabaseRest<FollowUpSessionRow[]>(
+    `follow_up_sessions?patient_id=eq.${patientId}&deleted_at=is.null&select=id,from_appointment_id,new_appointment_id,next_visit_date,next_visit_time,status,notes,created_at&order=next_visit_date.desc,created_at.desc&limit=30`,
+  );
 }
 
 function packFindings(form: AssessmentForm) {
@@ -159,14 +253,17 @@ export async function fetchPatientAssessments(patientId: string) {
   return supabaseRest<
     (AssessmentRow & {
       appointments?: {
+        id: string;
         appointment_code: string;
         preferred_date: string;
         scheduled_date: string | null;
+        visit_type: "initial" | "follow_up";
+        status: string;
         physiotherapy_categories?: { name: string } | null;
       } | null;
     })[]
   >(
-    `assessments?deleted_at=is.null&select=${ASSESS_SELECT},appointments!inner(appointment_code,preferred_date,scheduled_date,patient_id,physiotherapy_categories(name))&appointments.patient_id=eq.${patientId}&order=created_at.desc`,
+    `assessments?deleted_at=is.null&select=${ASSESS_SELECT},appointments!inner(id,appointment_code,preferred_date,scheduled_date,visit_type,status,patient_id,physiotherapy_categories(name))&appointments.patient_id=eq.${patientId}&order=created_at.desc`,
   );
 }
 
@@ -177,7 +274,16 @@ export async function saveAssessment(
   if (form.id && !options?.allowLocked) {
     const existing = await fetchAssessmentForAppointment(form.appointment_id);
     const row = existing.data?.[0];
-    const lock = assessmentEditState(row, false);
+    const apptRes = await supabaseRest<{ patient_id: string }[]>(
+      `appointments?id=eq.${form.appointment_id}&select=patient_id&limit=1`,
+    );
+    const patientId = apptRes.data?.[0]?.patient_id;
+    let isPriorVisit = false;
+    if (patientId) {
+      const visits = await fetchPatientVisitSummaries(patientId);
+      isPriorVisit = isPriorVisitAppointment(form.appointment_id, visits.data || []);
+    }
+    const lock = assessmentEditState(row, false, { isPriorVisit });
     if (lock.locked) {
       return { data: null, error: lock.reason || "Assessment is locked for editing." };
     }
@@ -288,6 +394,8 @@ export async function scheduleFollowUp(input: {
       physiotherapist_id: input.physioId,
       scheduled_date: input.date,
       scheduled_time: time,
+      visit_type: "follow_up",
+      parent_appointment_id: input.fromAppointment.id,
     }),
   });
 
@@ -342,7 +450,7 @@ export async function fetchAllAssessmentSessions() {
   }
 
   const res = await supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(accepted,checked_in,completed)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc,scheduled_time.desc.nullslast,preferred_time.desc&limit=120`,
+    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(accepted,checked_in,completed)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,visit_type,parent_appointment_id,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc,scheduled_time.desc.nullslast,preferred_time.desc&limit=120`,
   );
 
   const list = (res.data || []).filter((item) => matchesClinicId(clinicId, item.clinic_id));

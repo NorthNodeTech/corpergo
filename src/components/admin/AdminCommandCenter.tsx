@@ -13,10 +13,6 @@ import {
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -38,9 +34,12 @@ import {
   type AdminAssessmentRow,
 } from "@/lib/assessment-data";
 import { AdminCardCarousel } from "@/components/admin/AdminCardCarousel";
+import { AdminClinicComparison } from "@/components/admin/AdminClinicComparison";
+import { AdminPaymentsOverview } from "@/components/admin/AdminPaymentsOverview";
 import { cn, formatClinicName } from "@/lib/utils";
 import { toast } from "sonner";
 import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const STATUS_COLOR: Record<ClinicStatus, string> = {
   normal: "#f28c28",
@@ -50,12 +49,6 @@ const STATUS_COLOR: Record<ClinicStatus, string> = {
 
 const CHART_SAFFRON = "#f28c28";
 const CHART_SAFFRON_DEEP = "#d97706";
-
-const STATUS_LABEL: Record<ClinicStatus, string> = {
-  normal: "Operating normally",
-  busy: "Busy",
-  attention: "Needs attention",
-};
 
 /** Strip Dr. prefix from staff/clinic labels shown in admin lists. */
 function displayStaffLabel(name: string) {
@@ -248,10 +241,6 @@ function assessmentClinicId(row: AdminAssessmentRow) {
   return row.appointments?.clinic_id || row.appointments?.clinics?.id || "";
 }
 
-function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-2xl bg-black/[0.05]", className)} />;
-}
-
 export function AdminCommandCenter() {
   const [data, setData] = useState<AdminDashboardBundle | null>(null);
   const [loading, setLoading] = useState(true);
@@ -310,20 +299,6 @@ export function AdminCommandCenter() {
     setSelectedClinicId(data.clinics[0]!.clinic_id);
   }, [data?.clinics, selectedClinicId]);
 
-  const clinicBars = useMemo(
-    () =>
-      (data?.clinics || []).map((c) => {
-        const full = formatClinicName(c.clinic_name);
-        return {
-          name: full.replace(/(.{8}).+/, "$1…"),
-          full,
-          today: c.todays_appointments,
-          pending: c.pending,
-        };
-      }),
-    [data?.clinics],
-  );
-
   const kpis = data?.kpis;
   const waiting = (kpis?.checked_in || 0) + (kpis?.accepted || 0);
   const upcoming = Math.max((kpis?.todays_bookings || 0) - (kpis?.completed || 0) - waiting, 0);
@@ -336,7 +311,7 @@ export function AdminCommandCenter() {
   ] as const;
 
   const clinicList = loading
-    ? Array.from({ length: 4 }).map((_, i) => ({
+    ? Array.from({ length: 5 }).map((_, i) => ({
         clinic_id: `sk-${i}`,
         clinic_name: "…",
         slug: null,
@@ -363,7 +338,7 @@ export function AdminCommandCenter() {
           <Icon className="h-3 w-3 shrink-0 text-[var(--saffron-deep)]" />
         </div>
         <div className="mt-0.5 text-lg font-extrabold leading-none text-[var(--ink)] sm:mt-1 sm:text-2xl">
-          {loading ? "—" : <AnimatedNumber value={value} />}
+          {loading ? <Skeleton className="h-7 w-10 rounded-lg" /> : <AnimatedNumber value={value} />}
         </div>
       </div>
     );
@@ -379,48 +354,55 @@ export function AdminCommandCenter() {
         type="button"
         onClick={() => selectClinic(c.clinic_id)}
         className={cn(
-          "h-full w-full rounded-[24px] bg-white p-4 text-left shadow-[var(--shadow-soft)] ring-1 transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)]",
+          "flex h-full min-w-0 flex-col rounded-2xl bg-white p-2.5 text-left shadow-sm ring-1 transition hover:-translate-y-0.5 hover:shadow-md sm:p-3",
           selectedClinicId === c.clinic_id
-            ? "ring-2 ring-[var(--saffron)] ring-offset-2"
-            : "ring-black/[0.05]",
+            ? "ring-2 ring-[var(--saffron)] ring-offset-1"
+            : "ring-black/[0.06]",
         )}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
-              <MapPin className="h-3 w-3 shrink-0" /> Clinic
+        <div className="flex items-start justify-between gap-1">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide text-[var(--ink-soft)]">
+              <MapPin className="h-2.5 w-2.5 shrink-0" />
+              Clinic
             </div>
-            <div className="mt-1 truncate text-lg font-extrabold text-[var(--ink)]">{name}</div>
+            <div className="mt-0.5 line-clamp-2 text-xs font-extrabold leading-snug text-[var(--ink)] sm:text-[13px]">
+              {name}
+            </div>
           </div>
           <span
-            className="shrink-0 rounded-full px-2 py-1 text-[10px] font-bold"
+            className="shrink-0 rounded-full px-1.5 py-0.5 text-[8px] font-bold leading-none"
             style={{
               background: `${STATUS_COLOR[status]}1f`,
               color: STATUS_COLOR[status],
             }}
           >
-            {STATUS_LABEL[status]}
+            {status === "normal" ? "OK" : status === "busy" ? "Busy" : "Alert"}
           </span>
         </div>
-        <div className="mt-4 grid grid-cols-4 gap-2 text-center">
+        <div className="mt-2 grid grid-cols-4 gap-0.5 text-center">
           {[
             ["Today", c.todays_appointments],
-            ["Pending", c.pending],
+            ["Pend", c.pending],
             ["Done", c.completed],
-            ["Physios", c.active_physiotherapists],
+            ["Team", c.active_physiotherapists],
           ].map(([l, v]) => (
-            <div key={String(l)}>
-              <div className="text-base font-extrabold text-[var(--ink)]">{v as number}</div>
-              <div className="text-[10px] font-semibold text-[var(--ink-soft)]">{l}</div>
+            <div key={String(l)} className="min-w-0">
+              <div className="text-sm font-extrabold leading-none text-[var(--ink)] sm:text-base">
+                {v as number}
+              </div>
+              <div className="mt-0.5 truncate text-[8px] font-semibold text-[var(--ink-soft)] sm:text-[9px]">
+                {l}
+              </div>
             </div>
           ))}
         </div>
-        <div className="mt-4">
-          <div className="flex justify-between text-[11px] font-semibold text-[var(--ink-soft)]">
-            <span>Utilization</span>
+        <div className="mt-auto pt-2">
+          <div className="flex justify-between text-[9px] font-semibold text-[var(--ink-soft)]">
+            <span>Util</span>
             <span>{util}%</span>
           </div>
-          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[var(--muted)]">
+          <div className="mt-1 h-1 overflow-hidden rounded-full bg-[var(--muted)]">
             <motion.div
               className="h-full rounded-full"
               style={{ background: STATUS_COLOR[status] }}
@@ -491,7 +473,7 @@ export function AdminCommandCenter() {
   }
 
   return (
-    <div className="relative w-full min-w-0 max-w-full overflow-x-hidden pb-4 sm:pb-10">
+    <div className="relative mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-6 overflow-x-hidden pb-4 sm:gap-8 sm:pb-10">
       {/* Executive header */}
       <motion.section
         id="admin-overview"
@@ -543,7 +525,7 @@ export function AdminCommandCenter() {
           <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
             Today&apos;s operations
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="mt-3 grid grid-cols-2 items-stretch gap-2 sm:grid-cols-4">
             {kpiCards.map((card) => renderKpiCard(card))}
           </div>
         </div>
@@ -593,29 +575,31 @@ export function AdminCommandCenter() {
         </div>
       ) : null}
 
-      {/* Network + activity */}
-      <section id="admin-network" className="mt-6 grid w-full min-w-0 scroll-mt-24 gap-4 sm:mt-8 lg:grid-cols-[1.6fr_1fr]">
-        <div className="min-w-0">
-          <div className="mb-3">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
-              Network overview
-            </div>
-            <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Five clinics. One pulse.</h2>
+      {/* Network clinics — five compact cards in one row */}
+      <section id="admin-network" className="scroll-mt-24">
+        <div className="mb-3">
+          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+            Network overview
           </div>
-          <AdminCardCarousel
-            className="mt-1"
-            itemCount={Math.max(clinicList.length, 1)}
-            ariaLabel="clinic"
-            renderItem={(i) => renderClinicCard(clinicList[i]!)}
-            desktop={
-              <div className="grid gap-3 lg:grid-cols-2">
+          <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Five clinics. One pulse.</h2>
+        </div>
+        <AdminCardCarousel
+          itemCount={Math.max(clinicList.length, 1)}
+          ariaLabel="clinic"
+          renderItem={(i) => renderClinicCard(clinicList[i]!)}
+          desktop={
+            <div className="overflow-x-auto pb-1">
+              <div className="grid min-w-[680px] grid-cols-5 items-stretch gap-2">
                 {clinicList.map((c) => renderClinicCard(c))}
               </div>
-            }
-          />
-        </div>
+            </div>
+          }
+        />
+      </section>
 
-        <div className="min-w-0 rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+      {/* Live activity */}
+      <section className="w-full min-w-0">
+        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
@@ -688,29 +672,43 @@ export function AdminCommandCenter() {
         </div>
       </section>
 
-      {/* KPI mix */}
-      <section className="mt-6 grid w-full min-w-0 gap-4 sm:mt-8 lg:grid-cols-12">
-        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5 lg:col-span-12">
-          <div className="flex items-center justify-between">
+      {/* Analytics — stacked vertically */}
+      <section id="admin-analytics" className="flex w-full min-w-0 scroll-mt-24 flex-col gap-4 sm:gap-5">
+        <div className="rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
+          <div className="flex items-center justify-between gap-3">
             <div>
               <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
                 Appointments
               </div>
               <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Last 7 days — all clinics</h3>
             </div>
-            <Users className="h-4 w-4 text-[var(--ink-soft)]" />
+            <Users className="h-4 w-4 shrink-0 text-[var(--ink-soft)]" />
           </div>
-          <div className="mt-4 h-48 w-full min-w-0 overflow-hidden sm:h-56">
+          <div className="mt-4 h-52 w-full min-w-0 sm:h-60">
             <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <AreaChart data={data?.series7d || []}>
+              <AreaChart
+                data={data?.series7d || []}
+                margin={{ top: 8, right: 8, left: -8, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="apptFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={CHART_SAFFRON} stopOpacity={0.35} />
                     <stop offset="100%" stopColor={CHART_SAFFRON} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: "#5E6A6A", fontSize: 11 }}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tickLine={false}
+                  axisLine={false}
+                  width={32}
+                  tick={{ fill: "#5E6A6A", fontSize: 11 }}
+                />
                 <Tooltip
                   contentStyle={{
                     borderRadius: 12,
@@ -718,85 +716,49 @@ export function AdminCommandCenter() {
                     boxShadow: "0 8px 24px rgba(38,50,56,0.08)",
                   }}
                 />
-                <Area type="monotone" dataKey="count" stroke={CHART_SAFFRON_DEEP} strokeWidth={2.5} fill="url(#apptFill)" />
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  stroke={CHART_SAFFRON_DEEP}
+                  strokeWidth={2.5}
+                  fill="url(#apptFill)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="grid min-w-0 gap-4 sm:grid-cols-2 lg:col-span-12 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
           {[
             { label: "Network clinics", value: data?.totals.clinics ?? 0, hint: "Active locations" },
             { label: "Physiotherapists", value: data?.totals.physios ?? 0, hint: "Across Bengaluru" },
             { label: "Active patients", value: data?.totals.patients ?? 0, hint: "Registered" },
-            { label: "Cancelled / rejected", value: (kpis?.cancelled || 0) + (kpis?.rejected || 0), hint: "Needs follow-up" },
+            {
+              label: "Cancelled / rejected",
+              value: (kpis?.cancelled || 0) + (kpis?.rejected || 0),
+              hint: "Needs follow-up",
+            },
           ].map((m) => (
             <div
               key={m.label}
-              className="rounded-[24px] bg-gradient-to-br from-white to-[var(--ivory)] p-5 ring-1 ring-black/[0.05]"
+              className="flex h-full min-h-[108px] flex-col rounded-[24px] bg-gradient-to-br from-white to-[var(--ivory)] p-4 ring-1 ring-black/[0.05] sm:p-5"
             >
               <div className="text-xs font-semibold text-[var(--ink-soft)]">{m.label}</div>
-              <div className="mt-2 text-3xl font-extrabold text-[var(--ink)]">
-                {loading ? "—" : <AnimatedNumber value={m.value} />}
+              <div className="mt-auto pt-2 text-2xl font-extrabold text-[var(--ink)] sm:text-3xl">
+                {loading ? <Skeleton className="h-9 w-12 rounded-lg" /> : <AnimatedNumber value={m.value} />}
               </div>
               <div className="mt-1 text-[11px] font-medium text-[var(--ink-soft)]">{m.hint}</div>
             </div>
           ))}
         </div>
+
+        <AdminClinicComparison clinics={data?.clinics || []} loading={loading} />
       </section>
 
-      {/* Analytics */}
-      <section id="admin-analytics" className="mt-6 w-full min-w-0 scroll-mt-24 sm:mt-8">
-        <div className="min-w-0 rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
-          <h3 className="text-lg font-extrabold text-[var(--ink)]">Clinic comparison</h3>
-          <p className="mt-1 text-sm text-[var(--ink-soft)]">Today&apos;s appointments by location — tap a clinic above to drill down</p>
-          <div className="mt-4 h-64 w-full min-w-0 sm:h-72">
-            <ResponsiveContainer width="100%" height="100%" debounce={50}>
-              <BarChart data={clinicBars} layout="vertical" margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorToday" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor={CHART_SAFFRON} stopOpacity={0.8}/>
-                    <stop offset="100%" stopColor={CHART_SAFFRON} stopOpacity={1}/>
-                  </linearGradient>
-                  <linearGradient id="colorPending" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#C48A3A" stopOpacity={0.8}/>
-                    <stop offset="100%" stopColor="#C48A3A" stopOpacity={1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E7EB" />
-                <XAxis type="number" tickLine={false} axisLine={false} tick={{ fill: "#5E6A6A", fontSize: 11 }} />
-                <YAxis 
-                  dataKey="name" 
-                  type="category" 
-                  tickLine={false} 
-                  axisLine={false} 
-                  width={90} 
-                  tick={{ fill: "#5E6A6A", fontSize: 11 }} 
-                />
-                <Tooltip
-                  cursor={{ fill: "rgba(0,0,0,0.03)" }}
-                  contentStyle={{
-                    borderRadius: 12,
-                    border: "1px solid rgba(0,0,0,0.06)",
-                    boxShadow: "0 8px 24px rgba(38,50,56,0.08)",
-                    fontSize: 13,
-                  }}
-                  formatter={(value) => [value as number, "Count"]}
-                  labelFormatter={(_, payload) =>
-                    String((payload?.[0]?.payload as { full?: string } | undefined)?.full || "")
-                  }
-                />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: 12, color: "#5E6A6A", paddingTop: 10 }} />
-                <Bar name="Today" dataKey="today" stackId="a" fill="url(#colorToday)" radius={[0, 0, 0, 0]} maxBarSize={20} />
-                <Bar name="Pending" dataKey="pending" stackId="a" fill="url(#colorPending)" radius={[0, 4, 4, 0]} maxBarSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </section>
+      <AdminPaymentsOverview />
 
       {/* Doctor performance */}
-      <section className="mt-8 min-w-0">
+      <section className="min-w-0">
         <div className="mb-3 flex items-end justify-between">
           <div>
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
@@ -854,7 +816,7 @@ export function AdminCommandCenter() {
       </section>
 
       {/* Clinic detail — patients, schedule, assessment locks */}
-      <section id="admin-clinic-detail" className="mt-8 scroll-mt-24">
+      <section id="admin-clinic-detail" className="scroll-mt-24">
         {!selectedClinic ? (
           <div className="rounded-[28px] bg-white px-6 py-12 text-center shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
             <MapPin className="mx-auto h-8 w-8 text-[var(--ink-soft)]" />

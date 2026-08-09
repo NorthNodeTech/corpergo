@@ -1,5 +1,6 @@
-import { CalendarDays, Clock3, Loader2 } from "lucide-react";
+import { CalendarDays, Clock3 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import { LoadingSpinnerLabel } from "@/components/ui/loading-spinner";
 import {
   Dialog,
   DialogContent,
@@ -140,10 +141,11 @@ export function FollowUpSchedulerModal({
                   Select a date first.
                 </p>
               ) : slotsLoading ? (
-                <div className="mt-4 flex items-center justify-center gap-2 py-8 text-sm text-[var(--ink-soft)]">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading slots…
-                </div>
+                <LoadingSpinnerLabel
+                  label="Loading slots…"
+                  size="sm"
+                  className="mt-4 w-full py-8"
+                />
               ) : availableSlots.length === 0 ? (
                 <p className="mt-4 rounded-xl bg-amber-50 px-3 py-4 text-center text-sm text-amber-900">
                   No open slots on this day. Try another date.

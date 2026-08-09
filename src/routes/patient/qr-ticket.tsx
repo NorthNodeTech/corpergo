@@ -4,6 +4,7 @@ import { Calendar, Clock, MapPin, QrCode, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/portal/EmptyState";
 import { PortalPageHeader } from "@/components/portal/PortalPageHeader";
+import { LoadingState } from "@/components/ui/loading-spinner";
 import { ShowMoreButton, useShowMore } from "@/components/portal/ShowMoreList";
 import {
   fetchAcceptedTickets,
@@ -45,7 +46,7 @@ function QrTicketPage() {
       />
 
       {loading ? (
-        <div className="h-72 animate-pulse rounded-[2rem] bg-white ring-1 ring-black/5" />
+        <LoadingState label="Loading QR tickets…" minHeight="min-h-[18rem]" />
       ) : tickets.length === 0 ? (
         <EmptyState
           icon={QrCode}

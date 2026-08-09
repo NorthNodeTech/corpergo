@@ -18,16 +18,24 @@ import {
   X,
 } from "lucide-react";
 
+import {
+  createClinicPayment,
+  fetchClinicPayments,
+  softDeleteClinicPayment,
+  type ClinicPaymentRow,
+  type PaymentMethod,
+} from "@/lib/clinic-payments-data";
+
 export type PaymentRecord = {
   id: string;
   clinicId: string;
   patientName: string;
   patientPhone: string;
   amount: number;
-  paymentMethod: "UPI" | "Cash" | "Card" | "Other";
+  paymentMethod: PaymentMethod;
   notes?: string;
-  date: string; // YYYY-MM-DD
-  time: string; // HH:mm
+  date: string;
+  time: string;
   createdAt: string;
 };
 
@@ -37,6 +45,53 @@ interface ClinicPaymentsTrackerProps {
 }
 
 const STORAGE_PREFIX = "corpergo.clinic_payments.";
+
+function toPaymentRecord(row: ClinicPaymentRow): PaymentRecord {
+  return {
+    id: row.id,
+    clinicId: row.clinic_id,
+    patientName: row.patient_name,
+    patientPhone: row.patient_phone,
+    amount: row.amount,
+    paymentMethod: row.payment_method,
+    notes: row.notes || undefined,
+    date: row.payment_date,
+    time: row.payment_time || "—",
+    createdAt: row.created_at,
+  };
+}
+
+async function migrateLocalPayments(clinicId: string, storageKey: string) {
+  const migratedFlag = `${storageKey}.migrated`;
+  if (localStorage.getItem(migratedFlag)) return;
+
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) {
+      localStorage.setItem(migratedFlag, "1");
+      return;
+    }
+
+    const localRecords = JSON.parse(raw) as PaymentRecord[];
+    for (const record of localRecords) {
+      await createClinicPayment({
+        clinicId,
+        patientName: record.patientName,
+        patientPhone: record.patientPhone,
+        amount: record.amount,
+        paymentMethod: record.paymentMethod,
+        notes: record.notes,
+        paymentDate: record.date,
+        paymentTime: record.time,
+      });
+    }
+
+    localStorage.removeItem(storageKey);
+    localStorage.setItem(migratedFlag, "1");
+  } catch (error) {
+    console.error("Failed to migrate local payment records", error);
+  }
+}
 
 function getTodayIso() {
   const d = new Date();
@@ -56,66 +111,73 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
   
   const [selectedDate, setSelectedDate] = useState<string>(getTodayIso());
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Form State
   const [patientName, setPatientName] = useState("");
   const [patientPhone, setPhone] = useState("");
   const [amount, setAmount] = useState<string>("");
-  const [paymentMethod, setPaymentMethod] = useState<"UPI" | "Cash" | "Card" | "Other">("UPI");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("UPI");
   const [notes, setNotes] = useState("");
   const [paymentDate, setPaymentDate] = useState<string>(getTodayIso());
 
-  // Load stored payments
   useEffect(() => {
-    if (!storageKey) {
+    if (!clinicId || !storageKey) {
       setPayments([]);
       return;
     }
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw) {
-        setPayments(JSON.parse(raw));
-      } else {
+
+    const activeClinicId = clinicId;
+    const activeStorageKey = storageKey;
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      await migrateLocalPayments(activeClinicId, activeStorageKey);
+      const { data, error } = await fetchClinicPayments(activeClinicId);
+      if (cancelled) return;
+      if (error) {
+        console.error(error);
         setPayments([]);
+      } else {
+        setPayments((data || []).map(toPaymentRecord));
       }
-    } catch {
-      setPayments([]);
+      setLoading(false);
     }
-  }, [storageKey]);
 
-  const savePayments = (updated: PaymentRecord[]) => {
-    setPayments(updated);
-    if (!storageKey) return;
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(updated));
-    } catch (e) {
-      console.error("Failed to save payment record", e);
-    }
-  };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [clinicId, storageKey]);
 
-  const handleAddPayment = (e: React.FormEvent) => {
+  async function handleAddPayment(e: React.FormEvent) {
     e.preventDefault();
     if (!clinicId || !patientName.trim() || !patientPhone.trim() || !amount || Number(amount) <= 0) {
       return;
     }
 
-    const newRecord: PaymentRecord = {
-      id: `pay-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    setSaving(true);
+    const { data, error } = await createClinicPayment({
       clinicId,
-      patientName: patientName.trim(),
-      patientPhone: patientPhone.trim(),
+      patientName,
+      patientPhone,
       amount: parseFloat(amount),
       paymentMethod,
-      notes: notes.trim() || "Physiotherapy Session",
-      date: paymentDate || getTodayIso(),
-      time: getCurrentTimeStr(),
-      createdAt: new Date().toISOString(),
-    };
+      notes: notes.trim() || undefined,
+      paymentDate: paymentDate || getTodayIso(),
+      paymentTime: getCurrentTimeStr(),
+    });
+    setSaving(false);
 
-    const updated = [newRecord, ...payments];
-    savePayments(updated);
+    if (error || !data) {
+      console.error(error || "Could not save payment");
+      return;
+    }
+
+    setPayments((current) => [toPaymentRecord(data), ...current]);
 
     // Reset Form
     setPatientName("");
@@ -130,12 +192,15 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
     setTimeout(() => setShowSuccessToast(false), 3000);
   };
 
-  const handleDeletePayment = (id: string) => {
-    if (window.confirm("Are you sure you want to remove this payment record?")) {
-      const updated = payments.filter((p) => p.id !== id);
-      savePayments(updated);
+  async function handleDeletePayment(id: string) {
+    if (!window.confirm("Are you sure you want to remove this payment record?")) return;
+    const { error } = await softDeleteClinicPayment(id);
+    if (error) {
+      console.error(error);
+      return;
     }
-  };
+    setPayments((current) => current.filter((p) => p.id !== id));
+  }
 
   // Filter payments by selected date & search query
   const dayPayments = useMemo(() => {
@@ -304,7 +369,11 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
           </span>
         </div>
 
-        {dayPayments.length === 0 ? (
+        {loading ? (
+          <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center bg-[var(--ivory)]/30 text-sm text-[var(--ink-soft)]">
+            Loading payment records…
+          </div>
+        ) : dayPayments.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[var(--border)] p-8 text-center bg-[var(--ivory)]/30">
             <Receipt className="mx-auto h-8 w-8 text-[var(--ink-soft)] opacity-40 mb-2" />
             <p className="text-sm font-semibold text-[var(--ink)]">No payment records found for this date</p>
@@ -533,9 +602,10 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 rounded-2xl bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] py-2.5 text-sm font-bold text-white shadow-sm transition-all cursor-pointer"
+                    disabled={saving}
+                    className="flex-1 rounded-2xl bg-[var(--pink-main)] hover:bg-[var(--pink-hover)] py-2.5 text-sm font-bold text-white shadow-sm transition-all cursor-pointer disabled:opacity-50"
                   >
-                    Save Payment
+                    {saving ? "Saving…" : "Save Payment"}
                   </button>
                 </div>
               </form>

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FormEvent, useState } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
 import { CorpErgoLogo } from "@/components/CorpErgoLogo";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { getStoredSession, signUpPatient } from "@/lib/auth";
 
 export const Route = createFileRoute("/signup")({
@@ -22,7 +23,6 @@ function SignupPage() {
   const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,10 +43,6 @@ function SignupPage() {
       setError("Please enter your full name.");
       return;
     }
-    if (!phone.trim()) {
-      setError("Please enter your mobile number.");
-      return;
-    }
     if (!email.trim() || !email.includes("@")) {
       setError("Please enter a valid email address.");
       return;
@@ -64,7 +60,6 @@ function SignupPage() {
     const { error: signUpError } = await signUpPatient({
       fullName,
       email,
-      phone,
       password,
     });
     setLoading(false);
@@ -148,7 +143,7 @@ function SignupPage() {
               </h2>
               <p className="mt-2 text-sm text-[var(--ink-soft)] sm:text-base">
                 Physiotherapist and admin accounts are issued by CorpErgo — only patients can
-                self-register.
+                self-register. Your mobile number is collected when you book your first visit.
               </p>
 
               <form className="mt-6 space-y-3 sm:mt-8 sm:space-y-4" onSubmit={onSubmit}>
@@ -176,21 +171,6 @@ function SignupPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@email.com"
                     autoComplete="email"
-                    required
-                    className="mt-1.5 w-full rounded-2xl bg-white px-4 py-3 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)] sm:mt-2 sm:px-5 sm:py-3.5"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)] sm:text-xs">
-                    Mobile number
-                  </label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 9876543210"
-                    autoComplete="tel"
                     required
                     className="mt-1.5 w-full rounded-2xl bg-white px-4 py-3 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)] sm:mt-2 sm:px-5 sm:py-3.5"
                   />
@@ -264,7 +244,14 @@ function SignupPage() {
                   disabled={loading}
                   className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--pink-main)] px-5 py-3 text-sm font-semibold text-white shadow-[var(--shadow-soft)] transition-all hover:-translate-y-0.5 hover:bg-[var(--pink-hover)] hover:shadow-[var(--shadow-elev)] disabled:pointer-events-none disabled:opacity-60 sm:py-3.5"
                 >
-                  {loading ? "Creating account…" : "Create patient account"}
+                  {loading ? (
+                    <>
+                      <LoadingSpinner size="sm" className="text-white" />
+                      Creating account…
+                    </>
+                  ) : (
+                    "Create patient account"
+                  )}
                   {!loading ? (
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   ) : null}

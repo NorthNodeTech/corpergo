@@ -19,9 +19,9 @@ import {
   UserRound,
   Users,
   Camera,
-  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { uploadAvatar } from "@/lib/auth";
 import { updateMyProfile } from "@/lib/clinic-data";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -467,7 +467,7 @@ export function PremiumPatientProfile({
                 {/* Loading spinner */}
                 {uploadingAvatar && (
                   <div className="absolute inset-0 z-30 grid place-items-center rounded-full bg-black/40 backdrop-blur-sm">
-                    <Loader2 className="h-6 w-6 animate-spin text-white" />
+                    <LoadingSpinner size="md" className="text-white" />
                   </div>
                 )}
               </div>
@@ -1115,7 +1115,14 @@ export function PremiumPatientProfile({
                 onClick={onSave}
                 className="min-h-11 rounded-full bg-[var(--sage)] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[var(--sage-deep)] disabled:opacity-40"
               >
-                {saving ? "Saving…" : "Save changes"}
+                {saving ? (
+                  <span className="inline-flex items-center gap-2">
+                    <LoadingSpinner size="sm" className="text-white" />
+                    Saving…
+                  </span>
+                ) : (
+                  "Save changes"
+                )}
               </motion.button>
             </div>
           </div>
