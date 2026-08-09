@@ -190,11 +190,14 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         <div
           className={cn(
-            "landing-nav__shell relative flex min-h-12 min-w-0 items-center justify-between gap-2 overflow-hidden rounded-2xl px-2.5 py-2 transition-all duration-300 sm:min-h-[3.35rem] sm:gap-3 sm:px-3",
+            "landing-nav__shell flex min-h-12 min-w-0 items-center justify-between gap-2 rounded-2xl px-2.5 py-2 transition-all duration-300 sm:min-h-[3.35rem] sm:gap-3 sm:px-3",
             "lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-x-3 xl:gap-x-4",
-            scrolled && "landing-nav__shell--light",
-            !scrolled && onHero && "landing-nav__shell--hero",
-            !scrolled && !onHero && "landing-nav__shell--light",
+            scrolled &&
+              "border border-black/[0.08] bg-white/92 shadow-[0_8px_32px_rgba(15,23,42,0.08)] backdrop-blur-md",
+            !scrolled &&
+              onHero &&
+              "border border-white/22 bg-black/20 shadow-[0_8px_32px_rgba(0,0,0,0.12)] backdrop-blur-md",
+            !scrolled && !onHero && "border border-black/[0.07] bg-white/88 shadow-sm backdrop-blur-sm",
           )}
         >
           <Link
@@ -205,7 +208,6 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
             <CorpErgoLogo
               size="xs"
               withFrame={false}
-              eTone={onHero ? "light" : "dark"}
               className="h-10 w-10 shrink-0 object-cover object-top transition-transform duration-300 group-hover:scale-[1.03] sm:h-11 sm:w-11"
             />
             <div className="min-w-0 leading-none">
@@ -275,7 +277,7 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:hidden mt-2 landing-nav__shell landing-nav__shell--light rounded-2xl p-1.5"
+            className="lg:hidden mt-2 rounded-2xl border border-black/[0.08] bg-white/95 p-1.5 shadow-[0_8px_32px_rgba(15,23,42,0.08)] backdrop-blur-md"
           >
             {items.map(([label, href]) => (
               <a

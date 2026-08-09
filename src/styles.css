@@ -970,41 +970,9 @@
   font-weight: 600 !important;
 }
 
-/* Landing nav — glassmorphic shell + readable link hovers */
+/* Landing nav — outer shell + readable link hovers */
 .landing-nav__shell {
   isolation: isolate;
-  border: 1px solid transparent;
-  backdrop-filter: blur(20px) saturate(1.45);
-  -webkit-backdrop-filter: blur(20px) saturate(1.45);
-  box-shadow:
-    0 8px 32px rgba(15, 23, 42, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-
-.landing-nav__shell::before {
-  content: "";
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.06) 100%);
-}
-
-.landing-nav__shell--light {
-  border-color: rgba(255, 255, 255, 0.65);
-  background: rgba(255, 255, 255, 0.62);
-}
-
-.landing-nav__shell--hero {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(0, 0, 0, 0.22);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
-}
-
-.landing-nav__shell--hero::before {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 100%);
 }
 
 .landing-nav .landing-nav__link {

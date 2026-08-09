@@ -19,65 +19,27 @@ const padClasses = {
   xl: "p-3.5 sm:p-4",
 } as const;
 
-/** Light = white E on dark backgrounds; dark = black E on light backgrounds. */
-export type CorpErgoLogoETone = "light" | "dark";
-
 type CorpErgoLogoProps = {
   size?: keyof typeof sizeClasses;
   className?: string;
   frameClassName?: string;
   withFrame?: boolean;
-  /** When set, the letter E adapts for contrast against the page background. */
-  eTone?: CorpErgoLogoETone;
 };
-
-function LogoImage({
-  size,
-  className,
-  eTone,
-}: {
-  size: keyof typeof sizeClasses;
-  className?: string;
-  eTone?: CorpErgoLogoETone;
-}) {
-  const usesCover = className?.includes("object-cover");
-  const fitClass = usesCover ? "object-cover object-top" : "object-contain";
-  const imageClass = cn(sizeClasses[size], "w-auto max-w-none", fitClass, className);
-
-  if (!eTone) {
-    return <img src={logoImg} alt="CorpErgo" className={imageClass} decoding="async" />;
-  }
-
-  return (
-    <span className="relative inline-flex shrink-0 items-center justify-center">
-      <img src={logoImg} alt="CorpErgo" className={imageClass} decoding="async" />
-      <img
-        src={logoImg}
-        alt=""
-        aria-hidden
-        className={cn(
-          "pointer-events-none absolute inset-0 h-full w-full max-w-none transition-opacity duration-300",
-          fitClass,
-          eTone === "light" ? "opacity-100 mix-blend-lighten" : "opacity-0",
-        )}
-        style={{
-          filter: "brightness(0) invert(1)",
-          clipPath: "inset(4% 0 4% 34%)",
-        }}
-        decoding="async"
-      />
-    </span>
-  );
-}
 
 export function CorpErgoLogo({
   size = "lg",
   className,
   frameClassName,
   withFrame = true,
-  eTone,
 }: CorpErgoLogoProps) {
-  const image = <LogoImage size={size} className={className} eTone={eTone} />;
+  const image = (
+    <img
+      src={logoImg}
+      alt="CorpErgo"
+      className={cn(sizeClasses[size], "w-auto max-w-none object-contain", className)}
+      decoding="async"
+    />
+  );
 
   if (!withFrame) return image;
 
