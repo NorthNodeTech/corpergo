@@ -57,6 +57,7 @@ import { cn } from "@/lib/core/utils";
 import {
   FACEBOOK_PROFILE,
   INSTAGRAM_PROFILE,
+  YOUTUBE_PROFILE,
   SUPPORT_EMAIL,
   SUPPORT_PHONE,
   SUPPORT_PHONE_DISPLAY,
@@ -1550,9 +1551,11 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
                 <FacebookIcon className="h-4 w-4" />
               </a>
               <a
-                href="#videos"
+                href={YOUTUBE_PROFILE}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="grid h-9 w-9 place-items-center rounded-full bg-white ring-1 ring-black/[0.08] transition hover:ring-[var(--saffron)]/30"
-                aria-label="CorpErgo video stories"
+                aria-label="CorpErgo on YouTube"
               >
                 <YouTubeIcon className="h-4 w-4" />
               </a>

@@ -16,6 +16,7 @@ export const SUPPORT_PHONE_DISPLAY = "+91 91485 36394";
 export const SUPPORT_EMAIL = "care@corpergo.in";
 export const FACEBOOK_PROFILE = "https://www.facebook.com/corporate.ergonomcs13/";
 export const INSTAGRAM_PROFILE = "https://www.instagram.com/corpergophysiorehab.in/";
+export const YOUTUBE_PROFILE = "https://www.youtube.com/@corpegro";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 export const DEFAULT_OG_IMAGE_ALT =
   "CorpErgo Physiotherapy and Rehabilitation clinics in Bengaluru";
@@ -364,6 +365,7 @@ export function homepageStructuredData(): MetaDescriptor[] {
             sameAs: [
               INSTAGRAM_PROFILE,
               FACEBOOK_PROFILE,
+              YOUTUBE_PROFILE,
               "https://www.practo.com/bangalore/clinic/corpergo-physiotherapy-occupational-health-centre-channasandra-1",
               "https://kivihealth.com/clinic/corpergo-physiotherapy-%26-occupational-health-centre",
             ],
