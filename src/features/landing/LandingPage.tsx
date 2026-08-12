@@ -1542,22 +1542,24 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
                 Instagram
               </a>
               <a
-                href={FACEBOOK_PROFILE}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="grid h-9 w-9 place-items-center rounded-full bg-white ring-1 ring-black/[0.08] transition hover:ring-[var(--saffron)]/30"
-                aria-label="CorpErgo on Facebook"
-              >
-                <FacebookIcon className="h-4 w-4" />
-              </a>
-              <a
                 href={YOUTUBE_PROFILE}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="grid h-9 w-9 place-items-center rounded-full bg-white ring-1 ring-black/[0.08] transition hover:ring-[var(--saffron)]/30"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-[var(--ink)] ring-1 ring-black/[0.08] transition hover:ring-[var(--saffron)]/40"
                 aria-label="CorpErgo on YouTube"
               >
                 <YouTubeIcon className="h-4 w-4" />
+                YouTube
+              </a>
+              <a
+                href={FACEBOOK_PROFILE}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-[var(--ink)] ring-1 ring-black/[0.08] transition hover:ring-[var(--saffron)]/40"
+                aria-label="CorpErgo on Facebook"
+              >
+                <FacebookIcon className="h-4 w-4" />
+                Facebook
               </a>
             </div>
           </div>
