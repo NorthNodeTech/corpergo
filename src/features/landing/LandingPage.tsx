@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, useMotionValue, animate, useInView } from "framer-motion";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Activity,
   Brain,
@@ -41,9 +42,6 @@ import pinkyImg from "@/assets/Pinkyce.webp";
 import reelClinicMoments from "@/assets/reels/reel-clinic-moments.webp";
 import reelHandsOnCare from "@/assets/reels/reel-hands-on-care.webp";
 import reelRecoveryMotion from "@/assets/reels/reel-recovery-motion.webp";
-import reelPatientJourney from "@/assets/reels/reel-patient-journey.webp";
-import reelTherapyInsights from "@/assets/reels/reel-therapy-insights.webp";
-import reelStrongerEveryday from "@/assets/reels/reel-stronger-everyday.webp";
 import treatmentOrthopaedic from "@/assets/treatments/treatment-orthopaedic.webp";
 import treatmentNeurological from "@/assets/treatments/treatment-neurological.webp";
 import treatmentSports from "@/assets/treatments/treatment-sports.webp";
@@ -726,58 +724,55 @@ function WhyChoose() {
 
 /* ------------------------------ VIDEO STORIES ------------------------------ */
 
-const INSTAGRAM_REELS = [
+function youtubeShortThumb(id: string) {
+  return `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+}
+
+const YOUTUBE_SHORTS = [
   {
-    id: "DaaqA0HxJ8o",
+    id: "L2Nk6DJNURk",
     title: "Clinic moments",
-    tag: "Reel",
-    thumb: reelClinicMoments,
-    url: "https://www.instagram.com/reel/DaaqA0HxJ8o/",
+    tag: "Short",
+    thumb: youtubeShortThumb("L2Nk6DJNURk"),
+    url: "https://www.youtube.com/shorts/L2Nk6DJNURk",
   },
   {
-    id: "DZnTwpaxLR4",
+    id: "f1hDPpE2k8I",
     title: "Recovery in motion",
-    tag: "Reel",
-    thumb: reelRecoveryMotion,
-    url: "https://www.instagram.com/reel/DZnTwpaxLR4/",
+    tag: "Short",
+    thumb: youtubeShortThumb("f1hDPpE2k8I"),
+    url: "https://www.youtube.com/shorts/f1hDPpE2k8I",
   },
   {
-    id: "DZEeWgSxZx7",
+    id: "G9hZH8TWEYk",
     title: "Patient journey",
-    tag: "Reel",
-    thumb: reelPatientJourney,
-    url: "https://www.instagram.com/reel/DZEeWgSxZx7/",
+    tag: "Short",
+    thumb: youtubeShortThumb("G9hZH8TWEYk"),
+    url: "https://www.youtube.com/shorts/G9hZH8TWEYk",
   },
   {
-    id: "DIdJ8eczP_i",
+    id: "UcRsMD_4Qp0",
     title: "Therapy insights",
-    tag: "Reel",
-    thumb: reelTherapyInsights,
-    url: "https://www.instagram.com/reel/DIdJ8eczP_i/",
+    tag: "Short",
+    thumb: youtubeShortThumb("UcRsMD_4Qp0"),
+    url: "https://www.youtube.com/shorts/UcRsMD_4Qp0",
   },
   {
-    id: "DGTB4tvSuLK",
+    id: "cAYmSS2fjFs",
     title: "Hands-on care",
-    tag: "Reel",
-    thumb: reelHandsOnCare,
-    url: "https://www.instagram.com/reel/DGTB4tvSuLK/",
-  },
-  {
-    id: "DRRGSVQEsyy",
-    title: "Stronger every day",
-    tag: "Reel",
-    thumb: reelStrongerEveryday,
-    url: "https://www.instagram.com/reel/DRRGSVQEsyy/",
+    tag: "Short",
+    thumb: youtubeShortThumb("cAYmSS2fjFs"),
+    url: "https://www.youtube.com/shorts/cAYmSS2fjFs",
   },
 ] as const;
 
 function VideoStories() {
-  const [activeReel, setActiveReel] = useState<(typeof INSTAGRAM_REELS)[number] | null>(null);
+  const [activeShort, setActiveShort] = useState<(typeof YOUTUBE_SHORTS)[number] | null>(null);
 
   useEffect(() => {
-    if (!activeReel) return;
+    if (!activeShort) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setActiveReel(null);
+      if (e.key === "Escape") setActiveShort(null);
     };
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -786,7 +781,7 @@ function VideoStories() {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [activeReel]);
+  }, [activeShort]);
 
   return (
     <section
@@ -811,31 +806,31 @@ function VideoStories() {
             </p>
           </div>
           <a
-            href={INSTAGRAM_PROFILE}
+            href={YOUTUBE_PROFILE}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex self-start sm:self-auto items-center gap-1.5 text-sm font-semibold text-[var(--ink)]/80 hover:text-[var(--ink)]"
           >
-            <InstagramIcon className="h-4 w-4" /> Follow us
+            <YouTubeIcon className="h-4 w-4" /> Follow us
           </a>
         </div>
 
         <div className="scrollbar-hide -mr-4 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-pl-0 scroll-pr-4 pb-4 pr-4 sm:-mr-6 sm:scroll-pr-6 sm:pr-6">
-          {INSTAGRAM_REELS.map((reel, i) => (
+          {YOUTUBE_SHORTS.map((short, i) => (
             <motion.button
-              key={reel.id}
+              key={short.id}
               type="button"
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
               whileHover={{ y: -6 }}
-              onClick={() => setActiveReel(reel)}
-              aria-label={`Play ${reel.title}`}
+              onClick={() => setActiveShort(short)}
+              aria-label={`Play ${short.title}`}
               className="group relative aspect-[3/4] w-[280px] shrink-0 cursor-pointer snap-start overflow-hidden rounded-3xl bg-zinc-800 text-left shadow-lg sm:w-[340px]"
             >
               <img
-                src={reel.thumb}
+                src={short.thumb}
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -854,49 +849,54 @@ function VideoStories() {
 
               <div className="absolute inset-x-0 bottom-0 p-6">
                 <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-white/75">
-                  <InstagramIcon className="h-3.5 w-3.5" /> {reel.tag}
+                  <YouTubeIcon className="h-3.5 w-3.5" /> {short.tag}
                 </div>
-                <h3 className="mt-1 type-h3 font-bold tracking-tight text-white">{reel.title}</h3>
+                <h3 className="mt-1 type-h3 font-bold tracking-tight text-white">{short.title}</h3>
               </div>
             </motion.button>
           ))}
         </div>
       </div>
 
-      {activeReel ? (
-        <div
-          className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-8"
-          role="dialog"
-          aria-modal="true"
-          aria-label={activeReel.title}
-        >
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
-            aria-label="Close video"
-            onClick={() => setActiveReel(null)}
-          />
-          <div className="relative z-10 aspect-[9/16] max-h-[min(88vh,760px)] w-full max-w-[420px] overflow-hidden rounded-3xl bg-black shadow-2xl ring-1 ring-white/10">
-            <button
-              type="button"
-              onClick={() => setActiveReel(null)}
-              className="absolute top-3 right-3 z-20 grid h-10 w-10 place-items-center rounded-full bg-black/55 text-white transition-colors hover:bg-black/75"
-              aria-label="Close"
+      {activeShort
+        ? createPortal(
+            <div
+              className="fixed inset-0 z-[80] flex items-center justify-center p-4 pt-14 sm:p-6 sm:pt-6"
+              role="dialog"
+              aria-modal="true"
+              aria-label={activeShort.title}
             >
-              <X className="h-5 w-5" />
-            </button>
-            <iframe
-              key={activeReel.id}
-              title={activeReel.title}
-              src={`https://www.instagram.com/reel/${activeReel.id}/embed`}
-              className="h-full w-full border-0"
-              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-              allowFullScreen
-              loading="lazy"
-            />
-          </div>
-        </div>
-      ) : null}
+              <button
+                type="button"
+                className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+                aria-label="Close video"
+                onClick={() => setActiveShort(null)}
+              />
+              <div className="relative z-10 w-[min(92vw,420px)]">
+                <button
+                  type="button"
+                  onClick={() => setActiveShort(null)}
+                  className="absolute -top-12 right-0 z-30 grid h-10 w-10 place-items-center rounded-full bg-white/15 text-white ring-1 ring-white/25 backdrop-blur-sm transition-colors hover:bg-white/25"
+                  aria-label="Close"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <div className="aspect-[9/16] max-h-[min(88dvh,760px)] w-full overflow-hidden rounded-3xl bg-black shadow-2xl ring-1 ring-white/10">
+                  <iframe
+                    key={activeShort.id}
+                    title={activeShort.title}
+                    src={`https://www.youtube.com/embed/${activeShort.id}?autoplay=1&rel=0&modestbranding=1`}
+                    className="h-full w-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </section>
   );
 }

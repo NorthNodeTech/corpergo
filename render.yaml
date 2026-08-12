@@ -29,7 +29,7 @@ services:
         value: "camera=(self), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self)"
       - path: /*
         name: Content-Security-Policy-Report-Only
-        value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'self' https://www.instagram.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms; connect-src 'self' https://gnmahvpujdthvthsypaj.supabase.co wss://gnmahvpujdthvthsypaj.supabase.co https://www.google-analytics.com https://*.clarity.ms; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+        value: "default-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'self' https://www.instagram.com https://www.youtube.com https://www.youtube-nocookie.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://www.clarity.ms; connect-src 'self' https://gnmahvpujdthvthsypaj.supabase.co wss://gnmahvpujdthvthsypaj.supabase.co https://www.google-analytics.com https://*.clarity.ms; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
       - path: /*
         name: Feature-Policy
         value: "camera 'self'"
