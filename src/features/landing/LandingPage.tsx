@@ -211,7 +211,7 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
           <Link
             to="/"
             className="group flex min-w-0 shrink items-center gap-2 sm:gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--saffron)]/40 focus-visible:ring-offset-2 rounded-xl"
-            aria-label="CorpErgo Physiotherapy and Rehabilitation â€” Home"
+            aria-label="CorpErgo Physiotherapy and Rehabilitation — Home"
           >
             <CorpErgoLogo
               size="xs"
@@ -385,7 +385,7 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
 
             <motion.p variants={fadeItem} className="hero-fit__body text-white/88 drop-shadow-sm">
               Professional physiotherapy for pain relief, mobility restoration, neurological
-              rehabilitation, sports injuries and long-term wellness â€” delivered by certified
+              rehabilitation, sports injuries and long-term wellness — delivered by certified
               physiotherapists.
             </motion.p>
 
@@ -524,7 +524,7 @@ function About() {
                 {
                   n: "02",
                   t: "Our Vision",
-                  d: "A city that moves without pain â€” at any age, at any stage.",
+                  d: "A city that moves without pain — at any age, at any stage.",
                 },
               ].map((x) => (
                 <div
@@ -634,7 +634,7 @@ function Treatments() {
         </motion.div>
         {/*
           Mobile: narrower card so the next one peeks in before any swipe.
-          No opacity:0 on enter â€” peeked cards must stay visible.
+          No opacity:0 on enter — peeked cards must stay visible.
         */}
         <div className="treatments-scroll mt-8 flex gap-4 overflow-x-auto overscroll-x-contain scroll-pr-4 pb-4 pr-4 snap-x snap-mandatory sm:-mr-6 sm:gap-5 sm:scroll-pr-6 sm:pr-6 md:mr-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:pb-0 md:pr-0 md:snap-none lg:grid-cols-4 lg:gap-6">
           {TREATMENTS.map(({ icon: Icon, title, desc, image }, i) => (
@@ -685,7 +685,7 @@ function WhyChoose() {
       d: "Licensed experts with specialization in orthopaedic, neuro & sports.",
     },
     { t: "Modern Equipment", d: "Latest rehabilitation tools for faster, safer recovery." },
-    { t: "Individual Care", d: "One-on-one sessions â€” never a shared or hurried appointment." },
+    { t: "Individual Care", d: "One-on-one sessions — never a shared or hurried appointment." },
     { t: "5 Bengaluru Clinics", d: "Chansandra, Balagere, Muthsandra, Kannamangala & Manduru." },
     { t: "Affordable Care", d: "Transparent pricing and flexible session packages." },
   ];
@@ -801,7 +801,7 @@ function VideoStories() {
               Real recoveries. Real people.
             </h2>
             <p className="type-lead text-[var(--ink-soft)]">
-              Clinic stories from CorpErgo â€” treatment moments, rehab progress, and care you can
+              Clinic stories from CorpErgo — treatment moments, rehab progress, and care you can
               trust.
             </p>
           </div>
@@ -906,42 +906,42 @@ function VideoStories() {
 const TESTIMONIALS = [
   {
     name: "Anita R.",
-    context: "Post-surgery knee rehab Â· Balagere",
+    context: "Post-surgery knee rehab · Balagere",
     rating: 5,
     quote:
       "Within six weeks I went from barely bending my knee to climbing stairs without pain. The assessment was thorough and every session felt purposeful.",
   },
   {
     name: "Rahul K.",
-    context: "Sports injury Â· Chansandra",
+    context: "Sports injury · Chansandra",
     rating: 5,
     quote:
       "CorpErgo helped me return to cricket after a shoulder injury. Clear progress tracking, honest guidance, and therapists who actually listen.",
   },
   {
     name: "Meera S.",
-    context: "Neck & posture care Â· Whitefield",
+    context: "Neck & posture care · Whitefield",
     rating: 5,
     quote:
       "Years of desk work had left me with chronic neck stiffness. The manual therapy and home plan made a visible difference in the first month.",
   },
   {
     name: "Joseph T.",
-    context: "Stroke rehabilitation Â· Kannamangala",
+    context: "Stroke rehabilitation · Kannamangala",
     rating: 5,
     quote:
       "The neurological rehab program restored confidence in daily movement. Professional, patient, and deeply knowledgeable at every step.",
   },
   {
     name: "Priya M.",
-    context: "Women's health Â· Manduru",
+    context: "Women's health · Manduru",
     rating: 5,
     quote:
       "I felt comfortable from the first visit. The team explained everything clearly and tailored care to my post-natal recovery goals.",
   },
   {
     name: "Vikram D.",
-    context: "Back pain Â· Muthsandra",
+    context: "Back pain · Muthsandra",
     rating: 4,
     quote:
       "Structured treatment, modern equipment, and no rushed appointments. My lower back pain is manageable again after years of ignoring it.",
@@ -981,7 +981,7 @@ function Testimonials() {
           <div className="mt-5 inline-flex items-center gap-3 rounded-full bg-[var(--saffron-light)] px-4 py-2 ring-1 ring-[var(--saffron)]/20">
             <StarRating value={5} />
             <span className="text-sm font-bold text-[var(--ink)]">4.9 average rating</span>
-            <span className="text-xs font-semibold text-[var(--ink-soft)]">Â· 500+ reviews</span>
+            <span className="text-xs font-semibold text-[var(--ink-soft)]">· 500+ reviews</span>
           </div>
         </div>
 
@@ -1001,7 +1001,7 @@ function Testimonials() {
               />
               <StarRating value={item.rating} />
               <blockquote className="type-body-sm mt-4 flex-1 text-[var(--ink)]">
-                â€œ{item.quote}â€
+                &ldquo;{item.quote}&rdquo;
               </blockquote>
               <div className="mt-6 flex items-center gap-3 border-t border-black/[0.05] pt-5">
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--ink)] text-xs font-bold text-white">
@@ -1032,35 +1032,35 @@ const CLINICS = [
   {
     name: "Chansandra",
     addr: "Chansandra Main Rd, Bengaluru",
-    hours: "Monâ€“Sat Â· 8amâ€“8pm",
+    hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/w9o4N65QwY1NGkgc8",
     photo: CLINIC_PHOTOS[0],
   },
   {
     name: "Balagere",
     addr: "Balagere Rd, Varthur, Bengaluru",
-    hours: "Monâ€“Sat Â· 8amâ€“8pm",
+    hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/gP8neSidun1DtXHt7",
     photo: CLINIC_PHOTOS[1],
   },
   {
     name: "Muthsandra",
     addr: "Muthsandra, Whitefield, Bengaluru",
-    hours: "Monâ€“Sat Â· 8amâ€“8pm",
+    hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/N8ja8jsPgtCZkdky5",
     photo: CLINIC_PHOTOS[2],
   },
   {
     name: "Kannamangala",
     addr: "Kannamangala, Bengaluru East",
-    hours: "Monâ€“Sat Â· 8amâ€“8pm",
+    hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/AoB5Cftbm3hMzW1HA",
     photo: CLINIC_PHOTOS[3],
   },
   {
     name: "Manduru",
     addr: "Manduru, Bengaluru",
-    hours: "Monâ€“Sat Â· 8amâ€“8pm",
+    hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/HsFRRdwtYAqLZmoC8",
     photo: CLINIC_PHOTOS[4],
   },
@@ -1091,8 +1091,8 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
             Five clinics. One standard of care.
           </h2>
           <p className="type-lead mt-3 max-w-2xl text-[var(--ink-soft)]">
-            Same evidence-based physiotherapy at every CorpErgo location across Bengaluru â€” walk
-            in Monâ€“Sat, 8amâ€“8pm.
+            Same evidence-based physiotherapy at every CorpErgo location across Bengaluru — walk
+            in Mon-Sat, 8am-8pm.
           </p>
         </div>
 
@@ -1265,9 +1265,9 @@ function Founder() {
                 aria-hidden
               />
               <blockquote className="founder-fit__quote-text relative font-medium text-[var(--ink)] text-balance pl-8">
-                â€œPain is only the beginning of the story. At CorpErgo, we restore movement,
+                &ldquo;Pain is only the beginning of the story. At CorpErgo, we restore movement,
                 rebuild confidence, and walk with every patient until they feel strong in their own
-                body again.â€
+                body again.&rdquo;
               </blockquote>
             </div>
 
@@ -1285,7 +1285,7 @@ function Founder() {
               </div>
               <div className="founder-fit__divider hidden sm:block bg-[var(--ink)]/10" />
               <p className="founder-fit__clinics text-[var(--ink-soft)] max-w-xs">
-                Owner of CorpErgoâ€™s five Bengaluru clinics â€” Chansandra, Balagere, Muthsandra,
+                Owner of CorpErgo&apos;s five Bengaluru clinics — Chansandra, Balagere, Muthsandra,
                 Kannamangala &amp; Manduru.
               </p>
             </div>
@@ -1302,22 +1302,22 @@ const FAQ_ITEMS = [
   {
     question: "Do I need a doctor's referral to book?",
     answer:
-      "No referral is required for your first assessment. If you have reports, prescriptions, or imaging from your doctor, bring them along â€” they help us plan care faster.",
+      "No referral is required for your first assessment. If you have reports, prescriptions, or imaging from your doctor, bring them along — they help us plan care faster.",
   },
   {
     question: "What happens at the first visit?",
     answer:
-      "A certified physiotherapist will review your history, assess movement and pain, explain findings in plain language, and outline a personalised treatment plan with clear next steps.",
+      "A certified physiotherapist will review your history, assess movement and pain, explain findings in plain language, and outline a personalized treatment plan with clear next steps.",
   },
   {
     question: "How long is a typical session?",
     answer:
-      "Most sessions run 45â€“60 minutes depending on your condition and treatment plan. Follow-up visits may be shorter once your programme is established.",
+      "Most sessions run 45-60 minutes depending on your condition and treatment plan. Follow-up visits may be shorter once your program is established.",
   },
   {
     question: "Which CorpErgo clinic should I choose?",
     answer:
-      "Pick the location closest to you â€” Chansandra, Balagere, Muthsandra, Kannamangala, or Manduru. Every clinic follows the same evidence-based standards of care.",
+      "Pick the location closest to you — Chansandra, Balagere, Muthsandra, Kannamangala, or Manduru. Every clinic follows the same evidence-based standards of care.",
   },
   {
     question: "Where are CorpErgo physiotherapy clinics near me in Bengaluru?",
@@ -1337,7 +1337,7 @@ const FAQ_ITEMS = [
   {
     question: "Do you treat sports injuries and post-surgery rehab?",
     answer:
-      "Yes. We offer sports injury rehabilitation, orthopaedic recovery, neurological rehab, women's health, paediatric care, and structured post-operative programmes.",
+      "Yes. We offer sports injury rehabilitation, orthopedic recovery, neurological rehab, women's health, pediatric care, and structured post-operative programs.",
   },
   {
     question: "What should I wear and bring?",
@@ -1365,7 +1365,7 @@ function FAQ({ onBookClick }: { onBookClick: () => void }) {
               Common questions, answered clearly.
             </h2>
             <p className="type-lead text-[var(--ink-soft)]">
-              Everything you need to know before your first visit â€” booking, sessions, clinics,
+              Everything you need to know before your first visit — booking, sessions, clinics,
               and what to expect from CorpErgo care.
             </p>
             <button
@@ -1480,7 +1480,7 @@ function CTA({ onBookClick }: { onBookClick: () => void }) {
                 variants={fadeItem}
                 className="type-lead mt-4 text-white/90 font-medium max-w-xl"
               >
-                Book a first assessment with a certified CorpErgo physiotherapist â€” at the clinic
+                Book a first assessment with a certified CorpErgo physiotherapist — at the clinic
                 closest to you.
               </motion.p>
               <motion.div variants={fadeItem} className="mt-8 flex flex-wrap gap-3">
@@ -1527,7 +1527,7 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
               </div>
             </div>
             <p className="mt-4 text-sm leading-relaxed max-w-xs">
-              Evidence-based physiotherapy across five Bengaluru clinics â€” pain relief, mobility,
+              Evidence-based physiotherapy across five Bengaluru clinics — pain relief, mobility,
               and long-term wellness.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -1642,8 +1642,8 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
                 </a>
               </li>
               <li className="flex items-start gap-2">
-                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[var(--saffron)]" /> Monâ€“Sat Â·
-                8amâ€“8pm
+                <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[var(--saffron)]" /> Mon-Sat ·
+                8am-8pm
               </li>
             </ul>
           </div>
