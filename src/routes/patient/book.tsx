@@ -80,23 +80,18 @@ function BookAppointmentPage() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      await ensureSlotsGenerated();
-      const [c, cat] = await Promise.all([fetchClinics(), fetchCategories()]);
+      const [c, cat, patientRes, profileRes] = await Promise.all([
+        fetchClinics(),
+        fetchCategories(),
+        fetchMyPatient(),
+        fetchMyProfile(),
+        ensureSlotsGenerated(),
+      ]);
       if (cancelled) return;
       if (c.error) setLoadError(c.error);
       setClinics(c.data || []);
       setCategories(cat.data || []);
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    void Promise.all([fetchMyPatient(), fetchMyProfile()]).then(([patientRes, profileRes]) => {
-      if (cancelled) return;
       const patient = patientRes.data?.[0];
       if (patient?.gender) {
         setGender(patient.gender as DirectBookingGender);
@@ -107,7 +102,8 @@ function BookAppointmentPage() {
       if (profileRes.data?.phone) {
         setPhone(profileRes.data.phone);
       }
-    });
+    }
+    void load();
     return () => {
       cancelled = true;
     };

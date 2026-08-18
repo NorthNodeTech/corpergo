@@ -8,10 +8,7 @@ import { PortalPageHeader } from "@/shared/components/layout/PortalPageHeader";
 import { ShowMoreButton, useShowMore } from "@/shared/components/layout/ShowMoreList";
 import { StatusBadge } from "@/shared/components/layout/StatusBadge";
 import { LoadingState } from "@/shared/components/ui/loading-spinner";
-import {
-  fetchSavedAssessmentAppointmentIds,
-  isVisitDocumented,
-} from "@/lib/physio/assessment-data";
+import { isVisitDocumented } from "@/lib/physio/assessment-data";
 import { formatTimeLabel } from "@/lib/patient/clinic-data";
 import {
   fetchTodayQueue,
@@ -42,8 +39,10 @@ function TodayQueuePage() {
     if (error) toast.error(error);
     const queue = data || [];
     setItems(queue);
-    const saved = await fetchSavedAssessmentAppointmentIds(queue.map((item) => item.id));
-    setAssessedIds(new Set(saved.data || []));
+    const documentedIds = queue
+      .filter((item) => Boolean(item.assessments && item.assessments.length > 0))
+      .map((item) => item.id);
+    setAssessedIds(new Set(documentedIds));
     setLoading(false);
   }
 

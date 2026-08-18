@@ -539,17 +539,22 @@ export function PortalShell({
   );
 
   return (
-    <div className="portal-shell relative min-h-screen lg:h-screen lg:max-h-screen lg:overflow-hidden">
+    <div
+      className={cn(
+        "portal-shell relative min-h-screen w-full min-w-0",
+        !useHeaderNav && "lg:h-screen lg:max-h-screen lg:overflow-hidden",
+      )}
+    >
       <div className="portal-shell__glow" aria-hidden />
 
       <div
         className={cn(
-          "relative min-h-screen lg:h-screen lg:max-h-screen min-w-0 w-full max-w-full",
+          "relative min-h-screen min-w-0 w-full max-w-full",
           useHeaderNav
-            ? "lg:grid lg:grid-cols-1"
+            ? "flex flex-col"
             : hasFooter
-              ? `lg:grid ${showSidebar ? "lg:grid-cols-[240px_1fr]" : "lg:grid-cols-1"}`
-              : `lg:grid ${showSidebar ? "lg:grid-cols-[260px_1fr]" : "lg:grid-cols-1"}`,
+              ? `lg:grid ${showSidebar ? "lg:grid-cols-[240px_1fr]" : "lg:grid-cols-1"} lg:h-screen lg:max-h-screen`
+              : `lg:grid ${showSidebar ? "lg:grid-cols-[260px_1fr]" : "lg:grid-cols-1"} lg:h-screen lg:max-h-screen`,
         )}
       >
         {/* Desktop sidebar — hidden when using header nav (admin) */}
@@ -591,7 +596,8 @@ export function PortalShell({
 
         <div
           className={cn(
-            "relative z-[1] flex min-h-screen lg:h-screen lg:max-h-screen min-w-0 w-full max-w-full flex-col lg:overflow-y-auto",
+            "relative z-[1] flex min-h-screen min-w-0 w-full max-w-full flex-col",
+            !useHeaderNav && "lg:h-screen lg:max-h-screen lg:overflow-y-auto",
             !useHeaderNav && showSidebar && "lg:col-start-2",
             !useHeaderNav && !showSidebar && "lg:col-start-1",
           )}

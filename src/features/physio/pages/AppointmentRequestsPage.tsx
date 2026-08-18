@@ -41,6 +41,7 @@ import {
   fetchMyPhysioId,
   rejectAppointment,
   rescheduleAppointment,
+  resolveStaffClinicId,
   type PhysioAppointment,
 } from "@/lib/physio/physio-data";
 import { cn, formatClinicName } from "@/lib/core/utils";
@@ -108,21 +109,22 @@ export function AppointmentRequestsPage() {
     async (activeTab: InboxTab = tab, options?: { silent?: boolean }) => {
       if (!options?.silent) setLoading(true);
 
-      const [pendingRes, cancelledRes, rejectedRes, directRes, me, profile, categoryRes] =
-        await Promise.all([
-          fetchClinicAppointments("pending"),
-          fetchClinicAppointments("cancelled"),
-          fetchClinicAppointments("rejected"),
-          fetchDirectBookingRequests(),
-          fetchMyPhysioId(),
-          fetchMyProfile(),
-          fetchCategories(),
-        ]);
+      const [clinicId, me, profile, categoryRes, directRes] = await Promise.all([
+        resolveStaffClinicId(),
+        fetchMyPhysioId(),
+        fetchMyProfile(),
+        fetchCategories(),
+        fetchDirectBookingRequests(),
+      ]);
 
-      const pending = pendingRes.data || [];
-      const cancelled = cancelledRes.data || [];
-      const rejected = rejectedRes.data || [];
-      const fetchedDirect = directRes.data || [];
+      const allRes = clinicId ? await fetchClinicAppointments(undefined, clinicId) : { data: [] };
+      const all = allRes.data || [];
+      const pending = all.filter((a) => a.status === "pending");
+      const cancelled = all.filter((a) => a.status === "cancelled");
+      const rejected = all.filter((a) => a.status === "rejected");
+      const fetchedDirect = (directRes.data || []).filter(
+        (req) => !clinicId || !req.clinic_id || req.clinic_id === clinicId,
+      );
       const fetchedCategories = categoryRes.data || [];
       const activeDirect = filterActiveDirectRequests(fetchedDirect);
 

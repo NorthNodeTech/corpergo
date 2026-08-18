@@ -160,9 +160,18 @@ export function getStoredSession(): AuthSession | null {
 }
 
 export function clearSession() {
+  invalidateProfileCache();
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(SESSION_KEY);
   window.localStorage.removeItem("corpergo.demo.appointments");
+}
+
+let myProfilePromise: Promise<{ data: UserProfile | null; error: string | null }> | null = null;
+let cachedProfileUserId: string | null = null;
+
+export function invalidateProfileCache() {
+  myProfilePromise = null;
+  cachedProfileUserId = null;
 }
 
 /** Authed REST call against PostgREST / Storage / etc. */
@@ -233,35 +242,45 @@ export async function supabasePublicRest<T>(
   return { data: JSON.parse(text) as T, error: null };
 }
 
-export async function fetchMyProfile(): Promise<{
+export async function fetchMyProfile(forceRefresh = false): Promise<{
   data: UserProfile | null;
   error: string | null;
 }> {
   const session = getStoredSession();
   if (!session?.user?.id) return { data: null, error: "Not signed in" };
 
-  const { data, error } = await supabaseRest<UserProfile[]>(
-    `profiles?id=eq.${session.user.id}&select=id,role,full_name,phone,email,clinic_id,avatar_url&limit=1`,
-  );
-
-  if (error || !data || data.length === 0) {
-    return {
-      data: null,
-      error: error || "Could not load your profile. Try signing in again.",
-    };
+  if (!forceRefresh && myProfilePromise && cachedProfileUserId === session.user.id) {
+    return myProfilePromise;
   }
 
-  const profile = data[0];
-  if (profile.role === "patient") {
-    profile.clinic_id = null;
-  } else if (!profile.clinic_id) {
-    const physio = await supabaseRest<{ clinic_id: string }[]>(
-      `physiotherapists?user_id=eq.${session.user.id}&select=clinic_id&limit=1`,
+  cachedProfileUserId = session.user.id;
+  myProfilePromise = (async () => {
+    const { data, error } = await supabaseRest<UserProfile[]>(
+      `profiles?id=eq.${session.user.id}&select=id,role,full_name,phone,email,clinic_id,avatar_url&limit=1`,
     );
-    profile.clinic_id = physio.data?.[0]?.clinic_id ?? null;
-  }
 
-  return { data: profile, error: null };
+    if (error || !data || data.length === 0) {
+      myProfilePromise = null;
+      return {
+        data: null,
+        error: error || "Could not load your profile. Try signing in again.",
+      };
+    }
+
+    const profile = data[0];
+    if (profile.role === "patient") {
+      profile.clinic_id = null;
+    } else if (!profile.clinic_id) {
+      const physio = await supabaseRest<{ clinic_id: string }[]>(
+        `physiotherapists?user_id=eq.${session.user.id}&select=clinic_id&limit=1`,
+      );
+      profile.clinic_id = physio.data?.[0]?.clinic_id ?? null;
+    }
+
+    return { data: profile, error: null };
+  })();
+
+  return myProfilePromise;
 }
 
 /** Where to send the user after login based on DB role. */

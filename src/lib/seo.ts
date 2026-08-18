@@ -21,7 +21,17 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 export const DEFAULT_OG_IMAGE_ALT =
   "CorpErgo Physiotherapy and Rehabilitation clinics in Bengaluru";
 
-export const CLINIC_LOCATIONS = [
+export type ClinicLocation = {
+  name: string;
+  shortName: string;
+  address: string;
+  locality: string;
+  region: string;
+  postalCode?: string;
+  mapUrl: string;
+};
+
+export const CLINIC_LOCATIONS: ClinicLocation[] = [
   {
     name: "CorpErgo Chansandra",
     shortName: "Chansandra",
@@ -64,7 +74,7 @@ export const CLINIC_LOCATIONS = [
     region: "Karnataka",
     mapUrl: "https://maps.app.goo.gl/HsFRRdwtYAqLZmoC8",
   },
-] as const;
+];
 
 export const SERVICES = [
   {
@@ -230,6 +240,7 @@ export function rootMeta(): MetaDescriptor[] {
     { name: "author", content: SITE_NAME },
     { name: "application-name", content: SITE_NAME },
     { name: "theme-color", content: "#ff9933" },
+    { name: "mobile-web-app-capable", content: "yes" },
     { name: "apple-mobile-web-app-title", content: SITE_NAME },
     { name: "apple-mobile-web-app-capable", content: "yes" },
     { name: "apple-mobile-web-app-status-bar-style", content: "default" },

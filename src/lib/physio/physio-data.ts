@@ -16,10 +16,11 @@ export type PhysioAppointment = Appointment & {
     medical_history?: string | null;
     profiles?: { full_name: string; phone: string | null } | null;
   } | null;
+  assessments?: { id: string }[] | null;
 };
 
 const SELECT =
-  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,visit_type,parent_appointment_id,rejection_reason,cancellation_reason,cancelled_at,reschedule_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone))";
+  "id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,visit_type,parent_appointment_id,rejection_reason,cancellation_reason,cancelled_at,reschedule_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone)),assessments(id)";
 
 export function ageFromDob(dob: string | null | undefined): number | null {
   if (!dob) return null;
@@ -53,25 +54,38 @@ export async function fetchMyPhysioId() {
   );
 }
 
-/** Resolve the clinic ID for the currently logged-in staff member. */
-export async function resolveStaffClinicId(): Promise<string | null> {
-  const { data: profile } = await fetchMyProfile();
-  if (!profile) return null;
+let staffClinicIdPromise: Promise<string | null> | null = null;
 
-  const isStaff =
-    profile.role === "physiotherapist" ||
-    profile.role === "clinic_manager" ||
-    profile.role === "receptionist";
-
-  if (!isStaff) return null;
-  if (profile.clinic_id) return profile.clinic_id;
-
-  const me = await fetchMyPhysioId();
-  return me.data?.[0]?.clinic_id ?? null;
+export function invalidateStaffClinicIdCache() {
+  staffClinicIdPromise = null;
 }
 
-export async function fetchClinicAppointments(status?: string) {
-  const clinicId = await resolveStaffClinicId();
+/** Resolve the clinic ID for the currently logged-in staff member. */
+export async function resolveStaffClinicId(forceRefresh = false): Promise<string | null> {
+  if (forceRefresh) staffClinicIdPromise = null;
+  if (staffClinicIdPromise) return staffClinicIdPromise;
+
+  staffClinicIdPromise = (async () => {
+    const { data: profile } = await fetchMyProfile();
+    if (!profile) return null;
+
+    const isStaff =
+      profile.role === "physiotherapist" ||
+      profile.role === "clinic_manager" ||
+      profile.role === "receptionist";
+
+    if (!isStaff) return null;
+    if (profile.clinic_id) return profile.clinic_id;
+
+    const me = await fetchMyPhysioId();
+    return me.data?.[0]?.clinic_id ?? null;
+  })();
+
+  return staffClinicIdPromise;
+}
+
+export async function fetchClinicAppointments(status?: string, presetClinicId?: string | null) {
+  const clinicId = presetClinicId !== undefined ? presetClinicId : await resolveStaffClinicId();
   if (!clinicId) {
     return { data: [] as PhysioAppointment[], error: null };
   }
@@ -92,10 +106,10 @@ export async function fetchClinicAppointments(status?: string) {
   return { data: list, error: res.error };
 }
 
-export async function fetchTodayQueue() {
+export async function fetchTodayQueue(presetClinicId?: string | null) {
   const today = new Date();
   const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const clinicId = await resolveStaffClinicId();
+  const clinicId = presetClinicId !== undefined ? presetClinicId : await resolveStaffClinicId();
   if (!clinicId) {
     return { data: [] as PhysioAppointment[], error: null };
   }

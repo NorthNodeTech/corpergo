@@ -136,9 +136,12 @@ export function matchesClinicId(
   return targetClinicId === appointmentClinicId;
 }
 
-export async function fetchMyAppointments() {
-  const pat = await fetchMyPatient();
-  const patientId = pat.data?.[0]?.id;
+export async function fetchMyAppointments(presetPatientId?: string) {
+  let patientId = presetPatientId;
+  if (!patientId) {
+    const pat = await fetchMyPatient();
+    patientId = pat.data?.[0]?.id;
+  }
   if (!patientId) {
     return { data: [], error: null };
   }

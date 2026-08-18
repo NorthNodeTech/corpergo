@@ -96,11 +96,13 @@ function PatientDashboardPage() {
     let cancelled = false;
     async function load() {
       setLoading(true);
-      const [profileRes, apptRes, patientRes] = await Promise.all([
+      const [profileRes, patientRes] = await Promise.all([
         fetchMyProfile(),
-        fetchMyAppointments(),
         fetchMyPatient(),
       ]);
+      if (cancelled) return;
+      const patientId = patientRes.data?.[0]?.id;
+      const apptRes = await fetchMyAppointments(patientId);
       if (cancelled) return;
       if (profileRes.data?.full_name) setName(profileRes.data.full_name.split(" ")[0]);
       if (apptRes.error) setError(apptRes.error);

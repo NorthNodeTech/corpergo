@@ -1,13 +1,15 @@
 import { fetchMyProfile } from "@/lib/auth";
-import { fetchAssessableAppointments, fetchSavedAssessmentAppointmentIds } from "@/lib/physio/assessment-data";
 import { formatClinicName } from "@/lib/core/utils";
-import { fetchClinics } from "@/lib/patient/clinic-data";
-import { fetchDirectBookingRequests, filterActiveDirectRequests, instantWalkInAppointments, type DirectBookingRequest } from "@/lib/booking/direct-booking-data";
+import { fetchClinics, matchesClinicId as matchesClinicIdPatient } from "@/lib/patient/clinic-data";
+import {
+  fetchDirectBookingRequests,
+  filterActiveDirectRequests,
+  instantWalkInAppointments,
+  type DirectBookingRequest,
+} from "@/lib/booking/direct-booking-data";
 import {
   ageFromPatient,
   fetchClinicAppointments,
-  fetchMyPhysioId,
-  fetchTodayQueue,
   resolveStaffClinicId,
   type PhysioAppointment,
 } from "@/lib/physio/physio-data";
@@ -200,51 +202,90 @@ export function visitTimeLabel(a: PhysioAppointment) {
 
 export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
   const today = todayIso();
-  const [
-    profileRes,
-    physioRes,
-    queueRes,
-    pendingRes,
-    directRes,
-    cancelledRes,
-    assessRes,
-    allRes,
-    clinicId,
-  ] = await Promise.all([
+  const [profileRes, clinicId] = await Promise.all([
     fetchMyProfile(),
-    fetchMyPhysioId(),
-    fetchTodayQueue(),
-    fetchClinicAppointments("pending"),
-    fetchDirectBookingRequests(),
-    fetchClinicAppointments("cancelled"),
-    fetchAssessableAppointments(),
-    fetchClinicAppointments(),
     resolveStaffClinicId(),
   ]);
 
-  const queue = queueRes.data || [];
-  const allDirect = directRes.data || [];
-  const pending = pendingRes.data || [];
-  const cancelled = cancelledRes.data || [];
-  const assessable = assessRes.data || [];
+  if (!clinicId) {
+    return {
+      profileName: profileRes.data?.full_name?.trim() || "Doctor",
+      clinicName: "CorpErgo Clinic",
+      todayQueue: [],
+      pending: [],
+      directRequests: [],
+      directRequestsActive: [],
+      instantWalkIns: [],
+      cancelled: [],
+      accepted: [],
+      completedToday: [],
+      assessable: [],
+      assessedAppointmentIds: [],
+      directAppointmentIds: [],
+      instantAppointmentIds: [],
+      inProgressQueue: [],
+      current: null,
+      insights: [],
+      categories: [],
+      counts: { today: 0, waiting: 0, pending: 0, direct: 0, followUps: 0, completed: 0 },
+    };
+  }
+
+  // Fetch all appointments for this clinic and direct booking requests in parallel
+  const [allRes, directRes] = await Promise.all([
+    fetchClinicAppointments(undefined, clinicId),
+    fetchDirectBookingRequests(),
+  ]);
+
   const all = allRes.data || [];
+  const allDirect = (directRes.data || []).filter(
+    (request) => !request.clinic_id || matchesClinicIdPatient(clinicId, request.clinic_id),
+  );
+
+  const assessedAppointmentIds = all
+    .filter((a) => Boolean(a.assessments && a.assessments.length > 0))
+    .map((a) => a.id);
+  const assessedIds = new Set(assessedAppointmentIds);
+
+  const pending = all.filter((a) => a.status === "pending");
+  const cancelled = all.filter((a) => a.status === "cancelled");
+  const queue = all
+    .filter((a) => {
+      const visitDate = a.scheduled_date || a.preferred_date;
+      return (
+        visitDate === today &&
+        (a.status === "accepted" || a.status === "checked_in" || a.status === "completed")
+      );
+    })
+    .sort((a, b) => {
+      const timeA = (a.scheduled_time || a.preferred_time || "").slice(0, 5);
+      const timeB = (b.scheduled_time || b.preferred_time || "").slice(0, 5);
+      return timeA.localeCompare(timeB);
+    });
+
+  const assessable = all.filter(
+    (a) =>
+      (a.status === "checked_in" || a.status === "completed" || a.status === "accepted") &&
+      !assessedIds.has(a.id),
+  );
+
   const todayAll = all.filter((a) => (a.scheduled_date || a.preferred_date) === today);
 
   const directApptIds = allDirect
     .map((request) => request.appointment_id)
     .filter((id): id is string => Boolean(id));
-  const allAppointmentIds = all.map((a) => a.id);
-  const savedAssessments = await fetchSavedAssessmentAppointmentIds(allAppointmentIds);
-  const assessedAppointmentIds = savedAssessments.data || [];
-  const assessedIds = new Set(assessedAppointmentIds);
 
   const directRequests = filterActiveDirectRequests(allDirect);
   const directRequestsActive = directRequests;
   const instantWalkIns = instantWalkInAppointments(allDirect, all, assessedIds);
-  const directAppointmentIds = [...new Set(directApptIds.filter((id) => {
-    const req = allDirect.find((r) => r.appointment_id === id);
-    return (req?.booking_source || "web") === "web";
-  }))];
+  const directAppointmentIds = [
+    ...new Set(
+      directApptIds.filter((id) => {
+        const req = allDirect.find((r) => r.appointment_id === id);
+        return (req?.booking_source || "web") === "web";
+      }),
+    ),
+  ];
   const instantAppointmentIds = [
     ...new Set(
       allDirect
@@ -256,10 +297,8 @@ export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
   const inProgressQueue = queue.filter((a) => !assessedIds.has(a.id) && a.status !== "completed");
 
   let clinicName =
-    queue[0]?.clinics?.name ||
-    pending[0]?.clinics?.name ||
-    directRequests[0]?.clinics?.name ||
     all[0]?.clinics?.name ||
+    directRequests[0]?.clinics?.name ||
     "CorpErgo Clinic";
 
   if (clinicName === "CorpErgo Clinic" && clinicId) {
@@ -282,7 +321,6 @@ export async function fetchPhysioWorkspace(): Promise<PhysioWorkspaceBundle> {
   const accepted = queue.filter((a) => a.status === "accepted");
   const waiting = queue.filter((a) => a.status === "checked_in");
 
-  // Follow-ups heuristic: accepted visits that aren't checked in yet + assessable with next visit cues
   const followUps = accepted.length;
 
   return {

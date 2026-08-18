@@ -33,10 +33,10 @@ export function ClinicSlotManager({ clinicId, clinicName = "Clinic" }: ClinicSlo
 
   async function reload() {
     setLoading(true);
-    await ensureSlotsGenerated();
     const [slotsRes, blockedRes] = await Promise.all([
       fetchSlotsForClinicDate(clinicId, selectedDate),
       fetchBlockedTimes(clinicId, selectedDate),
+      ensureSlotsGenerated(),
     ]);
     setSlots(uniqueSlotTimes(slotsRes.data || []));
     setBlockedSet(

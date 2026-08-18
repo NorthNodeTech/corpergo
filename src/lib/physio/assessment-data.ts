@@ -1,6 +1,6 @@
 import { supabaseRest } from "@/lib/auth";
-import type { PhysioAppointment } from "@/lib/physio/physio-data";
-import { createAppointment } from "@/lib/patient/clinic-data";
+import { resolveStaffClinicId, type PhysioAppointment } from "@/lib/physio/physio-data";
+import { createAppointment, matchesClinicId } from "@/lib/patient/clinic-data";
 
 export type AssessmentForm = {
   id?: string;
@@ -136,15 +136,15 @@ export function isPriorVisitAppointment(
 }
 
 export async function fetchPatientVisitSummaries(patientId: string, excludeAppointmentId?: string) {
-  const res = await supabaseRest<PatientVisitSummary[]>(
-    `appointments?patient_id=eq.${patientId}&deleted_at=is.null&status=not.in.(cancelled,rejected)&select=id,appointment_code,status,visit_type,preferred_date,scheduled_date,scheduled_time,preferred_time,created_at&order=scheduled_date.desc.nullslast,preferred_date.desc,created_at.desc&limit=50`,
+  const res = await supabaseRest<(PatientVisitSummary & { assessments?: { id: string }[] })[]>(
+    `appointments?patient_id=eq.${patientId}&deleted_at=is.null&status=not.in.(cancelled,rejected)&select=id,appointment_code,status,visit_type,preferred_date,scheduled_date,scheduled_time,preferred_time,created_at,assessments(id)&order=scheduled_date.desc.nullslast,preferred_date.desc,created_at.desc&limit=50`,
   );
   const visits = (res.data || []).filter((v) => v.id !== excludeAppointmentId);
-  const ids = visits.map((v) => v.id);
-  const saved = await fetchSavedAssessmentAppointmentIds(ids);
-  const savedSet = new Set(saved.data || []);
   return {
-    data: visits.map((v) => ({ ...v, has_assessment: savedSet.has(v.id) || v.status === "completed" })),
+    data: visits.map((v) => ({
+      ...v,
+      has_assessment: Boolean(v.assessments?.length) || v.status === "completed",
+    })),
     error: res.error,
   };
 }
@@ -439,28 +439,21 @@ export type AssessmentSessionRow = PhysioAppointment & {
   documented: boolean;
 };
 
-export async function fetchAllAssessmentSessions() {
-  const { resolveStaffClinicId } = await import("@/lib/physio/physio-data");
-  type PhysioAppointment = import("@/lib/physio/physio-data").PhysioAppointment;
-  const { matchesClinicId } = await import("@/lib/patient/clinic-data");
-
-  const clinicId = await resolveStaffClinicId();
+export async function fetchAllAssessmentSessions(presetClinicId?: string | null) {
+  const clinicId = presetClinicId !== undefined ? presetClinicId : await resolveStaffClinicId();
   if (!clinicId) {
     return { data: [] as AssessmentSessionRow[], error: null };
   }
 
   const res = await supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(accepted,checked_in,completed)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,visit_type,parent_appointment_id,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc,scheduled_time.desc.nullslast,preferred_time.desc&limit=120`,
+    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(accepted,checked_in,completed)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,visit_type,parent_appointment_id,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,profiles(full_name,phone)),assessments(id)&order=scheduled_date.desc.nullslast,preferred_date.desc,scheduled_time.desc.nullslast,preferred_time.desc&limit=120`,
   );
 
   const list = (res.data || []).filter((item) => matchesClinicId(clinicId, item.clinic_id));
-  const ids = list.map((item) => item.id);
-  const saved = await fetchSavedAssessmentAppointmentIds(ids);
-  const savedSet = new Set(saved.data || []);
 
   const rows: AssessmentSessionRow[] = list.map((appointment) => ({
     ...appointment,
-    documented: savedSet.has(appointment.id) || appointment.status === "completed",
+    documented: Boolean(appointment.assessments?.length) || appointment.status === "completed",
   }));
 
   rows.sort((a, b) => {
@@ -475,26 +468,19 @@ export async function fetchAllAssessmentSessions() {
   return { data: rows, error: res.error };
 }
 
-export async function fetchAssessableAppointments() {
-  const { resolveStaffClinicId } = await import("@/lib/physio/physio-data");
-  type PhysioAppointment = import("@/lib/physio/physio-data").PhysioAppointment;
-  const { matchesClinicId } = await import("@/lib/patient/clinic-data");
-
-  const clinicId = await resolveStaffClinicId();
+export async function fetchAssessableAppointments(presetClinicId?: string | null) {
+  const clinicId = presetClinicId !== undefined ? presetClinicId : await resolveStaffClinicId();
   if (!clinicId) {
     return { data: [] as PhysioAppointment[], error: null };
   }
 
   const res = await supabaseRest<PhysioAppointment[]>(
-    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(checked_in,completed,accepted)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,medical_history,profiles(full_name,phone))&order=scheduled_date.desc.nullslast,preferred_date.desc&limit=80`,
+    `appointments?deleted_at=is.null&clinic_id=eq.${clinicId}&status=in.(checked_in,completed,accepted)&select=id,appointment_code,preferred_date,preferred_time,scheduled_date,scheduled_time,symptoms,status,rejection_reason,clinic_id,category_id,patient_id,physiotherapist_id,clinics(name,address,phone),physiotherapy_categories(name),patients(id,date_of_birth,age_years,gender,medical_history,profiles(full_name,phone)),assessments(id)&order=scheduled_date.desc.nullslast,preferred_date.desc&limit=80`,
   );
 
   const list = (res.data || []).filter((item) => matchesClinicId(clinicId, item.clinic_id));
-  const ids = list.map((item) => item.id);
-  const saved = await fetchSavedAssessmentAppointmentIds(ids);
-  const savedSet = new Set(saved.data || []);
   return {
-    data: list.filter((item) => !savedSet.has(item.id)),
+    data: list.filter((item) => !item.assessments?.length),
     error: res.error,
   };
 }

@@ -329,16 +329,18 @@ export function AdminCommandCenter() {
     return (
       <div
         key={label}
-        className="h-full rounded-xl bg-white px-2.5 py-2 ring-1 ring-black/[0.06] shadow-sm sm:px-3 sm:py-2.5"
+        className="group relative flex h-full flex-col justify-between overflow-hidden rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       >
-        <div className="flex items-center justify-between gap-1">
-          <span className="truncate text-[10px] font-semibold leading-tight text-[var(--ink-soft)] sm:text-xs">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-[var(--ink-soft)]">
             {label}
           </span>
-          <Icon className="h-3 w-3 shrink-0 text-[var(--saffron-deep)]" />
+          <div className="grid h-8 w-8 place-items-center rounded-xl bg-[var(--saffron)]/10 text-[var(--saffron-deep)] transition-colors group-hover:bg-[var(--saffron)] group-hover:text-white">
+            <Icon className="h-4 w-4 shrink-0" />
+          </div>
         </div>
-        <div className="type-stat mt-0.5 leading-none text-[var(--ink)] sm:mt-1">
-          {loading ? <Skeleton className="h-7 w-10 rounded-lg" /> : <AnimatedNumber value={value} />}
+        <div className="mt-3 text-3xl font-black tracking-tight text-[var(--ink)]">
+          {loading ? <Skeleton className="h-8 w-14 rounded-lg" /> : <AnimatedNumber value={value} />}
         </div>
       </div>
     );
@@ -348,67 +350,86 @@ export function AdminCommandCenter() {
     const status = clinicStatus(c);
     const util = utilizationPct(c);
     const name = formatClinicName(c.clinic_name);
+    const isSelected = selectedClinicId === c.clinic_id;
+
     return (
       <button
         key={c.clinic_id}
         type="button"
         onClick={() => selectClinic(c.clinic_id)}
         className={cn(
-          "flex h-full min-w-0 flex-col rounded-2xl bg-white p-2.5 text-left shadow-sm ring-1 transition hover:-translate-y-0.5 hover:shadow-md sm:p-3",
-          selectedClinicId === c.clinic_id
-            ? "ring-2 ring-[var(--saffron)] ring-offset-1"
-            : "ring-black/[0.06]",
+          "group relative flex h-full min-w-0 w-full flex-col justify-between rounded-2xl bg-white p-3.5 sm:p-4 text-left transition-all duration-200 hover:-translate-y-0.5",
+          isSelected
+            ? "border-2 border-[var(--saffron)] shadow-md shadow-[var(--saffron)]/10 ring-2 ring-[var(--saffron)]/20"
+            : "border border-[var(--border)] shadow-sm hover:border-[var(--saffron)]/60 hover:shadow-md",
         )}
       >
-        <div className="flex items-start justify-between gap-1">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide text-[var(--ink-soft)]">
-              <GoogleMapsIcon className="h-2.5 w-2.5 shrink-0" />
-              Clinic
-            </div>
-            <div className="mt-0.5 line-clamp-2 text-xs font-extrabold leading-snug text-[var(--ink)] sm:text-[13px]">
-              {name}
-            </div>
-          </div>
-          <span
-            className="shrink-0 rounded-full px-1.5 py-0.5 text-[8px] font-bold leading-none"
-            style={{
-              background: `${STATUS_COLOR[status]}1f`,
-              color: STATUS_COLOR[status],
-            }}
-          >
-            {status === "normal" ? "OK" : status === "busy" ? "Busy" : "Alert"}
-          </span>
-        </div>
-        <div className="mt-2 grid grid-cols-4 gap-0.5 text-center">
-          {[
-            ["Today", c.todays_appointments],
-            ["Pend", c.pending],
-            ["Done", c.completed],
-            ["Team", c.active_physiotherapists],
-          ].map(([l, v]) => (
-            <div key={String(l)} className="min-w-0">
-              <div className="text-sm font-extrabold leading-none text-[var(--ink)] sm:text-base">
-                {v as number}
+        <div className="w-full min-w-0">
+          <div className="flex items-start justify-between gap-1.5">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--ink-soft)]">
+                <span className="grid h-4 w-4 place-items-center rounded-md bg-[var(--saffron)]/10 text-[var(--saffron-deep)]">
+                  <GoogleMapsIcon className="h-2.5 w-2.5" />
+                </span>
+                Clinic
               </div>
-              <div className="mt-0.5 truncate text-[8px] font-semibold text-[var(--ink-soft)] sm:text-[9px]">
-                {l}
+              <div className="mt-1 truncate text-sm sm:text-base font-black text-[var(--ink)]" title={name}>
+                {name}
               </div>
             </div>
-          ))}
-        </div>
-        <div className="mt-auto pt-2">
-          <div className="flex justify-between text-[9px] font-semibold text-[var(--ink-soft)]">
-            <span>Util</span>
-            <span>{util}%</span>
+            <span
+              className={cn(
+                "shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider",
+                status === "normal"
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : status === "busy"
+                    ? "bg-amber-50 text-amber-700 border border-amber-200"
+                    : "bg-rose-50 text-rose-700 border border-rose-200",
+              )}
+            >
+              {status === "normal" ? "Normal" : status === "busy" ? "Busy" : "Alert"}
+            </span>
           </div>
-          <div className="mt-1 h-1 overflow-hidden rounded-full bg-[var(--muted)]">
+
+          <div className="mt-3 grid grid-cols-4 gap-1 text-center">
+            {[
+              { label: "Today", value: c.todays_appointments, bg: "bg-blue-50/70 text-blue-900", border: "border-blue-100" },
+              { label: "Pend", value: c.pending, bg: "bg-amber-50/70 text-amber-900", border: "border-amber-100" },
+              { label: "Done", value: c.completed, bg: "bg-emerald-50/70 text-emerald-900", border: "border-emerald-100" },
+              { label: "Team", value: c.active_physiotherapists, bg: "bg-purple-50/70 text-purple-900", border: "border-purple-100" },
+            ].map((m) => (
+              <div
+                key={m.label}
+                className={cn("min-w-0 rounded-lg p-1 sm:p-1.5 border", m.bg, m.border)}
+              >
+                <div className="text-xs sm:text-sm font-black leading-none">{m.value}</div>
+                <div className="mt-0.5 truncate text-[8px] sm:text-[9px] font-bold uppercase tracking-tight opacity-75">
+                  {m.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-3 w-full min-w-0 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between text-[11px] sm:text-xs font-bold">
+            <span className="text-[var(--ink-soft)]">Capacity</span>
+            <span className="font-extrabold text-[var(--ink)]">{util}%</span>
+          </div>
+          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
             <motion.div
-              className="h-full rounded-full"
-              style={{ background: STATUS_COLOR[status] }}
+              className="h-full rounded-full transition-all"
+              style={{
+                background:
+                  status === "normal"
+                    ? "linear-gradient(90deg, #10b981, #059669)"
+                    : status === "busy"
+                      ? "linear-gradient(90deg, #f59e0b, #d97706)"
+                      : "linear-gradient(90deg, #ef4444, #dc2626)",
+              }}
               initial={{ width: 0 }}
               animate={{ width: `${util}%` }}
-              transition={{ duration: 0.7 }}
+              transition={{ duration: 0.8 }}
             />
           </div>
         </div>
@@ -479,17 +500,17 @@ export function AdminCommandCenter() {
         id="admin-overview"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="min-w-0 scroll-mt-24 overflow-hidden rounded-[28px] border border-white/60 bg-white/65 p-4 shadow-[var(--shadow-soft)] backdrop-blur-xl sm:p-7"
+        className="min-w-0 scroll-mt-24 overflow-hidden rounded-[28px] border border-[var(--border)] bg-gradient-to-br from-white via-white to-[var(--ivory)] p-5 shadow-[var(--shadow-soft)] sm:p-7"
       >
         <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-[var(--ink-soft)]">
+            <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
               {greetingForHour(now.getHours())},
             </div>
-            <h1 className="type-h1 mt-1 font-extrabold tracking-tight text-[var(--ink)]">
+            <h1 className="type-h1 mt-1 font-black tracking-tight text-[var(--ink)]">
               CorpErgo Admin
             </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--ink-soft)] sm:text-sm">
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-[var(--ink-soft)] sm:text-sm">
               <span>
                 {now.toLocaleDateString(undefined, {
                   weekday: "long",
@@ -507,25 +528,25 @@ export function AdminCommandCenter() {
             <button
               type="button"
               onClick={() => setNotifyOpen((v) => !v)}
-              className="relative grid h-10 w-10 place-items-center rounded-full border border-black/[0.06] bg-white text-[var(--ink)] shadow-sm"
+              className="relative grid h-10 w-10 place-items-center rounded-xl border border-[var(--border)] bg-white text-[var(--ink)] shadow-sm hover:bg-[var(--ivory)]"
               aria-label="Notifications"
             >
               <Bell className="h-4 w-4" />
               {(kpis?.pending || 0) > 0 ? (
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />
+                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
               ) : null}
             </button>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--saffron-light)] px-2.5 py-2 text-[10px] font-bold text-[var(--saffron-deep)] ring-1 ring-[var(--saffron)]/20 sm:px-3 sm:text-xs">
-              <Radio className="h-3.5 w-3.5" /> Online
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 border border-emerald-200">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Online
             </span>
           </div>
         </div>
 
         <div className="mt-6">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+          <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
             Today&apos;s operations
           </div>
-          <div className="mt-3 grid grid-cols-2 items-stretch gap-2 sm:grid-cols-4">
+          <div className="mt-3 grid grid-cols-2 items-stretch gap-3 sm:grid-cols-4">
             {kpiCards.map((card) => renderKpiCard(card))}
           </div>
         </div>
@@ -577,19 +598,19 @@ export function AdminCommandCenter() {
 
       {/* Network clinics — five compact cards in one row */}
       <section id="admin-network" className="scroll-mt-24">
-        <div className="mb-3">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+        <div className="mb-4">
+          <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
             Network overview
           </div>
-          <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Five clinics. One pulse.</h2>
+          <h2 className="mt-1 text-2xl font-black text-[var(--ink)]">Five clinics. One pulse.</h2>
         </div>
         <AdminCardCarousel
           itemCount={Math.max(clinicList.length, 1)}
           ariaLabel="clinic"
           renderItem={(i) => renderClinicCard(clinicList[i]!)}
           desktop={
-            <div className="overflow-x-auto pb-1">
-              <div className="grid min-w-[680px] grid-cols-5 items-stretch gap-2">
+            <div className="overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="grid min-w-[700px] grid-cols-5 items-stretch gap-3">
                 {clinicList.map((c) => renderClinicCard(c))}
               </div>
             </div>
@@ -599,57 +620,59 @@ export function AdminCommandCenter() {
 
       {/* Live activity */}
       <section className="w-full min-w-0">
-        <div className="rounded-[28px] bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
+        <div className="rounded-[28px] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-soft)] sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+              <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
                 Live activity
               </div>
-              <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">What happened today</h3>
+              <h3 className="mt-1 text-xl font-black text-[var(--ink)]">What happened today</h3>
             </div>
-            <Activity className="h-4 w-4 text-[var(--saffron-deep)]" />
+            <div className="grid h-8 w-8 place-items-center rounded-xl bg-[var(--saffron)]/10 text-[var(--saffron-deep)]">
+              <Activity className="h-4 w-4" />
+            </div>
           </div>
-          <ul className="mt-4 space-y-3 pr-1">
+          <ul className="mt-5 space-y-4 pr-1">
             {loading ? (
               <>
-                <Skeleton className="h-14" />
-                <Skeleton className="h-14" />
-                <Skeleton className="h-14" />
+                <Skeleton className="h-14 rounded-2xl" />
+                <Skeleton className="h-14 rounded-2xl" />
+                <Skeleton className="h-14 rounded-2xl" />
               </>
             ) : activity.length ? (
               groupActivityByTime(activityMore.visible, now).map((group, gi) => (
-                <div key={group.label} className="mb-4 last:mb-0">
-                  <div className="mb-2 text-[10px] font-bold uppercase tracking-widest text-[var(--ink-soft)]">
+                <div key={group.label} className="mb-5 last:mb-0">
+                  <div className="mb-3 inline-flex items-center gap-1.5 rounded-lg bg-[var(--ivory)] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-[var(--ink-soft)] border border-black/[0.04]">
                     {group.label}
                   </div>
-                  <div className="space-y-3">
+                  <div className="relative pl-6 border-l-2 border-slate-100 space-y-3.5 ml-2">
                     {group.items.map((a, i) => (
                       <motion.li
                         key={a.id}
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: (gi * 2 + i) * 0.04 }}
-                        className="flex gap-3"
+                        className="relative flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-2xl bg-[var(--ivory)]/70 p-3.5 border border-black/[0.04] transition-all hover:bg-white hover:shadow-sm"
                       >
-                        <div className="w-16 shrink-0 pt-0.5 text-[11px] font-bold text-[var(--ink-soft)]">
+                        <span
+                          className="absolute -left-[31px] top-4 h-3 w-3 rounded-full ring-4 ring-white"
+                          style={{
+                            background:
+                              a.tone === "attention"
+                                ? STATUS_COLOR.attention
+                                : a.tone === "busy"
+                                  ? STATUS_COLOR.busy
+                                  : a.tone === "normal"
+                                    ? STATUS_COLOR.normal
+                                    : "#94a3b8",
+                          }}
+                        />
+                        <div className="shrink-0 text-xs font-bold text-[var(--ink-soft)] sm:w-20">
                           {formatActivityTime(a.at, group.label)}
                         </div>
-                        <div className="relative min-w-0 flex-1 rounded-2xl bg-[var(--ivory)]/80 px-3 py-2.5">
-                          <span
-                            className="absolute left-0 top-3 h-2 w-2 -translate-x-1/2 rounded-full"
-                            style={{
-                              background:
-                                a.tone === "attention"
-                                  ? STATUS_COLOR.attention
-                                  : a.tone === "busy"
-                                    ? STATUS_COLOR.busy
-                                    : a.tone === "normal"
-                                      ? STATUS_COLOR.normal
-                                      : "#94a3b8",
-                            }}
-                          />
-                          <div className="truncate text-sm font-semibold text-[var(--ink)]">{a.label}</div>
-                          <div className="mt-0.5 truncate text-[11px] text-[var(--ink-soft)]">{a.meta}</div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-sm text-[var(--ink)]">{a.label}</div>
+                          <div className="mt-0.5 text-xs font-medium text-[var(--ink-soft)]">{a.meta}</div>
                         </div>
                       </motion.li>
                     ))}
