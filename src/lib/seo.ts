@@ -128,7 +128,7 @@ export const SERVICES = [
   {
     name: "Online Video Consultation",
     description:
-      "Live video consultation with a CorpErgo physiotherapist for assessment, exercise guidance and follow-up. This is an online call, not a home visit.",
+      "Live video consultation when a patient cannot visit a clinic or lives far from CorpErgo branches. Call to book an online video session. This is not a home visit.",
   },
 ] as const;
 
@@ -166,7 +166,7 @@ export const FAQ_SCHEMA_ITEMS = [
   {
     question: "Do you offer online physiotherapy or telerehabilitation?",
     answer:
-      "Yes. You can join a CorpErgo physiotherapist on a video call for assessment, exercise guidance and follow-up. This is an online consultation — the therapist does not visit your home.",
+      "Yes. If you cannot visit a clinic or live far from our Greater Whitefield branches, call us and book an online video session. A CorpErgo physiotherapist will assess you on a video call — this is not a home visit.",
   },
 ] as const;
 

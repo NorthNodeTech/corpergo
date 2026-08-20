@@ -768,13 +768,13 @@ const EXPERTISE = [
   {
     icon: Video,
     title: "Online Treatment",
-    desc: "Video consultation with a physiotherapist for assessment, exercise guidance and follow-up.",
+    desc: "If you cannot visit or live far from clinic, call and book a video consultation.",
     image: reelRecoveryMotion,
     items: [
-      "Video consultation with a physiotherapist",
-      "Telerehabilitation programs",
-      "Guided home exercises",
-      "Follow-up and progress tracking",
+      "For patients who cannot come to clinic",
+      "For patients who live far from our branches",
+      "Live video assessment and exercise guidance",
+      "Call to book an online video session",
     ],
   },
 ] as const;
@@ -984,18 +984,18 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
   const steps = [
     {
       icon: Laptop,
-      t: "Book a video consult",
-      d: "Call us to schedule. Join the physiotherapist on a video call.",
+      t: "Call to book",
+      d: "Phone us and we will schedule your online video session.",
     },
     {
       icon: Video,
-      t: "Video assessment",
-      d: "Show movement on camera and get a clear treatment plan.",
+      t: "Join on video",
+      d: "Meet a CorpErgo physiotherapist on a live video call.",
     },
     {
       icon: Wifi,
-      t: "Follow-up on video",
-      d: "Continue exercises with remote guidance and progress checks.",
+      t: "Get your plan",
+      d: "Receive assessment, exercises and follow-up without travelling.",
     },
   ];
 
@@ -1027,8 +1027,8 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
                 <div className="inline-flex rounded-full bg-[var(--saffron)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
                   Video consultation
                 </div>
-                <p className="mt-2 max-w-[18rem] text-base font-bold leading-snug text-white sm:text-lg">
-                  Speak with a physiotherapist on a video call — not a home visit.
+                <p className="mt-2 max-w-[20rem] text-base font-bold leading-snug text-white sm:text-lg">
+                  Can&apos;t come to clinic, or live far away? Call and book a video session.
                 </p>
               </div>
             </div>
@@ -1039,16 +1039,18 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
                 Online video consultation.
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)] sm:text-[15px]">
-                Join a CorpErgo physiotherapist on a video call for assessment, exercise guidance
-                and follow-up. The therapist does not visit your home — care happens online.
+                Choose a video call when you cannot visit a clinic, travel is difficult, or you live
+                far from our Greater Whitefield branches. A CorpErgo physiotherapist assesses you
+                online — this is not a home visit. Call the number below and book your video
+                session.
               </p>
 
               <ul className="mt-4 grid grid-cols-2 gap-2">
                 {[
-                  "Live video consult",
-                  "Guided exercise plans",
-                  "Progress reviews",
-                  "Pain and mobility support",
+                  "Unable to visit the clinic",
+                  "Live far from our clinics",
+                  "Need a follow-up without travel",
+                  "Call to book a video session",
                 ].map((item) => (
                   <li
                     key={item}
@@ -1068,7 +1070,7 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
                 {SUPPORT_PHONE_DISPLAY}
               </a>
               <p className="mt-1.5 text-[11px] font-medium text-[var(--ink-soft)]">
-                Tap to call and book a video consultation.
+                Tap this number to call and book an online video session.
               </p>
             </div>
           </div>
@@ -1884,7 +1886,7 @@ const FAQ_ITEMS = [
   {
     question: "Do you offer online physiotherapy or telerehabilitation?",
     answer:
-      "Yes. You can join a CorpErgo physiotherapist on a video call for assessment, exercise guidance and follow-up. This is an online consultation — the therapist does not visit your home.",
+      "Yes. If you cannot visit a clinic or live far from our Greater Whitefield branches, call us and book an online video session. A CorpErgo physiotherapist will assess you on a video call — this is not a home visit.",
   },
   {
     question: "What should I wear and bring?",
