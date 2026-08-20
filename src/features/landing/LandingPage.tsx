@@ -768,7 +768,7 @@ const EXPERTISE = [
   {
     icon: Video,
     title: "Online Treatment",
-    desc: "Remote physiotherapy consultation and guided telerehabilitation from home.",
+    desc: "Video consultation with a physiotherapist for assessment, exercise guidance and follow-up.",
     image: reelRecoveryMotion,
     items: [
       "Video consultation with a physiotherapist",
@@ -948,15 +948,15 @@ function IndustrialErgonomics() {
           </p>
         </motion.div>
 
-        <div className="mx-auto mt-8 grid max-w-4xl grid-cols-3 gap-3 sm:gap-5">
+        <div className="mt-8 flex gap-3 overflow-x-auto overscroll-x-contain pb-3 snap-x snap-mandatory sm:grid sm:max-w-4xl sm:grid-cols-3 sm:gap-5 sm:overflow-visible sm:pb-0 sm:snap-none mx-auto">
           {INDUSTRIAL_MACHINES.map((machine) => (
             <Link
               key={machine.id}
               to="/industrial-ergonomics/$machineId"
               params={{ machineId: machine.id }}
-              className="group block min-w-0 overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)] sm:rounded-3xl"
+              className="group w-[72%] min-w-0 shrink-0 snap-start overflow-hidden rounded-3xl bg-white p-2.5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)] sm:w-auto sm:p-3"
             >
-              <div className="relative aspect-square overflow-hidden bg-[#ece8e1]">
+              <div className="relative aspect-square overflow-hidden rounded-3xl bg-[#ece8e1]">
                 <img
                   src={machine.cardImage}
                   alt={machine.shortName}
@@ -967,7 +967,7 @@ function IndustrialErgonomics() {
                   decoding="async"
                 />
               </div>
-              <h3 className="px-2 py-2.5 text-center text-[11px] font-bold leading-snug text-[var(--ink)] sm:px-3 sm:py-3 sm:text-sm">
+              <h3 className="px-1 py-3 text-center text-sm font-bold leading-snug text-[var(--ink)]">
                 {machine.shortName}
               </h3>
             </Link>
@@ -980,22 +980,22 @@ function IndustrialErgonomics() {
 
 /* ------------------------------ ONLINE TREATMENT ------------------------------ */
 
-function OnlineTreatment() {
+function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
   const steps = [
     {
       icon: Laptop,
-      t: "Book a teleconsultation",
-      d: "Call us. A physiotherapist joins you by video.",
+      t: "Book a video consult",
+      d: "Call us to schedule. Join the physiotherapist on a video call.",
     },
     {
       icon: Video,
-      t: "Remote assessment",
-      d: "Share your concerns and get a clear home plan.",
+      t: "Video assessment",
+      d: "Show movement on camera and get a clear treatment plan.",
     },
     {
       icon: Wifi,
-      t: "Guided telerehabilitation",
-      d: "Follow exercises with remote checks and follow-up.",
+      t: "Follow-up on video",
+      d: "Continue exercises with remote guidance and progress checks.",
     },
   ];
 
@@ -1016,7 +1016,7 @@ function OnlineTreatment() {
             <div className="relative h-48 overflow-hidden sm:h-56 lg:h-auto lg:min-h-[22rem]">
               <img
                 src={reelRecoveryMotion}
-                alt="Online physiotherapy and telerehabilitation"
+                alt="Online video consultation with a CorpErgo physiotherapist"
                 className="absolute inset-0 h-full w-full object-cover"
                 width={800}
                 height={1000}
@@ -1025,10 +1025,10 @@ function OnlineTreatment() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
               <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
                 <div className="inline-flex rounded-full bg-[var(--saffron)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
-                  Care from home
+                  Video consultation
                 </div>
-                <p className="mt-2 max-w-[16rem] text-base font-bold leading-snug text-white sm:text-lg">
-                  Consult, recover and follow up — without coming to the clinic.
+                <p className="mt-2 max-w-[18rem] text-base font-bold leading-snug text-white sm:text-lg">
+                  Speak with a physiotherapist on a video call — not a home visit.
                 </p>
               </div>
             </div>
@@ -1036,19 +1036,19 @@ function OnlineTreatment() {
             <div className="flex flex-col justify-center px-5 py-5 sm:px-7 sm:py-6 lg:px-8">
               <div className="type-eyebrow text-[var(--bronze)]">Service</div>
               <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--ink)] text-balance sm:text-[1.75rem]">
-                Online treatment and telerehabilitation.
+                Online video consultation.
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)] sm:text-[15px]">
-                Consult a CorpErgo physiotherapist remotely and continue guided rehabilitation
-                online — when a clinic visit is not possible, or follow-up works better from home.
+                Join a CorpErgo physiotherapist on a video call for assessment, exercise guidance
+                and follow-up. The therapist does not visit your home — care happens online.
               </p>
 
               <ul className="mt-4 grid grid-cols-2 gap-2">
                 {[
-                  "Video consultation",
-                  "Home exercise plans",
+                  "Live video consult",
+                  "Guided exercise plans",
                   "Progress reviews",
-                  "Pain, posture and rehab support",
+                  "Pain and mobility support",
                 ].map((item) => (
                   <li
                     key={item}
@@ -1068,7 +1068,7 @@ function OnlineTreatment() {
                 {SUPPORT_PHONE_DISPLAY}
               </a>
               <p className="mt-1.5 text-[11px] font-medium text-[var(--ink-soft)]">
-                Tap to call and book an online session.
+                Tap to call and book a video consultation.
               </p>
             </div>
           </div>
@@ -1884,7 +1884,7 @@ const FAQ_ITEMS = [
   {
     question: "Do you offer online physiotherapy or telerehabilitation?",
     answer:
-      "Yes. You can consult a CorpErgo physiotherapist remotely and continue guided rehabilitation online through telerehabilitation — including assessment, a home program, and follow-up.",
+      "Yes. You can join a CorpErgo physiotherapist on a video call for assessment, exercise guidance and follow-up. This is an online consultation — the therapist does not visit your home.",
   },
   {
     question: "What should I wear and bring?",
@@ -2368,7 +2368,7 @@ export function LandingPage() {
         <Mission />
         <Treatments />
         <IndustrialErgonomics />
-        <OnlineTreatment />
+        <OnlineTreatment onBookClick={handleBookClick} />
         <Founder />
         <WhyChoose />
         <WhoWeServe />

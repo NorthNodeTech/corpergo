@@ -126,9 +126,9 @@ export const SERVICES = [
       "On-site consultation for correct machine usage, operator posture, ergonomic working methods and workplace body-position assessment.",
   },
   {
-    name: "Online Treatment and Telerehabilitation",
+    name: "Online Video Consultation",
     description:
-      "Remote physiotherapy consultation and guided telerehabilitation so patients can continue recovery online.",
+      "Live video consultation with a CorpErgo physiotherapist for assessment, exercise guidance and follow-up. This is an online call, not a home visit.",
   },
 ] as const;
 
@@ -166,7 +166,7 @@ export const FAQ_SCHEMA_ITEMS = [
   {
     question: "Do you offer online physiotherapy or telerehabilitation?",
     answer:
-      "Yes. You can consult a CorpErgo physiotherapist remotely and continue guided rehabilitation online through telerehabilitation, including assessment, a home program and follow-up.",
+      "Yes. You can join a CorpErgo physiotherapist on a video call for assessment, exercise guidance and follow-up. This is an online consultation — the therapist does not visit your home.",
   },
 ] as const;
 
