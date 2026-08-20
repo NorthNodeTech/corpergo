@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as DirectBookingRouteImport } from './routes/direct-booking'
+import { Route as IndustrialErgonomicsRouteImport } from './routes/industrial-ergonomics'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PatientRouteImport } from './routes/patient'
 import { Route as PhysioRouteImport } from './routes/physio'
@@ -19,6 +20,8 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as IndustrialErgonomicsIndexRouteImport } from './routes/industrial-ergonomics/index'
+import { Route as IndustrialErgonomicsMachineIdRouteImport } from './routes/industrial-ergonomics/$machineId'
 import { Route as PatientAppointmentsRouteImport } from './routes/patient/appointments'
 import { Route as PatientBookRouteImport } from './routes/patient/book'
 import { Route as PatientDashboardRouteImport } from './routes/patient/dashboard'
@@ -48,6 +51,11 @@ const AdminRoute = AdminRouteImport.update({
 const DirectBookingRoute = DirectBookingRouteImport.update({
   id: '/direct-booking',
   path: '/direct-booking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndustrialErgonomicsRoute = IndustrialErgonomicsRouteImport.update({
+  id: '/industrial-ergonomics',
+  path: '/industrial-ergonomics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -85,6 +93,18 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const IndustrialErgonomicsIndexRoute =
+  IndustrialErgonomicsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => IndustrialErgonomicsRoute,
+  } as any)
+const IndustrialErgonomicsMachineIdRoute =
+  IndustrialErgonomicsMachineIdRouteImport.update({
+    id: '/$machineId',
+    path: '/$machineId',
+    getParentRoute: () => IndustrialErgonomicsRoute,
+  } as any)
 const PatientAppointmentsRoute = PatientAppointmentsRouteImport.update({
   id: '/appointments',
   path: '/appointments',
@@ -166,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/direct-booking': typeof DirectBookingRoute
+  '/industrial-ergonomics': typeof IndustrialErgonomicsRouteWithChildren
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
@@ -173,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/industrial-ergonomics/$machineId': typeof IndustrialErgonomicsMachineIdRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/book': typeof PatientBookRoute
   '/patient/dashboard': typeof PatientDashboardRoute
@@ -185,6 +207,7 @@ export interface FileRoutesByFullPath {
   '/physio/queue': typeof PhysioQueueRoute
   '/physio/requests': typeof PhysioRequestsRoute
   '/physio/scan': typeof PhysioScanRoute
+  '/industrial-ergonomics/': typeof IndustrialErgonomicsIndexRoute
   '/patient/reports/$reportId': typeof PatientReportsReportIdRoute
   '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
   '/physio/assessments/': typeof PhysioAssessmentsIndexRoute
@@ -200,6 +223,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/industrial-ergonomics/$machineId': typeof IndustrialErgonomicsMachineIdRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/book': typeof PatientBookRoute
   '/patient/dashboard': typeof PatientDashboardRoute
@@ -211,6 +235,7 @@ export interface FileRoutesByTo {
   '/physio/queue': typeof PhysioQueueRoute
   '/physio/requests': typeof PhysioRequestsRoute
   '/physio/scan': typeof PhysioScanRoute
+  '/industrial-ergonomics': typeof IndustrialErgonomicsIndexRoute
   '/patient/reports/$reportId': typeof PatientReportsReportIdRoute
   '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
   '/physio/assessments': typeof PhysioAssessmentsIndexRoute
@@ -220,6 +245,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/direct-booking': typeof DirectBookingRoute
+  '/industrial-ergonomics': typeof IndustrialErgonomicsRouteWithChildren
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
@@ -227,6 +253,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/industrial-ergonomics/$machineId': typeof IndustrialErgonomicsMachineIdRoute
   '/patient/appointments': typeof PatientAppointmentsRoute
   '/patient/book': typeof PatientBookRoute
   '/patient/dashboard': typeof PatientDashboardRoute
@@ -239,6 +266,7 @@ export interface FileRoutesById {
   '/physio/queue': typeof PhysioQueueRoute
   '/physio/requests': typeof PhysioRequestsRoute
   '/physio/scan': typeof PhysioScanRoute
+  '/industrial-ergonomics/': typeof IndustrialErgonomicsIndexRoute
   '/patient/reports/$reportId': typeof PatientReportsReportIdRoute
   '/physio/assessments/$appointmentId': typeof PhysioAssessmentsAppointmentIdRoute
   '/physio/assessments/': typeof PhysioAssessmentsIndexRoute
@@ -249,6 +277,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/direct-booking'
+    | '/industrial-ergonomics'
     | '/login'
     | '/patient'
     | '/physio'
@@ -256,6 +285,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/terms'
     | '/admin/dashboard'
+    | '/industrial-ergonomics/$machineId'
     | '/patient/appointments'
     | '/patient/book'
     | '/patient/dashboard'
@@ -268,6 +298,7 @@ export interface FileRouteTypes {
     | '/physio/queue'
     | '/physio/requests'
     | '/physio/scan'
+    | '/industrial-ergonomics/'
     | '/patient/reports/$reportId'
     | '/physio/assessments/$appointmentId'
     | '/physio/assessments/'
@@ -283,6 +314,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/terms'
     | '/admin/dashboard'
+    | '/industrial-ergonomics/$machineId'
     | '/patient/appointments'
     | '/patient/book'
     | '/patient/dashboard'
@@ -294,6 +326,7 @@ export interface FileRouteTypes {
     | '/physio/queue'
     | '/physio/requests'
     | '/physio/scan'
+    | '/industrial-ergonomics'
     | '/patient/reports/$reportId'
     | '/physio/assessments/$appointmentId'
     | '/physio/assessments'
@@ -302,6 +335,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/direct-booking'
+    | '/industrial-ergonomics'
     | '/login'
     | '/patient'
     | '/physio'
@@ -309,6 +343,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/terms'
     | '/admin/dashboard'
+    | '/industrial-ergonomics/$machineId'
     | '/patient/appointments'
     | '/patient/book'
     | '/patient/dashboard'
@@ -321,6 +356,7 @@ export interface FileRouteTypes {
     | '/physio/queue'
     | '/physio/requests'
     | '/physio/scan'
+    | '/industrial-ergonomics/'
     | '/patient/reports/$reportId'
     | '/physio/assessments/$appointmentId'
     | '/physio/assessments/'
@@ -330,6 +366,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   DirectBookingRoute: typeof DirectBookingRoute
+  IndustrialErgonomicsRoute: typeof IndustrialErgonomicsRouteWithChildren
   LoginRoute: typeof LoginRoute
   PatientRoute: typeof PatientRouteWithChildren
   PhysioRoute: typeof PhysioRouteWithChildren
@@ -359,6 +396,13 @@ declare module '@tanstack/react-router' {
       path: '/direct-booking'
       fullPath: '/direct-booking'
       preLoaderRoute: typeof DirectBookingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/industrial-ergonomics': {
+      id: '/industrial-ergonomics'
+      path: '/industrial-ergonomics'
+      fullPath: '/industrial-ergonomics'
+      preLoaderRoute: typeof IndustrialErgonomicsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -409,6 +453,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/industrial-ergonomics/': {
+      id: '/industrial-ergonomics/'
+      path: '/'
+      fullPath: '/industrial-ergonomics/'
+      preLoaderRoute: typeof IndustrialErgonomicsIndexRouteImport
+      parentRoute: typeof IndustrialErgonomicsRoute
+    }
+    '/industrial-ergonomics/$machineId': {
+      id: '/industrial-ergonomics/$machineId'
+      path: '/$machineId'
+      fullPath: '/industrial-ergonomics/$machineId'
+      preLoaderRoute: typeof IndustrialErgonomicsMachineIdRouteImport
+      parentRoute: typeof IndustrialErgonomicsRoute
     }
     '/patient/appointments': {
       id: '/patient/appointments'
@@ -528,6 +586,19 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface IndustrialErgonomicsRouteChildren {
+  IndustrialErgonomicsMachineIdRoute: typeof IndustrialErgonomicsMachineIdRoute
+  IndustrialErgonomicsIndexRoute: typeof IndustrialErgonomicsIndexRoute
+}
+
+const IndustrialErgonomicsRouteChildren: IndustrialErgonomicsRouteChildren = {
+  IndustrialErgonomicsMachineIdRoute: IndustrialErgonomicsMachineIdRoute,
+  IndustrialErgonomicsIndexRoute: IndustrialErgonomicsIndexRoute,
+}
+
+const IndustrialErgonomicsRouteWithChildren =
+  IndustrialErgonomicsRoute._addFileChildren(IndustrialErgonomicsRouteChildren)
+
 interface PatientReportsRouteChildren {
   PatientReportsReportIdRoute: typeof PatientReportsReportIdRoute
 }
@@ -599,6 +670,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   DirectBookingRoute: DirectBookingRoute,
+  IndustrialErgonomicsRoute: IndustrialErgonomicsRouteWithChildren,
   LoginRoute: LoginRoute,
   PatientRoute: PatientRouteWithChildren,
   PhysioRoute: PhysioRouteWithChildren,

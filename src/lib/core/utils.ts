@@ -11,6 +11,7 @@ export function formatClinicName(name: string): string {
     .replace(/^dr\.?\s+/i, "")
     .replace(/\bcorp\s*ergo\s*[-–—]?\s*/i, "")
     .replace(/\s+clinic$/i, "")
+    .replace(/\bChansandra\b/gi, "Channasandra")
     .trim();
 }
 

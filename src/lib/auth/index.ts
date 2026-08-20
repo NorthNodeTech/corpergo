@@ -118,7 +118,11 @@ export function isValidPhone(phone: string) {
   return normalizePhone(phone).replace(/\D/g, "").length >= 10;
 }
 
-export async function signInWithPassword(identifier: string, password: string) {
+export async function signInWithPassword(
+  identifier: string,
+  password: string,
+  portal: "patient" | "staff" = "patient",
+) {
   const cleanId = identifier.trim().toLowerCase();
   if (!cleanId.includes("@")) {
     return { data: null, error: "Enter a valid email address." };
@@ -135,8 +139,11 @@ export async function signInWithPassword(identifier: string, password: string) {
   }
 
   const raw = result.error || "Invalid email or password.";
-  const friendly = /invalid login credentials/i.test(raw)
-    ? "No account found with this email and password. New patient? Create an account first."
+  const invalidCredentials = /invalid login credentials/i.test(raw);
+  const friendly = invalidCredentials
+    ? portal === "staff"
+      ? "That email and password don’t match a staff account. Check the details or ask CorpErgo admin to reset the password."
+      : "No account found with this email and password. New patient? Create an account first."
     : raw;
 
   return { data: null, error: friendly };

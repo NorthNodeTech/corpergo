@@ -8,6 +8,10 @@ import {
   Bone,
   Briefcase,
   Building2,
+  Factory,
+  Video,
+  Wifi,
+  Laptop,
   Check,
   ClipboardList,
   Dumbbell,
@@ -23,6 +27,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  ChevronUp,
   Clock,
   Star,
   Sparkles,
@@ -37,10 +42,10 @@ import {
 } from "lucide-react";
 import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
 import {
-  FacebookIcon,
   GmailIcon,
   GoogleMapsIcon,
   InstagramIcon,
+  LinkedInIcon,
   PhoneAppIcon,
   YouTubeIcon,
 } from "@/shared/components/icons/BrandIcons";
@@ -59,12 +64,13 @@ import treatmentPediatric from "@/assets/treatments/treatment-pediatric.webp";
 import treatmentGeriatric from "@/assets/treatments/treatment-geriatric.webp";
 import treatmentPostSurgery from "@/assets/treatments/treatment-post-surgery.webp";
 import treatmentErgonomics from "@/assets/treatments/treatment-ergonomics.webp";
+import { INDUSTRIAL_MACHINES } from "@/features/landing/industrial-machines";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { cn } from "@/lib/core/utils";
 import {
-  FACEBOOK_PROFILE,
   INSTAGRAM_PROFILE,
   YOUTUBE_PROFILE,
+  FOUNDER_LINKEDIN,
   SUPPORT_EMAIL,
   SUPPORT_PHONE,
   SUPPORT_PHONE_DISPLAY,
@@ -118,6 +124,37 @@ const fadeItem = {
   show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: easeOut } },
 } as const;
 
+function SocialIconRow({ onDark = false }: { onDark?: boolean }) {
+  const item = cn(
+    "grid h-9 w-9 place-items-center rounded-full transition",
+    onDark
+      ? "bg-white/12 text-white ring-1 ring-white/25 hover:bg-white/20"
+      : "bg-white text-[var(--ink)] ring-1 ring-black/[0.08] hover:ring-[var(--saffron)]/40",
+  );
+  return (
+    <div className="flex items-center gap-2">
+      <a
+        href={INSTAGRAM_PROFILE}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={item}
+        aria-label="CorpErgo on Instagram"
+      >
+        <InstagramIcon className="h-4 w-4" />
+      </a>
+      <a
+        href={YOUTUBE_PROFILE}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={item}
+        aria-label="CorpErgo on YouTube"
+      >
+        <YouTubeIcon className="h-4 w-4" />
+      </a>
+    </div>
+  );
+}
+
 function AmbientOrbs() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
@@ -138,6 +175,8 @@ function MotionMarquee() {
     "Pain Management",
     "Sports Physiotherapy",
     "Corporate Ergonomics",
+    "Industrial Ergonomics",
+    "Online Treatment",
     "Pediatric Rehabilitation",
   ];
   const loop = [...items, ...items];
@@ -406,14 +445,18 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
               Bengaluru.
             </motion.p>
 
-            <motion.div variants={fadeItem}>
+            <motion.div
+              variants={fadeItem}
+              className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2"
+            >
               <a
                 href={`tel:${SUPPORT_PHONE}`}
-                className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-white/90 transition-colors hover:text-[var(--saffron-light)]"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 transition-colors hover:text-[var(--saffron-light)]"
               >
                 <PhoneAppIcon className="h-4 w-4 shrink-0" />
                 {SUPPORT_PHONE_DISPLAY}
               </a>
+              <SocialIconRow onDark />
             </motion.div>
 
             <motion.div
@@ -530,7 +573,7 @@ function About() {
             </p>
             <p className="mt-3 text-[0.9375rem] leading-relaxed text-[var(--ink-soft)]">
               What began as a single center with a vision for evidence-based care now spans five
-              branches — Chansandra, Muthsandra, Balagere, Kannamangala, and Manduru — making
+              branches — Channasandra, Muthsandra, Balagere, Kannamangala, and Manduru — making
               quality physiotherapy accessible to thousands of patients and families.
             </p>
             <p className="mt-3 text-[0.9375rem] leading-relaxed text-[var(--ink-soft)]">
@@ -710,6 +753,30 @@ const EXPERTISE = [
       "Executive postural reform and movement optimization",
     ],
   },
+  {
+    icon: Factory,
+    title: "Industrial Ergonomics",
+    desc: "On-site sessions for correct machine use, operator posture, and safer working methods.",
+    image: INDUSTRIAL_MACHINES[0].image,
+    items: [
+      "Correct usage of clinic and workplace machines",
+      "Posture while operating equipment",
+      "Ergonomic working methods",
+      "Workplace and body-position assessment",
+    ],
+  },
+  {
+    icon: Video,
+    title: "Online Treatment",
+    desc: "Remote physiotherapy consultation and guided telerehabilitation from home.",
+    image: reelRecoveryMotion,
+    items: [
+      "Video consultation with a physiotherapist",
+      "Telerehabilitation programs",
+      "Guided home exercises",
+      "Follow-up and progress tracking",
+    ],
+  },
 ] as const;
 
 const ADDITIONAL_PROGRAMS = [
@@ -734,6 +801,8 @@ const ADDITIONAL_PROGRAMS = [
 ] as const;
 
 function Treatments() {
+  const [showAdditional, setShowAdditional] = useState(false);
+
   return (
     <section id="treatments" className="landing-section relative landing-section-tone--warm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -797,36 +866,216 @@ function Treatments() {
           ))}
         </div>
 
-        <div className="mt-10">
-          <div className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[var(--ink-soft)]">
-            Additional programs
+        <div className="mt-6 flex justify-center">
+          <button
+            type="button"
+            aria-expanded={showAdditional}
+            onClick={() => setShowAdditional((open) => !open)}
+            className="inline-flex items-center gap-2 rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--saffron)] cursor-pointer focus:outline-none"
+          >
+            {showAdditional ? "Show less" : "More"}
+            {showAdditional ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+
+        {showAdditional ? (
+          <div className="mt-8">
+            <div className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[var(--ink-soft)]">
+              Additional programs
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {ADDITIONAL_PROGRAMS.map(({ icon: Icon, title, desc, image }) => (
+                <div
+                  key={title}
+                  className="group relative overflow-hidden rounded-3xl bg-white p-5 landing-card-hover site-card"
+                >
+                  <img
+                    src={image}
+                    alt=""
+                    aria-hidden
+                    className="absolute inset-0 h-full w-full object-cover opacity-90"
+                    loading="lazy"
+                    width={640}
+                    height={400}
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-black/75" aria-hidden />
+                  <div className="relative z-10">
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-white">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="mt-4 text-base font-bold text-white">{title}</h3>
+                    <p className="mt-1 text-sm text-white/80">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {ADDITIONAL_PROGRAMS.map(({ icon: Icon, title, desc, image }) => (
-              <div
-                key={title}
-                className="group relative overflow-hidden rounded-3xl bg-white p-5 landing-card-hover site-card"
-              >
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------ INDUSTRIAL ERGONOMICS ------------------------------ */
+
+function IndustrialErgonomics() {
+  return (
+    <section
+      id="industrial-ergonomics"
+      className="landing-section relative landing-section-tone--muted"
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="max-w-3xl section-header"
+        >
+          <div className="type-eyebrow text-[var(--bronze)]">Service</div>
+          <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
+            Industrial Ergonomics sessions and consultation.
+          </h2>
+          <p className="type-lead text-[var(--ink-soft)]">
+            CorpErgo helps employees and clinicians use equipment safely — correct machine
+            operation, operator posture, ergonomic working methods, and workplace body-position
+            assessment.
+          </p>
+        </motion.div>
+
+        <div className="mx-auto mt-8 grid max-w-4xl grid-cols-3 gap-3 sm:gap-5">
+          {INDUSTRIAL_MACHINES.map((machine) => (
+            <Link
+              key={machine.id}
+              to="/industrial-ergonomics/$machineId"
+              params={{ machineId: machine.id }}
+              className="group block min-w-0 overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)] sm:rounded-3xl"
+            >
+              <div className="relative aspect-square overflow-hidden bg-[#ece8e1]">
                 <img
-                  src={image}
-                  alt=""
-                  aria-hidden
-                  className="absolute inset-0 h-full w-full object-cover opacity-90"
+                  src={machine.cardImage}
+                  alt={machine.shortName}
+                  className="absolute inset-0 h-full w-full object-cover object-center"
                   loading="lazy"
-                  width={640}
-                  height={400}
+                  width={900}
+                  height={900}
                   decoding="async"
                 />
-                <div className="absolute inset-0 bg-black/75" aria-hidden />
-                <div className="relative z-10">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-white">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-4 text-base font-bold text-white">{title}</h3>
-                  <p className="mt-1 text-sm text-white/80">{desc}</p>
-                </div>
               </div>
-            ))}
+              <h3 className="px-2 py-2.5 text-center text-[11px] font-bold leading-snug text-[var(--ink)] sm:px-3 sm:py-3 sm:text-sm">
+                {machine.shortName}
+              </h3>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------ ONLINE TREATMENT ------------------------------ */
+
+function OnlineTreatment({ onBookClick }: { onBookClick: () => void }) {
+  const steps = [
+    {
+      icon: Laptop,
+      t: "Book a teleconsultation",
+      d: "Request an online appointment. A CorpErgo physiotherapist will connect with you by video.",
+    },
+    {
+      icon: Video,
+      t: "Remote assessment",
+      d: "Share your history, movement concerns and goals. Receive a clear plan without visiting the clinic.",
+    },
+    {
+      icon: Wifi,
+      t: "Guided telerehabilitation",
+      d: "Continue prescribed exercises at home with remote guidance, progress checks and follow-up sessions.",
+    },
+  ];
+
+  return (
+    <section id="online-treatment" className="landing-section relative landing-section-tone--plain">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center lg:gap-14">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="section-header max-w-xl"
+          >
+            <div className="type-eyebrow text-[var(--bronze)]">Service</div>
+            <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
+              Online treatment and telerehabilitation.
+            </h2>
+            <p className="type-lead text-[var(--ink-soft)]">
+              Consult a CorpErgo physiotherapist remotely and continue guided rehabilitation online.
+              Teleconsultation and telerehabilitation make evidence-based care accessible when you
+              cannot visit a clinic — or when follow-up works better from home.
+            </p>
+            <ul className="mt-5 space-y-2">
+              {[
+                "Video consultation with a qualified physiotherapist",
+                "Personalised home exercise and recovery plans",
+                "Progress reviews and guided telerehabilitation",
+                "Support for pain, posture, mobility and post-injury rehab",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm text-[var(--ink)]">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--saffron)]" aria-hidden />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={onBookClick}
+                className="inline-flex items-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--saffron-deep)] cursor-pointer focus:outline-none"
+              >
+                Book online care
+                <ArrowRight className="h-4 w-4" />
+              </button>
+              <a
+                href={`tel:${SUPPORT_PHONE}`}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--ink)] hover:text-[var(--saffron-deep)]"
+              >
+                <PhoneAppIcon className="h-4 w-4" />
+                {SUPPORT_PHONE_DISPLAY}
+              </a>
+            </div>
+          </motion.div>
+
+          <div className="grid gap-4">
+            {steps.map((step, i) => {
+              const Icon = step.icon;
+              return (
+                <motion.div
+                  key={step.t}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="flex gap-4 rounded-3xl bg-[#f6f3ee] p-5 ring-1 ring-black/[0.04] sm:p-6"
+                >
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-[var(--saffron-deep)] shadow-[var(--shadow-soft)]">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--saffron-deep)]">
+                      Step 0{i + 1}
+                    </div>
+                    <h3 className="mt-1 text-base font-bold text-[var(--ink)]">{step.t}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--ink-soft)]">{step.d}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -856,7 +1105,7 @@ function WhyChoose() {
     {
       icon: MapPin,
       t: "Community-Focused Care",
-      d: "Five conveniently located centers across Greater Whitefield — Chansandra, Muthsandra, Balagere, Kannamangala, and Manduru.",
+      d: "Five conveniently located centers across Greater Whitefield — Channasandra, Muthsandra, Balagere, Kannamangala, and Manduru.",
     },
     {
       icon: Sparkles,
@@ -1061,14 +1310,9 @@ function VideoStories() {
               trust.
             </p>
           </div>
-          <a
-            href={YOUTUBE_PROFILE}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex self-start sm:self-auto items-center gap-1.5 text-sm font-semibold text-[var(--ink)]/80 hover:text-[var(--ink)]"
-          >
-            <YouTubeIcon className="h-4 w-4" /> Follow us
-          </a>
+          <div className="flex items-center gap-3">
+            <SocialIconRow />
+          </div>
         </div>
 
         <div className="scrollbar-hide -mr-4 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-pl-0 scroll-pr-4 pb-4 pr-4 sm:-mr-6 sm:scroll-pr-6 sm:pr-6">
@@ -1169,7 +1413,7 @@ const TESTIMONIALS = [
   },
   {
     name: "Rahul K.",
-    context: "Sports injury · Chansandra",
+    context: "Sports injury · Channasandra",
     rating: 5,
     quote:
       "CorpErgo helped me return to cricket after a shoulder injury. Clear progress tracking, honest guidance, and therapists who actually listen.",
@@ -1286,36 +1530,36 @@ const CLINIC_PHOTOS = [heroImg, aboutImg, reelClinicMoments, reelHandsOnCare, re
 
 const CLINICS = [
   {
-    name: "Chansandra",
-    addr: "Chansandra Main Rd, Bengaluru",
+    name: "Channasandra",
+    addr: "Kadugodi, Whitefield, Bengaluru",
     hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/w9o4N65QwY1NGkgc8",
     photo: CLINIC_PHOTOS[0],
   },
   {
     name: "Balagere",
-    addr: "Balagere Rd, Varthur, Bengaluru",
+    addr: "Varthur, Bengaluru",
     hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/gP8neSidun1DtXHt7",
     photo: CLINIC_PHOTOS[1],
   },
   {
     name: "Muthsandra",
-    addr: "Muthsandra, Whitefield, Bengaluru",
+    addr: "Madhura Nagar, Varthur, Bengaluru",
     hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/N8ja8jsPgtCZkdky5",
     photo: CLINIC_PHOTOS[2],
   },
   {
     name: "Kannamangala",
-    addr: "Kannamangala, Bengaluru East",
+    addr: "Whitefield–Hoskote Road, Bengaluru",
     hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/AoB5Cftbm3hMzW1HA",
     photo: CLINIC_PHOTOS[3],
   },
   {
     name: "Manduru",
-    addr: "Manduru, Bengaluru",
+    addr: "Budigere Old Madras Road, Bengaluru",
     hours: "Mon-Sat · 8am-8pm",
     mapUrl: "https://maps.app.goo.gl/HsFRRdwtYAqLZmoC8",
     photo: CLINIC_PHOTOS[4],
@@ -1347,8 +1591,10 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
             Five clinics. One standard of care.
           </h2>
           <p className="type-lead mt-3 max-w-2xl text-[var(--ink-soft)]">
-            Same evidence-based physiotherapy across Greater Whitefield — Chansandra, Muthsandra,
-            Balagere, Kannamangala, and Manduru. Walk in Mon-Sat, 8am-8pm.
+            Same evidence-based physiotherapy across Greater Whitefield — Channasandra (Kadugodi,
+            Whitefield), Balagere (Varthur), Muthsandra (Madhura Nagar, Varthur), Kannamangala
+            (Whitefield–Hoskote Road), and Manduru (Budigere Old Madras Road). Walk in Mon-Sat,
+            8am-8pm.
           </p>
         </div>
 
@@ -1379,7 +1625,7 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
                     opacity: visible ? (isFront ? 1 : 0.58) : 0,
                     zIndex: isFront ? 10 : 5 - Math.abs(d),
                     filter: isFront ? "brightness(1)" : "brightness(0.88)",
-                    pointerEvents: isFront ? "auto" : "none",
+                    pointerEvents: visible ? "auto" : "none",
                   }}
                   transition={{ type: "spring", stiffness: 320, damping: 32 }}
                   aria-hidden={!visible}
@@ -1392,45 +1638,57 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
                         : "shadow-[var(--shadow-soft)]",
                     )}
                   >
-                    <div className="relative aspect-[16/10] overflow-hidden bg-[var(--ivory)]">
-                      <img
-                        src={c.photo}
-                        alt={`${c.name} clinic`}
-                        className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
-                        loading="lazy"
-                        width={640}
-                        height={400}
-                        decoding="async"
-                      />
-                      <span className="absolute right-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--bronze)] shadow-sm backdrop-blur-sm">
-                        Clinic 0{i + 1}
-                      </span>
-                    </div>
-                    <div className="flex flex-col p-5 sm:p-6">
-                      <h3 className="type-h3 font-bold text-[var(--ink)]">{c.name}</h3>
-                      <div className="mt-1.5 type-body-sm leading-relaxed text-[var(--ink-soft)]">
-                        {c.addr}
+                    <a
+                      href={c.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Open ${c.name} clinic location in Google Maps`}
+                      className="block cursor-pointer"
+                    >
+                      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--ivory)]">
+                        <img
+                          src={c.photo}
+                          alt={`${c.name} clinic`}
+                          className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.03]"
+                          loading="lazy"
+                          width={640}
+                          height={400}
+                          decoding="async"
+                        />
+                        <span className="absolute right-3 top-3 rounded-full bg-white/92 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-[var(--bronze)] shadow-sm backdrop-blur-sm">
+                          Clinic 0{i + 1}
+                        </span>
                       </div>
-                      <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-[var(--ink-soft)]">
-                        <Clock className="h-3.5 w-3.5 shrink-0" /> {c.hours}
+                      <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+                        <h3 className="type-h3 font-bold text-[var(--ink)]">{c.name}</h3>
+                        <div className="mt-1.5 type-body-sm leading-relaxed text-[var(--ink-soft)]">
+                          {c.addr}
+                        </div>
+                        <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-[var(--ink-soft)]">
+                          <Clock className="h-3.5 w-3.5 shrink-0" /> {c.hours}
+                        </div>
                       </div>
-                      <div className="mt-5 flex gap-2">
-                        <button
-                          onClick={onBookClick}
-                          className="flex-1 rounded-full bg-[var(--saffron)] py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--saffron-deep)] cursor-pointer focus:outline-none"
-                        >
-                          Book
-                        </button>
-                        <a
-                          href={c.mapUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`Open ${c.name} in Google Maps`}
-                          className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--ivory)] text-[var(--ink)] ring-1 ring-black/5 transition hover:bg-[var(--saffron-light)] hover:text-[var(--saffron-deep)]"
-                        >
-                          <GoogleMapsIcon className="h-5 w-5" />
-                        </a>
-                      </div>
+                    </a>
+                    <div className="flex gap-2 p-5 pt-5 sm:px-6 sm:pb-6">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onBookClick();
+                        }}
+                        className="flex-1 rounded-full bg-[var(--saffron)] py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-[var(--saffron-deep)] cursor-pointer focus:outline-none"
+                      >
+                        Book
+                      </button>
+                      <a
+                        href={c.mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open ${c.name} in Google Maps`}
+                        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[var(--ivory)] text-[var(--ink)] ring-1 ring-black/5 transition hover:bg-[var(--saffron-light)] hover:text-[var(--saffron-deep)]"
+                      >
+                        <GoogleMapsIcon className="h-5 w-5" />
+                      </a>
                     </div>
                   </div>
                 </motion.div>
@@ -1533,7 +1791,16 @@ function Founder() {
 
             <div className="founder-fit__meta flex flex-col sm:flex-row sm:items-end">
               <div>
-                <div className="founder-fit__name font-extrabold tracking-tight text-[var(--ink)]">
+                <div className="founder-fit__name flex items-center gap-2 font-extrabold tracking-tight text-[var(--ink)]">
+                  <a
+                    href={FOUNDER_LINKEDIN}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex shrink-0 items-center"
+                    aria-label="Dr. Pinky Dutta on LinkedIn"
+                  >
+                    <LinkedInIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </a>
                   Dr. Pinky Dutta
                 </div>
                 <div className="founder-fit__role font-semibold text-[var(--ink-soft)]">
@@ -1546,7 +1813,7 @@ function Founder() {
               <div className="founder-fit__divider hidden sm:block bg-[var(--ink)]/10" />
               <p className="founder-fit__clinics text-[var(--ink-soft)] max-w-xs">
                 Founded CorpErgo in 2017. Today the center serves Greater Whitefield through five
-                clinics — Chansandra, Muthsandra, Balagere, Kannamangala, and Manduru.
+                clinics — Channasandra, Muthsandra, Balagere, Kannamangala, and Manduru.
               </p>
             </div>
           </motion.div>
@@ -1577,12 +1844,12 @@ const FAQ_ITEMS = [
   {
     question: "Which CorpErgo clinic should I choose?",
     answer:
-      "Pick the location closest to you — Chansandra, Balagere, Muthsandra, Kannamangala, or Manduru. Every clinic follows the same evidence-based standards of care.",
+      "Pick the location closest to you — Channasandra (Kadugodi, Whitefield), Balagere (Varthur), Muthsandra (Madhura Nagar, Varthur), Kannamangala (Whitefield–Hoskote Road), or Manduru (Budigere Old Madras Road). Every clinic follows the same evidence-based standards of care.",
   },
   {
     question: "Where are CorpErgo physiotherapy clinics near me in Bengaluru?",
     answer:
-      "CorpErgo has physiotherapy clinics in Chansandra, Balagere, Muthsandra, Kannamangala, and Manduru, serving Greater Whitefield, Varthur, Bengaluru East, and nearby areas.",
+      "CorpErgo has physiotherapy clinics in Channasandra (Kadugodi, Whitefield), Balagere (Varthur), Muthsandra (Madhura Nagar, Varthur), Kannamangala (Whitefield–Hoskote Road), and Manduru (Budigere Old Madras Road).",
   },
   {
     question: "Do you treat back pain, neck pain, knee pain, and posture problems?",
@@ -1597,7 +1864,12 @@ const FAQ_ITEMS = [
   {
     question: "Do you treat sports injuries and post-surgery rehab?",
     answer:
-      "Yes. We offer orthopedic and neurological rehabilitation, pain management, sports physiotherapy, pediatric care, corporate ergonomics, women's health, and structured post-operative programs.",
+      "Yes. We offer orthopedic and neurological rehabilitation, pain management, sports physiotherapy, pediatric care, corporate and industrial ergonomics, online telerehabilitation, women's health, and structured post-operative programs.",
+  },
+  {
+    question: "Do you offer online physiotherapy or telerehabilitation?",
+    answer:
+      "Yes. You can consult a CorpErgo physiotherapist remotely and continue guided rehabilitation online through telerehabilitation — including assessment, a home program, and follow-up.",
   },
   {
     question: "What should I wear and bring?",
@@ -1757,6 +2029,7 @@ function CTA({ onBookClick }: { onBookClick: () => void }) {
                 >
                   <PhoneAppIcon className="h-4 w-4" /> Call us
                 </a>
+                <SocialIconRow onDark />
               </motion.div>
             </motion.div>
           </div>
@@ -1813,16 +2086,6 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
                 <YouTubeIcon className="h-4 w-4" />
                 YouTube
               </a>
-              <a
-                href={FACEBOOK_PROFILE}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-[var(--ink)] ring-1 ring-black/[0.08] transition hover:ring-[var(--saffron)]/40"
-                aria-label="CorpErgo on Facebook"
-              >
-                <FacebookIcon className="h-4 w-4" />
-                Facebook
-              </a>
             </div>
           </div>
 
@@ -1831,32 +2094,40 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
               Quick links
             </div>
             <ul className="mt-4 space-y-2.5 text-sm">
-              {["Treatments", "About", "FAQ", "Testimonials", "Clinics", "Book Appointment"].map(
-                (x) => (
-                  <li key={x}>
-                    <a
-                      href={
-                        x === "Book Appointment"
-                          ? "#"
-                          : x === "Testimonials"
-                            ? "#testimonials"
-                            : x === "FAQ"
-                              ? "#faq"
+              {[
+                "Treatments",
+                "About",
+                "Online Care",
+                "FAQ",
+                "Testimonials",
+                "Clinics",
+                "Book Appointment",
+              ].map((x) => (
+                <li key={x}>
+                  <a
+                    href={
+                      x === "Book Appointment"
+                        ? "#"
+                        : x === "Testimonials"
+                          ? "#testimonials"
+                          : x === "FAQ"
+                            ? "#faq"
+                            : x === "Online Care"
+                              ? "#online-treatment"
                               : `#${x.toLowerCase()}`
+                    }
+                    onClick={(e) => {
+                      if (x === "Book Appointment") {
+                        e.preventDefault();
+                        onBookClick();
                       }
-                      onClick={(e) => {
-                        if (x === "Book Appointment") {
-                          e.preventDefault();
-                          onBookClick();
-                        }
-                      }}
-                      className="transition-colors hover:text-[var(--saffron-deep)]"
-                    >
-                      {x}
-                    </a>
-                  </li>
-                ),
-              )}
+                    }}
+                    className="transition-colors hover:text-[var(--saffron-deep)]"
+                  >
+                    {x}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -2081,6 +2352,8 @@ export function LandingPage() {
         <About />
         <Mission />
         <Treatments />
+        <IndustrialErgonomics />
+        <OnlineTreatment onBookClick={handleBookClick} />
         <Founder />
         <WhyChoose />
         <WhoWeServe />

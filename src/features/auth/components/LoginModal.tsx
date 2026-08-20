@@ -74,7 +74,11 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
     }
 
     setLoading(true);
-    const { data, error: signInError } = await signInWithPassword(email.trim(), password);
+    const { data, error: signInError } = await signInWithPassword(
+      email.trim(),
+      password,
+      isPatient ? "patient" : "staff",
+    );
 
     if (signInError || !data) {
       setLoading(false);

@@ -14,9 +14,9 @@ export const SITE_DESCRIPTION =
 export const SUPPORT_PHONE = "+919148536394";
 export const SUPPORT_PHONE_DISPLAY = "+91 91485 36394";
 export const SUPPORT_EMAIL = "care@corpergo.in";
-export const FACEBOOK_PROFILE = "https://www.facebook.com/corporate.ergonomcs13/";
 export const INSTAGRAM_PROFILE = "https://www.instagram.com/corpergophysiorehab.in/";
 export const YOUTUBE_PROFILE = "https://www.youtube.com/@corpergo";
+export const FOUNDER_LINKEDIN = "https://in.linkedin.com/in/pinky-dutta-36731153";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 export const DEFAULT_OG_IMAGE_ALT =
   "CorpErgo Physiotherapy and Sports Rehabilitation clinics in Greater Whitefield, Bengaluru";
@@ -33,9 +33,10 @@ export type ClinicLocation = {
 
 export const CLINIC_LOCATIONS: ClinicLocation[] = [
   {
-    name: "CorpErgo Chansandra",
-    shortName: "Chansandra",
-    address: "50, Narayana Reddy Complex, Chansandra, near Thirumala Bakery, Whitefield",
+    name: "CorpErgo Channasandra",
+    shortName: "Channasandra",
+    address:
+      "50, Narayana Reddy Complex, Channasandra, near Thirumala Bakery, Kadugodi, Whitefield",
     locality: "Bengaluru",
     region: "Karnataka",
     postalCode: "560067",
@@ -53,7 +54,7 @@ export const CLINIC_LOCATIONS: ClinicLocation[] = [
   {
     name: "CorpErgo Muthsandra",
     shortName: "Muthsandra",
-    address: "Muthsandra, Whitefield",
+    address: "Muthsandra, Madhura Nagar, Varthur",
     locality: "Bengaluru",
     region: "Karnataka",
     mapUrl: "https://maps.app.goo.gl/N8ja8jsPgtCZkdky5",
@@ -61,7 +62,7 @@ export const CLINIC_LOCATIONS: ClinicLocation[] = [
   {
     name: "CorpErgo Kannamangala",
     shortName: "Kannamangala",
-    address: "Kannamangala, Bengaluru East",
+    address: "Kannamangala, Whitefield–Hoskote Road",
     locality: "Bengaluru",
     region: "Karnataka",
     mapUrl: "https://maps.app.goo.gl/AoB5Cftbm3hMzW1HA",
@@ -69,7 +70,7 @@ export const CLINIC_LOCATIONS: ClinicLocation[] = [
   {
     name: "CorpErgo Manduru",
     shortName: "Manduru",
-    address: "Manduru",
+    address: "Manduru, Budigere Old Madras Road",
     locality: "Bengaluru",
     region: "Karnataka",
     mapUrl: "https://maps.app.goo.gl/HsFRRdwtYAqLZmoC8",
@@ -119,6 +120,16 @@ export const SERVICES = [
     name: "Post-Surgery Rehabilitation",
     description: "Structured recovery after orthopaedic and other planned surgeries.",
   },
+  {
+    name: "Industrial Ergonomics",
+    description:
+      "On-site consultation for correct machine usage, operator posture, ergonomic working methods and workplace body-position assessment.",
+  },
+  {
+    name: "Online Treatment and Telerehabilitation",
+    description:
+      "Remote physiotherapy consultation and guided telerehabilitation so patients can continue recovery online.",
+  },
 ] as const;
 
 export const FAQ_SCHEMA_ITEMS = [
@@ -130,12 +141,12 @@ export const FAQ_SCHEMA_ITEMS = [
   {
     question: "Where are CorpErgo physiotherapy clinics located in Bengaluru?",
     answer:
-      "CorpErgo has clinics in Chansandra, Balagere, Muthsandra, Kannamangala and Manduru, serving Greater Whitefield, Varthur, Bengaluru East and nearby areas.",
+      "CorpErgo has clinics in Channasandra (Kadugodi, Whitefield), Balagere (Varthur), Muthsandra (Madhura Nagar, Varthur), Kannamangala (Whitefield–Hoskote Road) and Manduru (Budigere Old Madras Road).",
   },
   {
     question: "Which physiotherapy services does CorpErgo offer?",
     answer:
-      "CorpErgo offers orthopedic rehabilitation, neurological rehab, pain management, pediatric rehabilitation, sports physiotherapy, corporate ergonomics, women's health physiotherapy, geriatric physiotherapy and post-surgery rehab.",
+      "CorpErgo offers orthopedic rehabilitation, neurological rehab, pain management, pediatric rehabilitation, sports physiotherapy, corporate and industrial ergonomics, online telerehabilitation, women's health physiotherapy, geriatric physiotherapy and post-surgery rehab.",
   },
   {
     question: "Can I book online or by phone?",
@@ -151,6 +162,11 @@ export const FAQ_SCHEMA_ITEMS = [
     question: "Do you treat back pain, neck pain, knee pain and posture problems?",
     answer:
       "Yes. CorpErgo physiotherapists assess posture, strength, mobility and pain triggers, then create a treatment and exercise plan for back, neck, knee, shoulder and other musculoskeletal problems.",
+  },
+  {
+    question: "Do you offer online physiotherapy or telerehabilitation?",
+    answer:
+      "Yes. You can consult a CorpErgo physiotherapist remotely and continue guided rehabilitation online through telerehabilitation, including assessment, a home program and follow-up.",
   },
 ] as const;
 
@@ -389,8 +405,8 @@ export function homepageStructuredData(): MetaDescriptor[] {
             email: SUPPORT_EMAIL,
             sameAs: [
               INSTAGRAM_PROFILE,
-              FACEBOOK_PROFILE,
               YOUTUBE_PROFILE,
+              FOUNDER_LINKEDIN,
               "https://www.practo.com/bangalore/clinic/corpergo-physiotherapy-occupational-health-centre-channasandra-1",
               "https://kivihealth.com/clinic/corpergo-physiotherapy-%26-occupational-health-centre",
             ],
@@ -497,6 +513,8 @@ export function homepageStructuredData(): MetaDescriptor[] {
             name: "Dr. Pinky Dutta",
             honorificSuffix: "MPT, PhD",
             jobTitle: "Founder and Clinical Director",
+            url: FOUNDER_LINKEDIN,
+            sameAs: [FOUNDER_LINKEDIN],
             worksFor: { "@id": `${SITE_URL}/#organization` },
             knowsAbout: [
               "Physiotherapy",
