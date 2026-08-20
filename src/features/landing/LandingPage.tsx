@@ -980,104 +980,119 @@ function IndustrialErgonomics() {
 
 /* ------------------------------ ONLINE TREATMENT ------------------------------ */
 
-function OnlineTreatment({ onBookClick }: { onBookClick: () => void }) {
+function OnlineTreatment() {
   const steps = [
     {
       icon: Laptop,
       t: "Book a teleconsultation",
-      d: "Request an online appointment. A CorpErgo physiotherapist will connect with you by video.",
+      d: "Call us. A physiotherapist joins you by video.",
     },
     {
       icon: Video,
       t: "Remote assessment",
-      d: "Share your history, movement concerns and goals. Receive a clear plan without visiting the clinic.",
+      d: "Share your concerns and get a clear home plan.",
     },
     {
       icon: Wifi,
       t: "Guided telerehabilitation",
-      d: "Continue prescribed exercises at home with remote guidance, progress checks and follow-up sessions.",
+      d: "Follow exercises with remote checks and follow-up.",
     },
   ];
 
   return (
-    <section id="online-treatment" className="landing-section relative landing-section-tone--plain">
+    <section
+      id="online-treatment"
+      className="relative py-8 sm:py-10 landing-section-tone--muted"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center lg:gap-14">
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="section-header max-w-xl"
-          >
-            <div className="type-eyebrow text-[var(--bronze)]">Service</div>
-            <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
-              Online treatment and telerehabilitation.
-            </h2>
-            <p className="type-lead text-[var(--ink-soft)]">
-              Consult a CorpErgo physiotherapist remotely and continue guided rehabilitation online.
-              Teleconsultation and telerehabilitation make evidence-based care accessible when you
-              cannot visit a clinic — or when follow-up works better from home.
-            </p>
-            <ul className="mt-5 space-y-2">
-              {[
-                "Video consultation with a qualified physiotherapist",
-                "Personalised home exercise and recovery plans",
-                "Progress reviews and guided telerehabilitation",
-                "Support for pain, posture, mobility and post-injury rehab",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2.5 text-sm text-[var(--ink)]">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--saffron)]" aria-hidden />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={onBookClick}
-                className="inline-flex items-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--saffron-deep)] cursor-pointer focus:outline-none"
-              >
-                Book online care
-                <ArrowRight className="h-4 w-4" />
-              </button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.5 }}
+          className="overflow-hidden rounded-[28px] bg-white shadow-[var(--shadow-elev)] ring-1 ring-black/[0.04]"
+        >
+          <div className="grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+            <div className="relative h-48 overflow-hidden sm:h-56 lg:h-auto lg:min-h-[22rem]">
+              <img
+                src={reelRecoveryMotion}
+                alt="Online physiotherapy and telerehabilitation"
+                className="absolute inset-0 h-full w-full object-cover"
+                width={800}
+                height={1000}
+                decoding="async"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/10" />
+              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                <div className="inline-flex rounded-full bg-[var(--saffron)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white">
+                  Care from home
+                </div>
+                <p className="mt-2 max-w-[16rem] text-base font-bold leading-snug text-white sm:text-lg">
+                  Consult, recover and follow up — without coming to the clinic.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-center px-5 py-5 sm:px-7 sm:py-6 lg:px-8">
+              <div className="type-eyebrow text-[var(--bronze)]">Service</div>
+              <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--ink)] text-balance sm:text-[1.75rem]">
+                Online treatment and telerehabilitation.
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)] sm:text-[15px]">
+                Consult a CorpErgo physiotherapist remotely and continue guided rehabilitation
+                online — when a clinic visit is not possible, or follow-up works better from home.
+              </p>
+
+              <ul className="mt-4 grid grid-cols-2 gap-2">
+                {[
+                  "Video consultation",
+                  "Home exercise plans",
+                  "Progress reviews",
+                  "Pain, posture and rehab support",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-center gap-1.5 rounded-xl bg-[#f7f4ef] px-2.5 py-2 text-xs font-semibold text-[var(--ink)] sm:text-sm"
+                  >
+                    <Check className="h-3.5 w-3.5 shrink-0 text-[var(--saffron)]" aria-hidden />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
               <a
                 href={`tel:${SUPPORT_PHONE}`}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--ink)] hover:text-[var(--saffron-deep)]"
+                className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--saffron-deep)]"
               >
-                <PhoneAppIcon className="h-4 w-4" />
+                <PhoneAppIcon className="h-4 w-4 shrink-0" />
                 {SUPPORT_PHONE_DISPLAY}
               </a>
+              <p className="mt-1.5 text-[11px] font-medium text-[var(--ink-soft)]">
+                Tap to call and book an online session.
+              </p>
             </div>
-          </motion.div>
+          </div>
 
-          <div className="grid gap-4">
+          <div className="grid gap-2 border-t border-black/[0.05] bg-[#f7f4ef] p-3 sm:grid-cols-3 sm:gap-3 sm:p-4">
             {steps.map((step, i) => {
               const Icon = step.icon;
               return (
-                <motion.div
-                  key={step.t}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
-                  className="flex gap-4 rounded-3xl bg-[#f6f3ee] p-5 ring-1 ring-black/[0.04] sm:p-6"
-                >
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-[var(--saffron-deep)] shadow-[var(--shadow-soft)]">
-                    <Icon className="h-5 w-5" />
+                <div key={step.t} className="flex gap-3 rounded-2xl bg-white px-3.5 py-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[var(--ink)] text-white">
+                    <Icon className="h-4 w-4" />
                   </span>
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--saffron-deep)]">
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--saffron-deep)]">
                       Step 0{i + 1}
                     </div>
-                    <h3 className="mt-1 text-base font-bold text-[var(--ink)]">{step.t}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-[var(--ink-soft)]">{step.d}</p>
+                    <h3 className="text-sm font-bold leading-snug text-[var(--ink)]">{step.t}</h3>
+                    <p className="mt-0.5 text-xs leading-relaxed text-[var(--ink-soft)]">{step.d}</p>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -2353,7 +2368,7 @@ export function LandingPage() {
         <Mission />
         <Treatments />
         <IndustrialErgonomics />
-        <OnlineTreatment onBookClick={handleBookClick} />
+        <OnlineTreatment />
         <Founder />
         <WhyChoose />
         <WhoWeServe />
