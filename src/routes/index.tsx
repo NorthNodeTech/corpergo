@@ -13,9 +13,9 @@ export const Route = createFileRoute("/")({
   head: () => {
     const head = publicRouteHead({
       path: "/",
-      title: "CorpErgo Physiotherapy - Bengaluru's Premium Recovery Clinic",
+      title: "CorpErgo Physiotherapy & Sports Rehabilitation - Greater Whitefield",
       description:
-        "Book evidence-based physiotherapy in Bengaluru for pain relief, sports injuries, posture correction, neurological rehab and post-surgery recovery across 5 CorpErgo clinics.",
+        "Founded in 2017 by Dr. Pinky Dutta (MPT, PhD). Book evidence-based physiotherapy in Greater Whitefield, Bengaluru for pain relief, sports rehab, neurological recovery, pediatric care and corporate ergonomics across 5 CorpErgo clinics.",
       image: DEFAULT_OG_IMAGE,
       imageAlt: DEFAULT_OG_IMAGE_ALT,
       structuredData: homepageStructuredData(),

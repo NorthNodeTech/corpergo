@@ -7,10 +7,10 @@ const GOOGLE_SITE_VERIFICATION = import.meta.env.VITE_GOOGLE_SITE_VERIFICATION?.
 const BING_SITE_VERIFICATION = import.meta.env.VITE_BING_SITE_VERIFICATION?.trim();
 
 export const SITE_URL = "https://corpergo.in";
-export const SITE_NAME = "CorpErgo Physiotherapy";
-export const SITE_TITLE = "CorpErgo Physiotherapy - Bengaluru Recovery Clinics";
+export const SITE_NAME = "CorpErgo Physiotherapy & Sports Rehabilitation Center";
+export const SITE_TITLE = "CorpErgo Physiotherapy - Greater Whitefield, Bengaluru";
 export const SITE_DESCRIPTION =
-  "Evidence-based physiotherapy in Bengaluru for pain relief, sports injuries, post-surgery rehab, neurological rehab, posture correction and mobility recovery.";
+  "Founded in 2017 by Dr. Pinky Dutta (MPT, PhD). Evidence-based physiotherapy, sports rehabilitation, pain management and corporate ergonomics across five Greater Whitefield clinics in Bengaluru.";
 export const SUPPORT_PHONE = "+919148536394";
 export const SUPPORT_PHONE_DISPLAY = "+91 91485 36394";
 export const SUPPORT_EMAIL = "care@corpergo.in";
@@ -19,7 +19,7 @@ export const INSTAGRAM_PROFILE = "https://www.instagram.com/corpergophysiorehab.
 export const YOUTUBE_PROFILE = "https://www.youtube.com/@corpergo";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 export const DEFAULT_OG_IMAGE_ALT =
-  "CorpErgo Physiotherapy and Rehabilitation clinics in Bengaluru";
+  "CorpErgo Physiotherapy and Sports Rehabilitation clinics in Greater Whitefield, Bengaluru";
 
 export type ClinicLocation = {
   name: string;
@@ -78,28 +78,38 @@ export const CLINIC_LOCATIONS: ClinicLocation[] = [
 
 export const SERVICES = [
   {
-    name: "Orthopaedic Physiotherapy",
-    description: "Joint, bone, fracture and spine rehabilitation for pain and mobility.",
+    name: "Orthopedic Rehabilitation",
+    description:
+      "Comprehensive physiotherapy for back, neck, knee, shoulder, ligament, fracture and joint-replacement recovery.",
   },
   {
     name: "Neurological Rehabilitation",
-    description: "Physiotherapy for stroke, Parkinson's disease, nerve injury and balance.",
+    description:
+      "Specialized rehabilitation for stroke, paralysis, Parkinson's disease, multiple sclerosis and balance disorders.",
   },
   {
-    name: "Sports Injury Rehabilitation",
-    description: "Return-to-sport care for shoulder, knee, ankle and overuse injuries.",
+    name: "Pain Management",
+    description:
+      "Root-cause physiotherapy for chronic pain, sciatica, spondylosis, muscle spasms and repetitive strain injuries.",
   },
   {
-    name: "Musculoskeletal Therapy",
-    description: "Manual therapy and exercise care for back, neck, shoulder and posture pain.",
+    name: "Pediatric Rehabilitation",
+    description:
+      "Dedicated physiotherapy for children with developmental delays, cerebral palsy and movement disorders.",
+  },
+  {
+    name: "Sports Physiotherapy & Performance Rehabilitation",
+    description:
+      "Injury treatment, sports-specific rehab, return-to-sport conditioning and injury-prevention programs.",
+  },
+  {
+    name: "Corporate Ergonomics & Postural Transformation",
+    description:
+      "Workstation assessments, posture correction, corporate wellness workshops and work-related injury prevention.",
   },
   {
     name: "Women's Health Physiotherapy",
     description: "Pre-natal, post-natal and pelvic floor physiotherapy.",
-  },
-  {
-    name: "Pediatric Physiotherapy",
-    description: "Gentle developmental physiotherapy and movement support for children.",
   },
   {
     name: "Geriatric Physiotherapy",
@@ -120,12 +130,12 @@ export const FAQ_SCHEMA_ITEMS = [
   {
     question: "Where are CorpErgo physiotherapy clinics located in Bengaluru?",
     answer:
-      "CorpErgo has clinics in Chansandra, Balagere, Muthsandra, Kannamangala and Manduru, serving Whitefield, Varthur, Bengaluru East and nearby areas.",
+      "CorpErgo has clinics in Chansandra, Balagere, Muthsandra, Kannamangala and Manduru, serving Greater Whitefield, Varthur, Bengaluru East and nearby areas.",
   },
   {
     question: "Which physiotherapy services does CorpErgo offer?",
     answer:
-      "CorpErgo offers orthopaedic physiotherapy, neurological rehabilitation, sports injury rehab, musculoskeletal therapy, women's health physiotherapy, pediatric physiotherapy, geriatric physiotherapy and post-surgery rehab.",
+      "CorpErgo offers orthopedic rehabilitation, neurological rehab, pain management, pediatric rehabilitation, sports physiotherapy, corporate ergonomics, women's health physiotherapy, geriatric physiotherapy and post-surgery rehab.",
   },
   {
     question: "Can I book online or by phone?",
@@ -361,8 +371,12 @@ export function homepageStructuredData(): MetaDescriptor[] {
           {
             "@type": "Organization",
             "@id": `${SITE_URL}/#organization`,
-            name: "CorpErgo Physiotherapy and Rehabilitation",
-            alternateName: ["CorpErgo", "CorpErgo Physiotherapy"],
+            name: "CorpErgo Physiotherapy & Sports Rehabilitation Center",
+            alternateName: [
+              "CorpErgo",
+              "CorpErgo Physiotherapy",
+              "CorpErgo Physiotherapy and Rehabilitation",
+            ],
             url: SITE_URL,
             logo: {
               "@type": "ImageObject",
@@ -381,6 +395,7 @@ export function homepageStructuredData(): MetaDescriptor[] {
               "https://kivihealth.com/clinic/corpergo-physiotherapy-%26-occupational-health-centre",
             ],
             founder: { "@id": `${SITE_URL}/#dr-pinky-dutta` },
+            foundingDate: "2017",
             contactPoint: [
               {
                 "@type": "ContactPoint",
@@ -431,7 +446,7 @@ export function homepageStructuredData(): MetaDescriptor[] {
           {
             "@type": ["LocalBusiness", "MedicalBusiness"],
             "@id": `${SITE_URL}/#localbusiness`,
-            name: "CorpErgo Physiotherapy and Occupational Health Centre",
+            name: "CorpErgo Physiotherapy & Sports Rehabilitation Center",
             url: SITE_URL,
             image: DEFAULT_OG_IMAGE,
             telephone: SUPPORT_PHONE,
@@ -479,13 +494,16 @@ export function homepageStructuredData(): MetaDescriptor[] {
           {
             "@type": "Person",
             "@id": `${SITE_URL}/#dr-pinky-dutta`,
-            name: "Dr. Pinky Dutta PT",
-            jobTitle: "Head of Department",
+            name: "Dr. Pinky Dutta",
+            honorificSuffix: "MPT, PhD",
+            jobTitle: "Founder and Clinical Director",
             worksFor: { "@id": `${SITE_URL}/#organization` },
             knowsAbout: [
               "Physiotherapy",
-              "Musculoskeletal physiotherapy",
               "Sports rehabilitation",
+              "Pain management",
+              "Corporate ergonomics",
+              "Neurological rehabilitation",
               "Post-surgery rehabilitation",
             ],
           },

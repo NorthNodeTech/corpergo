@@ -6,9 +6,16 @@ import {
   Activity,
   Brain,
   Bone,
+  Briefcase,
+  Building2,
+  Check,
+  ClipboardList,
   Dumbbell,
+  GraduationCap,
   HeartPulse,
   Baby,
+  MapPin,
+  Monitor,
   UserRound,
   Stethoscope,
   ArrowRight,
@@ -26,6 +33,7 @@ import {
   CalendarPlus,
   LogIn,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
 import {
@@ -50,6 +58,7 @@ import treatmentWomensHealth from "@/assets/treatments/treatment-womens-health.w
 import treatmentPediatric from "@/assets/treatments/treatment-pediatric.webp";
 import treatmentGeriatric from "@/assets/treatments/treatment-geriatric.webp";
 import treatmentPostSurgery from "@/assets/treatments/treatment-post-surgery.webp";
+import treatmentErgonomics from "@/assets/treatments/treatment-ergonomics.webp";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { cn } from "@/lib/core/utils";
 import {
@@ -122,13 +131,14 @@ function AmbientOrbs() {
 function MotionMarquee() {
   const items = [
     "Evidence-Based Care",
-    "5 Bengaluru Clinics",
-    "Certified Physiotherapists",
-    "Post-Surgery Rehab",
-    "Sports Recovery",
-    "One-on-One Sessions",
+    "Founded in 2017",
+    "5 Greater Whitefield Clinics",
+    "Orthopedic Rehabilitation",
     "Neurological Rehab",
-    "Women's Health",
+    "Pain Management",
+    "Sports Physiotherapy",
+    "Corporate Ergonomics",
+    "Pediatric Rehabilitation",
   ];
   const loop = [...items, ...items];
   return (
@@ -211,7 +221,7 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
           <Link
             to="/"
             className="group flex min-w-0 shrink items-center gap-2 sm:gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--saffron)]/40 focus-visible:ring-offset-2 rounded-xl"
-            aria-label="CorpErgo Physiotherapy and Rehabilitation — Home"
+            aria-label="CorpErgo Physiotherapy and Sports Rehabilitation — Home"
           >
             <CorpErgoLogo
               size="xs"
@@ -230,7 +240,7 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
                 <span className={onHero ? "text-white" : "text-[var(--ink)]"}>Ergo</span>
               </div>
               <div className="corpergo-brand-tagline landing-nav__brand-tagline">
-                Physiotherapy &amp; Rehabilitation
+                Physiotherapy &amp; Sports Rehabilitation
               </div>
             </div>
           </Link>
@@ -383,10 +393,17 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
               </span>
             </motion.h1>
 
+            <motion.p
+              variants={fadeItem}
+              className="mt-3 text-sm font-semibold tracking-wide text-[var(--saffron-light)] drop-shadow-sm sm:text-[15px]"
+            >
+              Restoring Movement · Relieving Pain · Transforming Lives
+            </motion.p>
+
             <motion.p variants={fadeItem} className="hero-fit__body text-white/88 drop-shadow-sm">
-              Professional physiotherapy for pain relief, mobility restoration, neurological
-              rehabilitation, sports injuries and long-term wellness — delivered by certified
-              physiotherapists.
+              Founded in 2017 by Dr. Pinky Dutta (MPT, PhD). Evidence-based physiotherapy, sports
+              rehabilitation, and ergonomics care across five clinics in Greater Whitefield,
+              Bengaluru.
             </motion.p>
 
             <motion.div variants={fadeItem}>
@@ -486,11 +503,9 @@ function About() {
               viewport={{ once: true }}
               transition={{ delay: 0.35, duration: 0.6, ease: easeOut }}
             >
-              <div className="about-fit__years-n font-extrabold text-[var(--ink)]">
-                <Counter to={12} />+
-              </div>
+              <div className="about-fit__years-n font-extrabold text-[var(--ink)]">2017</div>
               <div className="about-fit__years-l text-[var(--ink-soft)]">
-                Years of hands-on physiotherapy expertise
+                Founded in Greater Whitefield, Bengaluru
               </div>
             </motion.div>
           </motion.div>
@@ -506,12 +521,22 @@ function About() {
               About CorpErgo
             </div>
             <h2 className="about-fit__title font-extrabold tracking-tight text-[var(--ink)] text-balance">
-              Recovery, reimagined for how you live and move.
+              Restoring movement. Relieving pain. Transforming lives.
             </h2>
             <p className="about-fit__body text-[var(--ink-soft)]">
-              CorpErgo is a physiotherapy-first clinic chain built on evidence, empathy and
-              outcomes. From posture correction to post-surgery rehabilitation, our team designs a
-              plan for your body, your goals and your timeline.
+              Founded in 2017 by Dr. Pinky Dutta (MPT, PhD), CorpErgo Physiotherapy &amp; Sports
+              Rehabilitation Center has grown into one of the most trusted physiotherapy and
+              rehabilitation providers in Greater Whitefield, Bengaluru.
+            </p>
+            <p className="mt-3 text-[0.9375rem] leading-relaxed text-[var(--ink-soft)]">
+              What began as a single center with a vision for evidence-based care now spans five
+              branches — Chansandra, Muthsandra, Balagere, Kannamangala, and Manduru — making
+              quality physiotherapy accessible to thousands of patients and families.
+            </p>
+            <p className="mt-3 text-[0.9375rem] leading-relaxed text-[var(--ink-soft)]">
+              We believe every individual deserves to live, move, and perform without pain or
+              physical limitations. Our multidisciplinary approach combines clinical expertise,
+              personalized treatment plans, modern rehabilitation, and patient-centered care.
             </p>
 
             <div className="about-fit__cards grid sm:grid-cols-2">
@@ -519,12 +544,12 @@ function About() {
                 {
                   n: "01",
                   t: "Our Mission",
-                  d: "Make world-class physiotherapy accessible across Bengaluru.",
+                  d: "Accessible, evidence-based physiotherapy, rehabilitation, and ergonomics that empower pain-free living.",
                 },
                 {
                   n: "02",
-                  t: "Our Vision",
-                  d: "A city that moves without pain — at any age, at any stage.",
+                  t: "Our Approach",
+                  d: "Treat the root cause, restore function, prevent recurrence, and improve quality of life.",
                 },
               ].map((x) => (
                 <div
@@ -540,9 +565,9 @@ function About() {
 
             <div className="about-fit__stats grid grid-cols-3">
               {[
-                [<Counter to={1000} suffix="+" />, "Patients"],
                 [<Counter to={5} />, "Clinics"],
-                [<Counter to={98} suffix="%" />, "Satisfaction"],
+                ["2017", "Founded"],
+                [<Counter to={1000} suffix="+" />, "Patients"],
               ].map(([v, l], i) => (
                 <div key={i}>
                   <div className="about-fit__stat-n font-extrabold text-[var(--ink)]">{v}</div>
@@ -559,33 +584,135 @@ function About() {
   );
 }
 
+/* ------------------------------ MISSION ------------------------------ */
+
+function Mission() {
+  return (
+    <section className="landing-section relative landing-section-tone--muted">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.35 }}
+          className="relative overflow-hidden rounded-[32px] bg-[var(--ink)] px-6 py-10 text-white sm:px-12 sm:py-14 lg:px-16"
+        >
+          <div
+            className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[var(--saffron)]/20 blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-white/10 blur-3xl"
+            aria-hidden
+          />
+          <div className="relative z-10 max-w-3xl">
+            <div className="type-eyebrow text-[var(--saffron)]">Our Mission</div>
+            <blockquote className="mt-4 text-balance text-xl font-semibold leading-snug tracking-tight sm:text-2xl lg:text-[1.75rem] lg:leading-snug">
+              To provide accessible, evidence-based physiotherapy, rehabilitation, and ergonomics
+              solutions that empower individuals to achieve pain-free living, optimal movement, and
+              improved quality of life.
+            </blockquote>
+            <p className="mt-6 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-[15px]">
+              CorpErgo continues to be a trusted partner in health and recovery for the Greater
+              Whitefield community — with compassion, clinical excellence, and a commitment to
+              transforming lives through movement.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 /* ------------------------------ TREATMENTS ------------------------------ */
 
-const TREATMENTS = [
+const EXPERTISE = [
   {
     icon: Bone,
-    title: "Orthopaedic Physiotherapy",
-    desc: "Joint, bone & post-fracture rehabilitation.",
+    title: "Orthopedic Rehabilitation",
+    desc: "Comprehensive treatment for joints, bones, and post-operative recovery.",
     image: treatmentOrthopaedic,
+    items: [
+      "Back and neck pain",
+      "Knee pain and arthritis",
+      "Shoulder injuries and frozen shoulder",
+      "Sports injuries",
+      "Ligament and tendon injuries",
+      "Fractures and post-operative rehabilitation",
+      "Joint replacement recovery",
+    ],
   },
   {
     icon: Brain,
     title: "Neurological Rehabilitation",
-    desc: "Stroke, Parkinson's and nerve injury recovery.",
+    desc: "Specialized programs for patients recovering from neurological conditions.",
     image: treatmentNeurological,
-  },
-  {
-    icon: Dumbbell,
-    title: "Sports Injury Rehab",
-    desc: "Return-to-sport programs for athletes.",
-    image: treatmentSports,
+    items: [
+      "Stroke and paralysis",
+      "Parkinson's disease",
+      "Multiple sclerosis",
+      "Spinal cord injuries",
+      "Neuromuscular disorders",
+      "Balance and coordination problems",
+    ],
   },
   {
     icon: Activity,
-    title: "Musculoskeletal Therapy",
-    desc: "Manual therapy for pain & mobility.",
+    title: "Pain Management",
+    desc: "We identify and treat the root cause of pain — not only the symptoms.",
     image: treatmentMusculoskeletal,
+    items: [
+      "Chronic pain conditions",
+      "Sciatica",
+      "Cervical and lumbar spondylosis",
+      "Migraine-related musculoskeletal issues",
+      "Muscle spasms and stiffness",
+      "Repetitive strain injuries",
+    ],
   },
+  {
+    icon: Baby,
+    title: "Pediatric Rehabilitation",
+    desc: "Dedicated care for children with developmental and physical challenges.",
+    image: treatmentPediatric,
+    items: [
+      "Developmental delays",
+      "Cerebral palsy",
+      "Pediatric neurological conditions",
+      "Postural and movement disorders",
+      "Motor coordination difficulties",
+    ],
+  },
+  {
+    icon: Dumbbell,
+    title: "Sports Physiotherapy",
+    desc: "Performance rehabilitation for athletes, fitness enthusiasts, and active individuals.",
+    image: treatmentSports,
+    items: [
+      "Injury assessment and treatment",
+      "Sports-specific rehabilitation",
+      "Performance enhancement programs",
+      "Return-to-sport conditioning",
+      "Injury prevention strategies",
+    ],
+  },
+  {
+    icon: Monitor,
+    title: "Corporate Ergonomics",
+    desc: "Workstation, posture, and wellness programs for healthier, more productive workplaces.",
+    image: treatmentErgonomics,
+    items: [
+      "Ergonomic workstation assessments",
+      "Posture correction programs",
+      "Work-related injury prevention",
+      "Corporate wellness workshops",
+      "Employee health awareness sessions",
+      "Executive postural reform and movement optimization",
+    ],
+  },
+] as const;
+
+const ADDITIONAL_PROGRAMS = [
   {
     icon: HeartPulse,
     title: "Women's Health",
@@ -593,15 +720,9 @@ const TREATMENTS = [
     image: treatmentWomensHealth,
   },
   {
-    icon: Baby,
-    title: "Pediatric Physiotherapy",
-    desc: "Gentle developmental support for children.",
-    image: treatmentPediatric,
-  },
-  {
     icon: UserRound,
     title: "Geriatric Physiotherapy",
-    desc: "Balance, strength & fall prevention.",
+    desc: "Balance, strength, and fall prevention.",
     image: treatmentGeriatric,
   },
   {
@@ -610,7 +731,7 @@ const TREATMENTS = [
     desc: "Structured recovery after operations.",
     image: treatmentPostSurgery,
   },
-];
+] as const;
 
 function Treatments() {
   return (
@@ -623,49 +744,90 @@ function Treatments() {
           viewport={{ once: true }}
           className="max-w-2xl section-header"
         >
-          <div className="type-eyebrow text-[var(--bronze)]">Treatments</div>
+          <div className="type-eyebrow text-[var(--bronze)]">Areas of Expertise</div>
           <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
-            Specialized programs, delivered with precision.
+            Specialized programs for every stage of recovery.
           </h2>
           <p className="type-lead text-[var(--ink-soft)]">
-            Every physiotherapy plan is built around your assessment, pain pattern, mobility goals
-            and evidence-based protocols, not a template.
+            From orthopedic and neurological rehab to sports performance and corporate ergonomics —
+            every plan is built around your assessment, goals, and lifestyle.
           </p>
         </motion.div>
-        {/*
-          Mobile: narrower card so the next one peeks in before any swipe.
-          No opacity:0 on enter — peeked cards must stay visible.
-        */}
-        <div className="treatments-scroll mt-8 flex gap-4 overflow-x-auto overscroll-x-contain scroll-pr-4 pb-4 pr-4 snap-x snap-mandatory sm:-mr-6 sm:gap-5 sm:scroll-pr-6 sm:pr-6 md:mr-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:pb-0 md:pr-0 md:snap-none lg:grid-cols-4 lg:gap-6">
-          {TREATMENTS.map(({ icon: Icon, title, desc, image }, i) => (
-            <motion.div
+
+        <div className="treatments-scroll mt-8 flex gap-4 overflow-x-auto overscroll-x-contain scroll-pr-4 pb-4 pr-4 snap-x snap-mandatory sm:-mr-6 sm:gap-5 sm:scroll-pr-6 sm:pr-6">
+          {EXPERTISE.map(({ icon: Icon, title, desc, image, items }, i) => (
+            <motion.article
               key={title}
               initial={{ opacity: 1, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.05 }}
               transition={{ delay: Math.min(i, 2) * 0.04, duration: 0.45 }}
-              className="group relative w-[calc(100vw-5.25rem)] max-w-[20rem] shrink-0 grow-0 snap-start rounded-3xl bg-white p-6 transition-all overflow-hidden sm:w-[20rem] md:w-auto md:max-w-none landing-card-hover site-card"
+              className="group relative flex w-[calc(100vw-5.25rem)] max-w-[21rem] shrink-0 grow-0 snap-start flex-col overflow-hidden rounded-3xl bg-white p-6 transition-all sm:w-[21rem] landing-card-hover site-card"
             >
               <img
                 src={image}
                 alt=""
                 aria-hidden
-                className="absolute inset-0 h-full w-full object-cover opacity-99"
+                className="absolute inset-0 h-full w-full object-cover"
                 loading="lazy"
                 width={640}
                 height={800}
                 decoding="async"
               />
-              <div className="absolute inset-0 bg-black/80" aria-hidden />
-              <div className="relative z-10">
-                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 text-white backdrop-blur-[2px] group-hover:bg-[var(--sage)] group-hover:text-white transition-colors">
+              <div className="absolute inset-0 bg-black/78" aria-hidden />
+              <div className="relative z-10 flex min-h-[22.5rem] flex-col">
+                <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 text-white backdrop-blur-[2px] transition-colors group-hover:bg-[var(--sage)] group-hover:text-white">
                   <Icon className="h-6 w-6" />
                 </div>
-                <h3 className="mt-5 type-h3 font-bold text-white leading-snug">{title}</h3>
-                <div className="mt-2 type-body-sm text-white/80">{desc}</div>
+                <h3 className="mt-5 type-h3 font-bold leading-snug text-white">{title}</h3>
+                <p className="mt-2 type-body-sm text-white/80">{desc}</p>
+                <ul className="mt-4 space-y-2">
+                  {items.slice(0, 4).map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm text-white/90">
+                      <Check
+                        className="mt-0.5 h-4 w-4 shrink-0 text-[var(--saffron)]"
+                        aria-hidden
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </motion.div>
+            </motion.article>
           ))}
+        </div>
+
+        <div className="mt-10">
+          <div className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-[var(--ink-soft)]">
+            Additional programs
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {ADDITIONAL_PROGRAMS.map(({ icon: Icon, title, desc, image }) => (
+              <div
+                key={title}
+                className="group relative overflow-hidden rounded-3xl bg-white p-5 landing-card-hover site-card"
+              >
+                <img
+                  src={image}
+                  alt=""
+                  aria-hidden
+                  className="absolute inset-0 h-full w-full object-cover opacity-90"
+                  loading="lazy"
+                  width={640}
+                  height={400}
+                  decoding="async"
+                />
+                <div className="absolute inset-0 bg-black/75" aria-hidden />
+                <div className="relative z-10">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 text-white">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-4 text-base font-bold text-white">{title}</h3>
+                  <p className="mt-1 text-sm text-white/80">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
@@ -677,45 +839,139 @@ function Treatments() {
 function WhyChoose() {
   const items = [
     {
-      t: "Evidence-Based Treatment",
-      d: "Protocols grounded in clinical research and measurable outcomes.",
+      icon: GraduationCap,
+      t: "Expert Clinical Leadership",
+      d: "Led by Dr. Pinky Dutta (MPT, PhD), CorpErgo combines academic excellence with extensive clinical experience to deliver evidence-based care.",
     },
     {
-      t: "Certified Physiotherapists",
-      d: "Licensed experts with specialization in orthopaedic, neuro & sports.",
+      icon: ClipboardList,
+      t: "Personalized Treatment Plans",
+      d: "Every patient receives an individualized assessment and a rehabilitation program tailored to their condition, goals, and lifestyle.",
     },
-    { t: "Modern Equipment", d: "Latest rehabilitation tools for faster, safer recovery." },
-    { t: "Individual Care", d: "One-on-one sessions — never a shared or hurried appointment." },
-    { t: "5 Bengaluru Clinics", d: "Chansandra, Balagere, Muthsandra, Kannamangala & Manduru." },
-    { t: "Affordable Care", d: "Transparent pricing and flexible session packages." },
+    {
+      icon: HeartPulse,
+      t: "Holistic Recovery Approach",
+      d: "We focus not only on pain relief but also on restoring function, improving mobility, preventing recurrence, and enhancing quality of life.",
+    },
+    {
+      icon: MapPin,
+      t: "Community-Focused Care",
+      d: "Five conveniently located centers across Greater Whitefield — Chansandra, Muthsandra, Balagere, Kannamangala, and Manduru.",
+    },
+    {
+      icon: Sparkles,
+      t: "Advanced Rehabilitation Techniques",
+      d: "Our therapists use modern physiotherapy methods and clinically proven practices for effective, sustainable results.",
+    },
+    {
+      icon: Building2,
+      t: "Corporate Ergonomics Expertise",
+      d: "Specialized workstation assessments, posture correction, and wellness programs that help organizations build healthier workplaces.",
+    },
   ];
   return (
-    <section className="landing-section relative landing-section-tone--muted">
+    <section id="why" className="landing-section relative landing-section-tone--muted">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="max-w-2xl mb-6 sm:mb-8 section-header">
           <div className="type-eyebrow text-[var(--bronze)]">Why choose CorpErgo</div>
           <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
-            A different kind of physiotherapy clinic.
+            Clinical excellence, close to home.
           </h2>
+          <p className="type-lead text-[var(--ink-soft)]">
+            A trusted partner in health and recovery — serving Greater Whitefield with compassion
+            and a commitment to transforming lives through movement.
+          </p>
         </div>
 
-        <div className="scrollbar-hide -mr-4 flex gap-4 overflow-x-auto scroll-pr-4 pb-2 pr-4 snap-x snap-mandatory sm:-mr-6 sm:scroll-pr-6 sm:pr-6 md:mr-0 md:grid md:grid-cols-2 md:gap-5 md:overflow-visible md:pb-0 md:pr-0 md:snap-none lg:grid-cols-3">
-          {items.map((x, i) => (
-            <motion.div
-              key={x.t}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="relative min-w-[17.5rem] max-w-[17.5rem] shrink-0 snap-start rounded-3xl bg-white p-7 transition-all overflow-hidden sm:min-w-[19rem] sm:max-w-[19rem] sm:p-8 md:min-w-0 md:max-w-none landing-card-hover site-card"
-            >
-              <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[var(--sage)]/5 transition-transform duration-700" />
-              <div className="relative">
-                <div className="type-stat text-[var(--sage)]/25 transition-colors">0{i + 1}</div>
-                <h3 className="mt-3 type-h3 font-bold text-[var(--ink)]">{x.t}</h3>
-                <div className="mt-2 type-body-sm text-[var(--ink-soft)]">{x.d}</div>
-              </div>
-            </motion.div>
-          ))}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((x, i) => {
+            const Icon = x.icon;
+            return (
+              <motion.div
+                key={x.t}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: Math.min(i, 3) * 0.05, duration: 0.45 }}
+                className="relative rounded-3xl bg-white p-7 transition-all overflow-hidden sm:p-8 landing-card-hover site-card"
+              >
+                <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[var(--sage)]/5 transition-transform duration-700" />
+                <div className="relative">
+                  <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[var(--saffron-light)] text-[var(--saffron-deep)]">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="mt-4 type-stat text-[var(--sage)]/20 transition-colors">
+                    0{i + 1}
+                  </div>
+                  <h3 className="mt-2 type-h3 font-bold text-[var(--ink)]">{x.t}</h3>
+                  <div className="mt-2 type-body-sm text-[var(--ink-soft)]">{x.d}</div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------ WHO WE SERVE ------------------------------ */
+
+const AUDIENCES = [
+  { icon: Briefcase, label: "Working professionals" },
+  { icon: UserRound, label: "Senior citizens" },
+  { icon: Users, label: "Homemakers" },
+  { icon: Dumbbell, label: "Athletes and sports enthusiasts" },
+  { icon: Baby, label: "Children with developmental needs" },
+  { icon: Stethoscope, label: "Post-surgical patients" },
+  { icon: Activity, label: "Acute or chronic pain" },
+] as const;
+
+function WhoWeServe() {
+  return (
+    <section id="patients" className="landing-section relative landing-section-tone--plain">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-14">
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="section-header max-w-xl"
+          >
+            <div className="type-eyebrow text-[var(--bronze)]">Who we serve</div>
+            <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
+              Care for every age, every stage, every lifestyle.
+            </h2>
+            <p className="type-lead text-[var(--ink-soft)]">
+              Whether you are recovering from an injury, managing a long-term condition, seeking
+              postural correction, or looking to move better — CorpErgo offers comprehensive
+              rehabilitation designed to help you move better, feel better, and live better.
+            </p>
+          </motion.div>
+
+          <div className="flex flex-wrap gap-3">
+            {AUDIENCES.map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: Math.min(i, 4) * 0.04, duration: 0.4 }}
+                  className="flex min-w-[13.5rem] flex-1 items-center gap-3 rounded-2xl bg-[#f6f3ee] px-4 py-3.5 ring-1 ring-black/[0.04]"
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--saffron-light)] text-[var(--saffron-deep)]">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-sm font-bold leading-snug text-[var(--ink)]">
+                    {item.label}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>
@@ -1091,8 +1347,8 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
             Five clinics. One standard of care.
           </h2>
           <p className="type-lead mt-3 max-w-2xl text-[var(--ink-soft)]">
-            Same evidence-based physiotherapy at every CorpErgo location across Bengaluru — walk
-            in Mon-Sat, 8am-8pm.
+            Same evidence-based physiotherapy across Greater Whitefield — Chansandra, Muthsandra,
+            Balagere, Kannamangala, and Manduru. Walk in Mon-Sat, 8am-8pm.
           </p>
         </div>
 
@@ -1106,10 +1362,11 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
             <ChevronLeft className="h-5 w-5" />
           </button>
 
-          <div className="relative mx-auto min-h-[30rem] w-full flex-1 py-2 sm:min-h-[32rem] [--carousel-offset:22.5rem] sm:[--carousel-offset:27rem] lg:[--carousel-offset:30rem]">
+          <div className="relative mx-auto min-h-[32rem] w-full flex-1 py-6 sm:min-h-[34rem] sm:py-8 [--carousel-offset:16.75rem] sm:[--carousel-offset:21.25rem] lg:[--carousel-offset:23.5rem]">
             {CLINICS.map((c, i) => {
               const d = offsetOf(i);
               const visible = Math.abs(d) <= 1;
+              const isFront = d === 0;
               return (
                 <motion.div
                   key={c.name}
@@ -1117,11 +1374,12 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
                   initial={false}
                   animate={{
                     x: `calc(-50% + ${d} * var(--carousel-offset))`,
-                    y: "-50%",
-                    scale: d === 0 ? 1 : 0.94,
-                    opacity: visible ? (d === 0 ? 1 : 0.78) : 0,
-                    zIndex: d === 0 ? 10 : 5 - Math.abs(d),
-                    pointerEvents: d === 0 ? "auto" : "none",
+                    y: isFront ? "-50%" : "calc(-50% + 14px)",
+                    scale: isFront ? 1.08 : 0.86,
+                    opacity: visible ? (isFront ? 1 : 0.58) : 0,
+                    zIndex: isFront ? 10 : 5 - Math.abs(d),
+                    filter: isFront ? "brightness(1)" : "brightness(0.88)",
+                    pointerEvents: isFront ? "auto" : "none",
                   }}
                   transition={{ type: "spring", stiffness: 320, damping: 32 }}
                   aria-hidden={!visible}
@@ -1129,7 +1387,9 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
                   <div
                     className={cn(
                       "group flex flex-col overflow-hidden rounded-3xl bg-white transition-all landing-card-hover site-card",
-                      d === 0 ? "shadow-[var(--shadow-elev)]" : "shadow-[var(--shadow-soft)]",
+                      isFront
+                        ? "shadow-[0_28px_56px_rgba(15,23,42,0.2)] ring-1 ring-black/[0.06]"
+                        : "shadow-[var(--shadow-soft)]",
                     )}
                   >
                     <div className="relative aspect-[16/10] overflow-hidden bg-[var(--ivory)]">
@@ -1227,7 +1487,7 @@ function Founder() {
             <div className="founder-fit__media overflow-hidden rounded-[28px] shadow-[var(--shadow-elev)] ring-1 ring-black/[0.04]">
               <img
                 src={pinkyImg}
-                alt="Dr. Pinky Dutta PT, Head of Department at CorpErgo"
+                alt="Dr. Pinky Dutta, MPT, PhD, Founder and Clinical Director at CorpErgo"
                 className="aspect-[4/5] h-full w-full object-cover object-[center_18%] sm:object-[center_15%] lg:aspect-auto"
                 width={640}
                 height={800}
@@ -1237,10 +1497,10 @@ function Founder() {
             </div>
             <div className="founder-fit__badge absolute left-4 right-4 sm:left-6 sm:right-auto rounded-2xl bg-white/95 backdrop-blur-md shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
               <div className="founder-fit__badge-kicker uppercase tracking-[0.18em] font-bold text-[var(--bronze)]">
-                Founder of CorpErgo
+                Founder · Est. 2017
               </div>
               <div className="founder-fit__badge-copy font-bold text-[var(--ink)] leading-snug">
-                Leading care across Bengaluru
+                Clinical leadership across Greater Whitefield
               </div>
             </div>
           </motion.div>
@@ -1274,19 +1534,19 @@ function Founder() {
             <div className="founder-fit__meta flex flex-col sm:flex-row sm:items-end">
               <div>
                 <div className="founder-fit__name font-extrabold tracking-tight text-[var(--ink)]">
-                  Dr. Pinky Dutta PT
+                  Dr. Pinky Dutta
                 </div>
                 <div className="founder-fit__role font-semibold text-[var(--ink-soft)]">
-                  Head of the Department
+                  Founder &amp; Clinical Director · MPT, PhD
                 </div>
                 <div className="founder-fit__specialty text-[var(--ink-soft)]/80">
-                  Musculoskeletal &amp; Sports Physiotherapist
+                  Physiotherapy, Sports Rehabilitation &amp; Ergonomics
                 </div>
               </div>
               <div className="founder-fit__divider hidden sm:block bg-[var(--ink)]/10" />
               <p className="founder-fit__clinics text-[var(--ink-soft)] max-w-xs">
-                Owner of CorpErgo&apos;s five Bengaluru clinics — Chansandra, Balagere, Muthsandra,
-                Kannamangala &amp; Manduru.
+                Founded CorpErgo in 2017. Today the center serves Greater Whitefield through five
+                clinics — Chansandra, Muthsandra, Balagere, Kannamangala, and Manduru.
               </p>
             </div>
           </motion.div>
@@ -1322,7 +1582,7 @@ const FAQ_ITEMS = [
   {
     question: "Where are CorpErgo physiotherapy clinics near me in Bengaluru?",
     answer:
-      "CorpErgo has physiotherapy clinics in Chansandra, Balagere, Muthsandra, Kannamangala, and Manduru, serving Whitefield, Varthur, Bengaluru East, and nearby areas.",
+      "CorpErgo has physiotherapy clinics in Chansandra, Balagere, Muthsandra, Kannamangala, and Manduru, serving Greater Whitefield, Varthur, Bengaluru East, and nearby areas.",
   },
   {
     question: "Do you treat back pain, neck pain, knee pain, and posture problems?",
@@ -1337,7 +1597,7 @@ const FAQ_ITEMS = [
   {
     question: "Do you treat sports injuries and post-surgery rehab?",
     answer:
-      "Yes. We offer sports injury rehabilitation, orthopedic recovery, neurological rehab, women's health, pediatric care, and structured post-operative programs.",
+      "Yes. We offer orthopedic and neurological rehabilitation, pain management, sports physiotherapy, pediatric care, corporate ergonomics, women's health, and structured post-operative programs.",
   },
   {
     question: "What should I wear and bring?",
@@ -1365,8 +1625,8 @@ function FAQ({ onBookClick }: { onBookClick: () => void }) {
               Common questions, answered clearly.
             </h2>
             <p className="type-lead text-[var(--ink-soft)]">
-              Everything you need to know before your first visit — booking, sessions, clinics,
-              and what to expect from CorpErgo care.
+              Everything you need to know before your first visit — booking, sessions, clinics, and
+              what to expect from CorpErgo care.
             </p>
             <button
               type="button"
@@ -1480,8 +1740,8 @@ function CTA({ onBookClick }: { onBookClick: () => void }) {
                 variants={fadeItem}
                 className="type-lead mt-4 text-white/90 font-medium max-w-xl"
               >
-                Book a first assessment with a certified CorpErgo physiotherapist — at the clinic
-                closest to you.
+                Book a first assessment with a certified CorpErgo physiotherapist — at the Greater
+                Whitefield clinic closest to you.
               </motion.p>
               <motion.div variants={fadeItem} className="mt-8 flex flex-wrap gap-3">
                 <button
@@ -1523,12 +1783,14 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
                 <div className="corpergo-brand-title type-h4 text-[var(--ink)]">
                   <span className="text-[var(--saffron)]">Corp</span>Ergo
                 </div>
-                <div className="corpergo-brand-tagline">Physiotherapy &amp; Rehabilitation</div>
+                <div className="corpergo-brand-tagline">
+                  Physiotherapy &amp; Sports Rehabilitation
+                </div>
               </div>
             </div>
             <p className="mt-4 text-sm leading-relaxed max-w-xs">
-              Evidence-based physiotherapy across five Bengaluru clinics — pain relief, mobility,
-              and long-term wellness.
+              CorpErgo Physiotherapy &amp; Sports Rehabilitation Center — restoring movement,
+              relieving pain, and transforming lives across Greater Whitefield since 2017.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <a
@@ -1651,8 +1913,8 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-black/[0.06] pt-6 text-xs sm:flex-row">
           <div>
-            &copy; {new Date().getFullYear()} CorpErgo Physiotherapy. All rights reserved. Powered
-            by{" "}
+            &copy; {new Date().getFullYear()} CorpErgo Physiotherapy &amp; Sports Rehabilitation
+            Center. All rights reserved. Powered by{" "}
             <a
               href="https://northnode.live"
               target="_blank"
@@ -1817,9 +2079,11 @@ export function LandingPage() {
       <FloatingBackgroundLayout>
         <MotionMarquee />
         <About />
+        <Mission />
         <Treatments />
         <Founder />
         <WhyChoose />
+        <WhoWeServe />
         <VideoStories />
         <Testimonials />
         <Clinics onBookClick={handleBookClick} />
