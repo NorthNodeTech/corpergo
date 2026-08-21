@@ -247,7 +247,7 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         <div
           className={cn(
-            "landing-nav__shell flex min-h-12 min-w-0 items-center justify-between gap-2 rounded-2xl px-2.5 py-2 transition-all duration-300 sm:min-h-[3.35rem] sm:gap-3 sm:px-3",
+            "landing-nav__shell flex min-h-12 min-w-0 items-center justify-between gap-2 rounded-2xl px-6 py-2 transition-all duration-300 sm:min-h-[3.35rem] sm:gap-3 sm:px-8",
             "lg:grid lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-x-3 xl:gap-x-4",
             scrolled &&
               "border border-black/[0.08] bg-white/92 shadow-[0_8px_32px_rgba(15,23,42,0.08)] backdrop-blur-md",
