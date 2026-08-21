@@ -1,9 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Factory, Monitor, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, Factory, Monitor, ShieldCheck, Camera } from "lucide-react";
 import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
 import { PhoneAppIcon, WhatsAppIcon } from "@/shared/components/icons/BrandIcons";
-import ergonomicsIndustrialImg from "@/assets/ergonomics/ergonomics-industrial-coaching.webp";
-import ergonomicsSafeOpImg from "@/assets/ergonomics/ergonomics-safe-operation.webp";
+import pinkyErgoImg from "@/assets/pinky ergonomics.jpeg";
+import ergoTeamPhoto from "@/assets/ergonomics 1.jpeg";
+import ergoWorkshopSession from "@/assets/ergonomics 2.jpeg";
+import ergoTherapyCamp from "@/assets/ergonomics 3.jpeg";
+import ergoConferenceTalk from "@/assets/ergonomics 4.jpeg";
 import {
   SUPPORT_PHONE,
   SUPPORT_PHONE_DISPLAY,
@@ -38,6 +41,33 @@ const SERVICES = [
   },
 ] as const;
 
+const GALLERY_ITEMS = [
+  {
+    src: ergoTherapyCamp,
+    alt: "Free physiotherapy camp — professionals assessing and consulting attendees on ergonomic health",
+    caption: "Free Physiotherapy Camp",
+    desc: "On-site health assessments and ergonomic consultations for workers and community members.",
+  },
+  {
+    src: ergoWorkshopSession,
+    alt: "Interactive ergonomics awareness workshop with employees seated and a physiotherapist leading the session",
+    caption: "Ergonomics Awareness Workshop",
+    desc: "Interactive sessions educating teams on posture, safe practices, and injury prevention techniques.",
+  },
+  {
+    src: ergoTeamPhoto,
+    alt: "CorpErgo team of physiotherapists and ergonomists after a successful workplace wellness camp",
+    caption: "Our Expert Team",
+    desc: "Dedicated physiotherapists and ergonomists committed to making workplaces safer and healthier.",
+  },
+  {
+    src: ergoConferenceTalk,
+    alt: "CorpErgo physiotherapist presenting at MITHRACON 2025 conference on sports medicine and rehabilitation",
+    caption: "Conference Speaker — MITHRACON 2025",
+    desc: "Sharing expertise on sports medicine, arthroscopy, and rehabilitation at leading physiotherapy conferences.",
+  },
+] as const;
+
 export function ErgonomicsPage() {
   return (
     <main className="mobile-compact-page min-h-dvh bg-[var(--ivory)] text-[var(--ink)]">
@@ -53,36 +83,24 @@ export function ErgonomicsPage() {
         </div>
 
         <section className="mt-5 grid items-center gap-6 lg:mt-12 lg:grid-cols-2 lg:gap-14">
-          <div className="relative grid grid-cols-[1.15fr_0.85fr] gap-2.5 sm:gap-4">
+          <div className="relative flex flex-col gap-2.5 sm:gap-4">
             <div className="overflow-hidden rounded-[22px] shadow-[var(--shadow-elev)] ring-1 ring-black/5 sm:rounded-[28px]">
               <img
-                src={ergonomicsIndustrialImg}
-                alt="CorpErgo ergonomist coaching a factory operator on safe machine posture"
-                className="h-full min-h-[14rem] w-full object-cover sm:min-h-[28rem]"
-                width={900}
-                height={1200}
+                src={pinkyErgoImg}
+                alt="CorpErgo physiotherapist and ergonomics specialist in branded lab coat"
+                className="h-full min-h-[18rem] w-full object-cover object-top sm:min-h-[28rem]"
+                width={1080}
+                height={1080}
                 decoding="async"
               />
             </div>
-            <div className="flex flex-col gap-2.5 sm:gap-4">
-              <div className="overflow-hidden rounded-[22px] shadow-[var(--shadow-soft)] ring-1 ring-black/5 sm:rounded-[28px]">
-                <img
-                  src={ergonomicsSafeOpImg}
-                  alt="Hands-on industrial ergonomics training for safe equipment operation"
-                  className="aspect-[3/4] h-full w-full object-cover"
-                  width={720}
-                  height={960}
-                  decoding="async"
-                />
+            <div className="rounded-[20px] bg-[var(--ink)] px-3.5 py-3 text-white sm:rounded-[24px] sm:px-5 sm:py-5">
+              <div className="text-xl font-extrabold tracking-tight text-[var(--saffron)] sm:text-2xl">
+                Safe use
               </div>
-              <div className="rounded-[20px] bg-[var(--ink)] px-3.5 py-3 text-white sm:rounded-[24px] sm:px-5 sm:py-5">
-                <div className="text-xl font-extrabold tracking-tight text-[var(--saffron)] sm:text-2xl">
-                  Safe use
-                </div>
-                <p className="mt-1 text-xs leading-snug text-white/75 sm:text-sm">
-                  Teach workers how to operate tools and machines without injury.
-                </p>
-              </div>
+              <p className="mt-1 text-xs leading-snug text-white/75 sm:text-sm">
+                Teach workers how to operate tools and machines without injury.
+              </p>
             </div>
           </div>
 
@@ -145,6 +163,50 @@ export function ErgonomicsPage() {
                 </div>
                 <h3 className="mt-4 text-base font-bold text-[var(--ink)]">{title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Gallery — Camps, Workshops & Conferences */}
+        <section className="mt-8 sm:mt-16">
+          <div className="max-w-2xl">
+            <div className="type-eyebrow text-[var(--bronze)]">
+              <Camera className="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
+              In action
+            </div>
+            <h2 className="type-h2 mt-2 font-extrabold tracking-tight text-balance">
+              Workshops, camps &amp; conferences.
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)] sm:text-[0.9375rem]">
+              From free community physiotherapy camps to national-level conference presentations — see
+              our team at work.
+            </p>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4">
+            {GALLERY_ITEMS.map(({ src, alt, caption, desc }) => (
+              <div
+                key={caption}
+                className="group overflow-hidden rounded-[22px] bg-white shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:rounded-[28px]"
+              >
+                <div className="relative overflow-hidden">
+                  <img
+                    src={src}
+                    alt={alt}
+                    className="aspect-[16/10] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    decoding="async"
+                    loading="lazy"
+                  />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/40 to-transparent" />
+                </div>
+                <div className="px-4 py-3.5 sm:px-5 sm:py-4">
+                  <h3 className="text-[0.9375rem] font-bold leading-tight text-[var(--ink)]">
+                    {caption}
+                  </h3>
+                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-[var(--ink-soft)]">
+                    {desc}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

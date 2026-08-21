@@ -48,9 +48,14 @@ import {
   YouTubeIcon,
   WhatsAppIcon,
 } from "@/shared/components/icons/BrandIcons";
-import heroImg from "@/assets/corpergo-hero.webp";
+import heroImg from "@/assets/corpergo hero sec.jpeg";
 import aboutImg from "@/assets/abt.webp";
 import pinkyImg from "@/assets/Pinkyce.webp";
+import channasandraImg from "@/assets/channasandra clinic.jpeg";
+import balagereImg from "@/assets/balagere clinic.jpeg";
+import muthsandraImg from "@/assets/muthsandra clinic.jpeg";
+import kannamangalaImg from "@/assets/kannamangala clinic.jpeg";
+import manduruImg from "@/assets/manduru clinic.jpeg";
 import reelClinicMoments from "@/assets/reels/reel-clinic-moments.webp";
 import reelHandsOnCare from "@/assets/reels/reel-hands-on-care.webp";
 import reelRecoveryMotion from "@/assets/reels/reel-recovery-motion.webp";
@@ -224,12 +229,9 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
 
   const items = [
     { label: "About", href: "#about" },
-    { label: "Treatments", href: "#treatments" },
     { label: "Ergonomics", to: "/ergonomics" as const },
     { label: "Testimonials", href: "#testimonials" },
     { label: "Videos", href: "#videos" },
-    { label: "Clinics", href: "#clinics" },
-    { label: "FAQ", href: "#faq" },
     { label: "Contact", href: "#contact" },
   ];
 
@@ -401,9 +403,8 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
           decoding="async"
           fetchPriority="high"
         />
-        <div className="absolute inset-0 bg-neutral-900/18" />
-        <div className="absolute inset-0 bg-gradient-to-r from-neutral-900/45 via-neutral-900/22 to-neutral-900/5" />
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-900/35 via-transparent to-neutral-900/12" />
+        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
       </div>
 
       <div className="hero-fit__inner relative z-10">
@@ -412,29 +413,29 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
             variants={stagger}
             initial="hidden"
             animate="show"
-            className="max-w-[34rem] lg:max-w-[38rem]"
+            className="mx-auto flex max-w-[48rem] flex-col items-center text-center lg:max-w-[56rem]"
           >
             <motion.h1
               variants={fadeItem}
-              className="hero-fit__title text-white text-balance drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white text-balance drop-shadow-[0_4px_32px_rgba(0,0,0,0.5)]"
             >
               Physiotherapy &amp;{" "}
               <span className="text-[var(--saffron)]">Rehabilitation</span>
             </motion.h1>
 
-            <motion.p variants={fadeItem} className="hero-fit__body text-white/88 drop-shadow-sm">
+            <motion.p variants={fadeItem} className="mt-6 max-w-3xl text-xl sm:text-2xl leading-relaxed text-white/90 drop-shadow-md">
               Personalised physiotherapy and sports rehab to help you move better, every day.
             </motion.p>
 
             <motion.div
               variants={fadeItem}
-              className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2"
+              className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-3"
             >
               <a
                 href={`tel:${SUPPORT_PHONE}`}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 transition-colors hover:text-[var(--saffron-light)]"
+                className="inline-flex items-center gap-2 text-base sm:text-lg font-semibold text-white/90 transition-colors hover:text-[var(--saffron-light)]"
               >
-                <PhoneAppIcon className="h-4 w-4 shrink-0" />
+                <PhoneAppIcon className="h-5 w-5 shrink-0" />
                 {SUPPORT_PHONE_DISPLAY}
               </a>
               <a
@@ -442,9 +443,9 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp CorpErgo for a consultation"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 transition-colors hover:text-[var(--saffron-light)]"
+                className="inline-flex items-center gap-2 text-base sm:text-lg font-semibold text-white/90 transition-colors hover:text-[var(--saffron-light)]"
               >
-                <WhatsAppIcon className="h-4 w-4 shrink-0" />
+                <WhatsAppIcon className="h-5 w-5 shrink-0" />
                 {SUPPORT_PHONE_ALT_DISPLAY}
               </a>
               <SocialIconRow onDark />
@@ -452,18 +453,18 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
 
             <motion.div
               variants={fadeItem}
-              className="hero-fit__actions flex flex-col sm:flex-row sm:flex-wrap sm:items-center"
+              className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row sm:flex-wrap"
             >
               <button
                 onClick={onBookClick}
-                className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--saffron)] hover:bg-[var(--saffron-deep)] font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 sm:w-auto cursor-pointer focus:outline-none"
+                className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--saffron)] px-6 py-3.5 sm:px-8 sm:py-4 text-base sm:text-lg font-bold text-white shadow-xl transition-all hover:-translate-y-1 hover:bg-[var(--saffron-deep)] sm:w-auto cursor-pointer focus:outline-none"
               >
                 Book Appointment
-                <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
               </button>
               <a
                 href="#treatments"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/12 font-semibold text-white shadow-sm ring-1 ring-white/25 backdrop-blur-md transition-all hover:bg-white/20 sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/12 px-6 py-3.5 sm:px-8 sm:py-4 text-base sm:text-lg font-bold text-white shadow-lg ring-1 ring-white/25 backdrop-blur-md transition-all hover:bg-white/20 sm:w-auto"
               >
                 Explore Treatments
               </a>
@@ -471,12 +472,12 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
 
             <motion.div
               variants={fadeItem}
-              className="hero-fit__stats hidden max-w-md grid-cols-3 sm:grid"
+              className="mt-10 hidden w-full max-w-xl grid-cols-3 gap-4 sm:grid"
             >
               {heroStats.map(([n, l]) => (
-                <div key={l} className="text-left">
-                  <div className="hero-fit__stat-n font-extrabold text-white">{n}</div>
-                  <div className="hero-fit__stat-l mt-0.5 font-semibold uppercase tracking-widest text-white/70">
+                <div key={l} className="text-center">
+                  <div className="text-2xl sm:text-3xl font-black text-white">{n}</div>
+                  <div className="mt-0.5 text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-white/70">
                     {l}
                   </div>
                 </div>
@@ -1388,7 +1389,13 @@ function Testimonials() {
 
 /* ------------------------------ CLINICS ------------------------------ */
 
-const CLINIC_PHOTOS = [heroImg, aboutImg, reelClinicMoments, reelHandsOnCare, reelRecoveryMotion];
+const CLINIC_PHOTOS = [
+  channasandraImg,
+  balagereImg,
+  muthsandraImg,
+  kannamangalaImg,
+  manduruImg
+];
 
 const CLINICS = CLINIC_LOCATIONS.map((clinic, i) => ({
   name: clinic.shortName,
@@ -1684,29 +1691,9 @@ const FAQ_ITEMS = [
       "A certified physiotherapist will review your history, assess movement and pain, explain findings in plain language, and outline a personalized treatment plan with clear next steps.",
   },
   {
-    question: "How long is a typical session?",
-    answer:
-      "Most sessions run 45-60 minutes depending on your condition and treatment plan. Follow-up visits may be shorter once your program is established.",
-  },
-  {
-    question: "Which CorpErgo clinic should I choose?",
-    answer:
-      "Pick the location closest to you — Channasandra (Kadugodi, Whitefield), Balagere (Varthur), Muthsandra (Madhura Nagar, Varthur), Kannamangala (Whitefield–Hoskote Road), or Manduru (Budigere Old Madras Road). Every clinic follows the same evidence-based standards of care.",
-  },
-  {
-    question: "Where are CorpErgo physiotherapy clinics near me in Bengaluru?",
-    answer:
-      "CorpErgo has physiotherapy clinics in Channasandra (Kadugodi, Whitefield), Balagere (Varthur), Muthsandra (Madhura Nagar, Varthur), Kannamangala (Whitefield–Hoskote Road), and Manduru (Budigere Old Madras Road).",
-  },
-  {
     question: "Do you treat back pain, neck pain, knee pain, and posture problems?",
     answer:
       "Yes. CorpErgo physiotherapists assess posture, strength, mobility, and pain triggers, then create a treatment and exercise plan for back, neck, knee, shoulder, and other musculoskeletal problems.",
-  },
-  {
-    question: "Can I book online or by phone?",
-    answer:
-      "Yes. Book directly on our website without logging in, or sign in to your patient portal to manage appointments. You can also call us and our team will help you schedule.",
   },
   {
     question: "Do you treat sports injuries and post-surgery rehab?",
@@ -1714,14 +1701,9 @@ const FAQ_ITEMS = [
       "Yes. We offer orthopedic and neurological rehabilitation, pain management, sports physiotherapy, pediatric care, corporate and industrial ergonomics, online telerehabilitation, women's health, and structured post-operative programs.",
   },
   {
-    question: "Do you offer online physiotherapy or telerehabilitation?",
+    question: "Can I book online or by phone?",
     answer:
-      "Yes. If you cannot visit a clinic or live far from our Greater Whitefield branches, call us and book an online video session. A CorpErgo physiotherapist will assess you on a video call — this is not a home visit.",
-  },
-  {
-    question: "What should I wear and bring?",
-    answer:
-      "Wear comfortable clothing that allows easy movement. Bring a valid ID, any medical reports or scans, and a list of current medications if relevant.",
+      "Yes. Book directly on our website without logging in, or sign in to your patient portal to manage appointments. You can also call us and our team will help you schedule.",
   },
 ] as const;
 
@@ -1756,7 +1738,7 @@ function FAQ({ onBookClick }: { onBookClick: () => void }) {
           </button>
         </motion.div>
 
-        <div className="faq-grid mt-4 grid grid-cols-1 gap-2 sm:mt-8 sm:grid-cols-2 sm:gap-2.5 lg:gap-3">
+        <div className="faq-grid mx-auto mt-4 flex max-w-3xl flex-col gap-2 sm:mt-8 sm:gap-2.5 lg:gap-3">
           {FAQ_ITEMS.map((item, i) => {
             const isOpen = openIndex === i;
             return (
@@ -1822,7 +1804,7 @@ function CTA({ onBookClick }: { onBookClick: () => void }) {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.75, ease: easeOut }}
-          className="cta-panel relative overflow-hidden rounded-[28px] border-2 border-black/25 p-5 sm:rounded-[36px] sm:border-[3px] sm:p-16 lg:p-20 grain bg-[var(--structure-maroon)]"
+          className="cta-panel relative overflow-hidden rounded-[28px] border-2 border-black/25 p-5 sm:rounded-[36px] sm:border-[3px] sm:p-16 lg:p-20 grain bg-[var(--ink)]"
         >
           <div className="alive-orb alive-orb--cta-a absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
           <div className="alive-orb alive-orb--cta-b absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-[var(--saffron)]/20 blur-3xl" />
@@ -1863,7 +1845,7 @@ function CTA({ onBookClick }: { onBookClick: () => void }) {
               <motion.div variants={fadeItem} className="cta-actions mt-5 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
                 <button
                   onClick={onBookClick}
-                  className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-[var(--structure-maroon)] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl cursor-pointer focus:outline-none sm:w-auto sm:py-3.5"
+                  className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-[var(--ink)] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl cursor-pointer focus:outline-none sm:w-auto sm:py-3.5"
                 >
                   Book Appointment
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
