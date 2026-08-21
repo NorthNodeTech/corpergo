@@ -1,32 +1,60 @@
 :root {
-  /* === Brand palette: white · black · saffron === */
+  /* === Brand: logo orange + burnt amber depth === */
   --saffron: #f28c28;
   --saffron-deep: #d97706;
   --saffron-light: #fff4e8;
 
+  --burnt-amber: #8a3324;
+  --burnt-amber-deep: #6e281c;
+  --burnt-amber-light: #f6ebe8;
+
   --canvas-bg: #ffffff;
   --structure-dark: #000000;
-  --structure-maroon: #000000;
+  --structure-maroon: var(--burnt-amber);
   --accent-orange: var(--saffron);
+
+  /*
+    Semantic tokens stay warm and brand-matched.
+    Cool teal/green were removed — they clash with the logo.
+  */
+  --sage: var(--saffron);
+  --sage-deep: var(--burnt-amber);
+  --sage-light: var(--saffron-light);
+
+  --teal: var(--saffron);
+  --teal-deep: var(--burnt-amber);
+  --teal-light: var(--saffron-light);
+
+  --bronze: var(--burnt-amber);
+  --bronze-light: var(--burnt-amber-light);
+
+  --pink-main: var(--saffron);
+  --pink-hover: var(--burnt-amber);
+  --pink-light: var(--saffron-light);
+  --pink-subtle: #fff8f0;
+
+  --ivory: #faf8f5;
+  --ink: #000000;
+  --ink-soft: #525252;
 
   /* === Core theme mapping === */
   --background: #ffffff;
-  --foreground: #000000;
+  --foreground: var(--ink);
 
   --card: #ffffff;
-  --card-foreground: #000000;
+  --card-foreground: var(--ink);
 
   --popover: #ffffff;
-  --popover-foreground: #000000;
+  --popover-foreground: var(--ink);
 
   --primary: #ffffff;
-  --primary-foreground: #000000;
+  --primary-foreground: var(--ink);
 
-  --secondary: #000000;
+  --secondary: var(--ink);
   --secondary-foreground: #ffffff;
 
   --muted: #f5f5f5;
-  --muted-foreground: #525252;
+  --muted-foreground: var(--ink-soft);
 
   --accent: var(--saffron);
   --accent-foreground: #000000;
@@ -34,35 +62,42 @@
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
-  --border: #d4d4d4;
+  --border: #e5e5e5;
   --card-border-width: 1px;
   --card-border-strong: rgba(0, 0, 0, 0.08);
-  --input: #d4d4d4;
+  --input: #e5e5e5;
   --ring: var(--saffron);
 
   --radius: 16px;
-
-  /* === Backwards compatibility === */
-  --sage: var(--saffron);
-  --sage-deep: var(--saffron-deep);
-  --teal: var(--saffron);
-  --bronze: #000000;
-  --pink-main: var(--saffron);
-  --pink-hover: var(--saffron-deep);
-  --pink-light: var(--saffron-light);
-  --pink-subtle: var(--saffron-light);
-  --ivory: #ffffff;
-  --ink: #000000;
-  --ink-soft: #525252;
 }
 
 .dark {
   --canvas-bg: #000000;
   --structure-dark: #ffffff;
-  --structure-maroon: #ffffff;
+  --structure-maroon: #e8a090;
   --saffron: #ff9933;
   --saffron-deep: #ffb347;
   --saffron-light: #2a2010;
+
+  --burnt-amber: #e07a5f;
+  --burnt-amber-deep: #c45c42;
+  --burnt-amber-light: #3a221c;
+
+  --sage: var(--saffron);
+  --sage-deep: var(--burnt-amber);
+  --sage-light: var(--saffron-light);
+
+  --teal: var(--saffron);
+  --teal-deep: var(--burnt-amber);
+  --teal-light: var(--saffron-light);
+
+  --bronze: var(--burnt-amber);
+  --bronze-light: var(--burnt-amber-light);
+
+  --pink-main: var(--saffron);
+  --pink-hover: var(--burnt-amber);
+  --pink-light: var(--saffron-light);
+  --pink-subtle: #2a2010;
 
   --background: #000000;
   --foreground: #ffffff;
@@ -94,6 +129,4 @@
   --ivory: #0a0a0a;
   --ink: #ffffff;
   --ink-soft: #a3a3a3;
-  --pink-light: #2a2010;
-  --pink-subtle: #2a2010;
 }

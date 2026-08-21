@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as DirectBookingRouteImport } from './routes/direct-booking'
+import { Route as ErgonomicsRouteImport } from './routes/ergonomics'
 import { Route as IndustrialErgonomicsRouteImport } from './routes/industrial-ergonomics'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PatientRouteImport } from './routes/patient'
@@ -51,6 +52,11 @@ const AdminRoute = AdminRouteImport.update({
 const DirectBookingRoute = DirectBookingRouteImport.update({
   id: '/direct-booking',
   path: '/direct-booking',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErgonomicsRoute = ErgonomicsRouteImport.update({
+  id: '/ergonomics',
+  path: '/ergonomics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndustrialErgonomicsRoute = IndustrialErgonomicsRouteImport.update({
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/direct-booking': typeof DirectBookingRoute
+  '/ergonomics': typeof ErgonomicsRoute
   '/industrial-ergonomics': typeof IndustrialErgonomicsRouteWithChildren
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/direct-booking': typeof DirectBookingRoute
+  '/ergonomics': typeof ErgonomicsRoute
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
   '/physio': typeof PhysioRouteWithChildren
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/direct-booking': typeof DirectBookingRoute
+  '/ergonomics': typeof ErgonomicsRoute
   '/industrial-ergonomics': typeof IndustrialErgonomicsRouteWithChildren
   '/login': typeof LoginRoute
   '/patient': typeof PatientRouteWithChildren
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/direct-booking'
+    | '/ergonomics'
     | '/industrial-ergonomics'
     | '/login'
     | '/patient'
@@ -307,6 +317,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/direct-booking'
+    | '/ergonomics'
     | '/login'
     | '/patient'
     | '/physio'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/direct-booking'
+    | '/ergonomics'
     | '/industrial-ergonomics'
     | '/login'
     | '/patient'
@@ -366,6 +378,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   DirectBookingRoute: typeof DirectBookingRoute
+  ErgonomicsRoute: typeof ErgonomicsRoute
   IndustrialErgonomicsRoute: typeof IndustrialErgonomicsRouteWithChildren
   LoginRoute: typeof LoginRoute
   PatientRoute: typeof PatientRouteWithChildren
@@ -396,6 +409,13 @@ declare module '@tanstack/react-router' {
       path: '/direct-booking'
       fullPath: '/direct-booking'
       preLoaderRoute: typeof DirectBookingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ergonomics': {
+      id: '/ergonomics'
+      path: '/ergonomics'
+      fullPath: '/ergonomics'
+      preLoaderRoute: typeof ErgonomicsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/industrial-ergonomics': {
@@ -670,6 +690,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   DirectBookingRoute: DirectBookingRoute,
+  ErgonomicsRoute: ErgonomicsRoute,
   IndustrialErgonomicsRoute: IndustrialErgonomicsRouteWithChildren,
   LoginRoute: LoginRoute,
   PatientRoute: PatientRouteWithChildren,

@@ -280,7 +280,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+              className="w-full rounded-xl border border-[var(--border)] bg-white px-3 py-2 text-sm font-semibold text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--saffron)]"
             />
             <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--ink-soft)] pointer-events-none" />
           </div>
@@ -290,7 +290,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
         <div className="rounded-2xl border border-[var(--saffron)]/25 bg-[var(--saffron-light)]/60 p-4 flex flex-col justify-between shadow-sm">
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
                 Daily Total Collection
               </span>
               <span className="rounded-full bg-[var(--saffron-light)] px-2.5 py-0.5 text-[10px] font-extrabold text-[var(--saffron-deep)]">
@@ -315,12 +315,12 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
             Payment Mode Breakdown
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <div className="rounded-xl bg-purple-50 border border-purple-100 p-2.5">
-              <div className="flex items-center gap-1.5 text-[11px] font-bold text-purple-800">
-                <Smartphone className="h-3.5 w-3.5 text-purple-600" />
+            <div className="rounded-xl bg-[var(--saffron-light)] border border-[var(--saffron)]/20 p-2.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--saffron-deep)]">
+                <Smartphone className="h-3.5 w-3.5 text-[var(--saffron)]" />
                 UPI
               </div>
-              <div className="mt-1 text-base font-extrabold text-purple-900">
+              <div className="mt-1 text-base font-extrabold text-[var(--ink)]">
                 ₹{methodBreakdown.UPI.toLocaleString("en-IN")}
               </div>
             </div>
@@ -421,7 +421,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold ${
                           p.paymentMethod === "UPI"
-                            ? "bg-purple-100 text-purple-800"
+                            ? "bg-[var(--saffron-light)] text-[var(--saffron-deep)]"
                             : p.paymentMethod === "Cash"
                             ? "bg-amber-100 text-amber-800"
                             : p.paymentMethod === "Card"
@@ -502,7 +502,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                       value={patientName}
                       onChange={(e) => setPatientName(e.target.value)}
                       placeholder="e.g. Ramesh Kumar"
-                      className="w-full rounded-2xl border border-[var(--border)] pl-10 pr-4 py-2.5 text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--sage)] focus:outline-none"
+                      className="w-full rounded-2xl border border-[var(--border)] pl-10 pr-4 py-2.5 text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--saffron)] focus:outline-none"
                     />
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--ink-soft)]" />
                   </div>
@@ -519,7 +519,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                       value={patientPhone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+91 98765 43210"
-                      className="w-full rounded-2xl border border-[var(--border)] pl-10 pr-4 py-2.5 text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--sage)] focus:outline-none"
+                      className="w-full rounded-2xl border border-[var(--border)] pl-10 pr-4 py-2.5 text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--saffron)] focus:outline-none"
                     />
                     <PhoneAppIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" />
                   </div>
@@ -539,7 +539,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder="500"
-                        className="w-full rounded-2xl border border-[var(--border)] pl-8 pr-3 py-2.5 text-sm font-bold text-[var(--ink)] focus:ring-2 focus:ring-[var(--sage)] focus:outline-none"
+                        className="w-full rounded-2xl border border-[var(--border)] pl-8 pr-3 py-2.5 text-sm font-bold text-[var(--ink)] focus:ring-2 focus:ring-[var(--saffron)] focus:outline-none"
                       />
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[var(--ink-soft)]">
                         ₹
@@ -554,7 +554,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                     <select
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value as any)}
-                      className="w-full rounded-2xl border border-[var(--border)] px-3 py-2.5 text-sm font-semibold text-[var(--ink)] focus:ring-2 focus:ring-[var(--sage)] focus:outline-none bg-white"
+                      className="w-full rounded-2xl border border-[var(--border)] px-3 py-2.5 text-sm font-semibold text-[var(--ink)] focus:ring-2 focus:ring-[var(--saffron)] focus:outline-none bg-white"
                     >
                       <option value="UPI">UPI / GPay / PhonePe</option>
                       <option value="Cash">Cash</option>
@@ -572,7 +572,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                     type="date"
                     value={paymentDate}
                     onChange={(e) => setPaymentDate(e.target.value)}
-                    className="w-full rounded-2xl border border-[var(--border)] px-4 py-2 text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--sage)] focus:outline-none bg-white"
+                    className="w-full rounded-2xl border border-[var(--border)] px-4 py-2 text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--saffron)] focus:outline-none bg-white"
                   />
                 </div>
 
@@ -586,7 +586,7 @@ export function ClinicPaymentsTracker({ clinicId, clinicName = "CorpErgo Clinic"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="e.g. Back rehab consultation"
-                      className="w-full rounded-2xl border border-[var(--border)] pl-10 pr-4 py-2.5 text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--sage)] focus:outline-none"
+                      className="w-full rounded-2xl border border-[var(--border)] pl-10 pr-4 py-2.5 text-sm text-[var(--ink)] focus:ring-2 focus:ring-[var(--saffron)] focus:outline-none"
                     />
                     <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--ink-soft)]" />
                   </div>

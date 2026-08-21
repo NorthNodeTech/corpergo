@@ -121,16 +121,20 @@ export function isValidPhone(phone: string) {
 export async function signInWithPassword(
   identifier: string,
   password: string,
-  portal: "patient" | "staff" = "patient",
+  portal?: "patient" | "staff",
 ) {
   const cleanId = identifier.trim().toLowerCase();
+  const cleanPassword = password.trim();
   if (!cleanId.includes("@")) {
     return { data: null, error: "Enter a valid email address." };
+  }
+  if (!cleanPassword) {
+    return { data: null, error: "Enter your password." };
   }
 
   const result = await authRequest<AuthSession>("/auth/v1/token?grant_type=password", {
     email: cleanId,
-    password,
+    password: cleanPassword,
   });
 
   if (!result.error && result.data?.access_token) {
@@ -143,7 +147,9 @@ export async function signInWithPassword(
   const friendly = invalidCredentials
     ? portal === "staff"
       ? "That email and password don’t match a staff account. Check the details or ask CorpErgo admin to reset the password."
-      : "No account found with this email and password. New patient? Create an account first."
+      : portal === "patient"
+        ? "No account found with this email and password. New patient? Create an account first."
+        : "That email and password don’t match an account. Check your details and try again."
     : raw;
 
   return { data: null, error: friendly };
@@ -322,8 +328,8 @@ function isStaffRole(role: AppRole | string) {
 }
 
 /**
- * Resolve post-login destination.
- * Enforces the UI portal choice: patient tab only for patients, staff tab only for staff/admin.
+ * Resolve post-login destination from the account role in the database.
+ * When preferredPortal is omitted, any valid account is routed to its portal.
  */
 export async function resolvePostLoginPath(
   preferredPortal?: "patient" | "staff",
@@ -342,8 +348,7 @@ export async function resolvePostLoginPath(
     clearSession();
     return {
       path: null,
-      error:
-        "This account is for staff. You don’t have access to sign in as a patient. Switch to Physiotherapist and try again.",
+      error: "This account is for clinic staff. Sign in with your staff email instead.",
     };
   }
 
@@ -351,8 +356,7 @@ export async function resolvePostLoginPath(
     clearSession();
     return {
       path: null,
-      error:
-        "This account is for patients. You don’t have access to sign in as staff. Switch to Patient and try again.",
+      error: "This account is for patients. Sign in with your patient email instead.",
     };
   }
 

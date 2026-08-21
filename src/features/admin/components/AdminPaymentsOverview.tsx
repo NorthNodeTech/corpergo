@@ -25,9 +25,9 @@ function todayIso() {
 }
 
 const METHOD_STYLES = {
-  purple: "border-purple-200/80 bg-purple-50/90",
+  purple: "border-[var(--saffron)]/25 bg-[var(--saffron-light)]/80",
   amber: "border-amber-200/80 bg-amber-50/90",
-  blue: "border-sky-200/80 bg-sky-50/90",
+  blue: "border-neutral-200 bg-neutral-50",
   gray: "border-black/10 bg-[var(--ivory)]",
 } as const;
 
@@ -72,7 +72,7 @@ export function AdminPaymentsOverview() {
         {/* Header */}
         <div className="flex flex-col gap-4 border-b border-[var(--card-border-strong)] px-4 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-6">
           <div className="min-w-0">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--burnt-amber)]">
               Collections
             </div>
             <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Network payments</h2>
@@ -108,9 +108,9 @@ export function AdminPaymentsOverview() {
 
         {/* Summary row */}
         <div className="grid gap-4 border-b border-[var(--card-border-strong)] p-4 sm:p-6 lg:grid-cols-[minmax(220px,1fr)_2fr] lg:items-stretch">
-          <div className="portal-card-outline flex min-h-[140px] flex-col rounded-2xl bg-[var(--saffron-light)]/60 p-4 sm:p-5">
+          <div className="portal-card-outline flex min-h-[140px] flex-col rounded-2xl bg-[var(--saffron-light)]/70 p-4 sm:p-5">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
                 Network total
               </span>
               <Receipt className="h-4 w-4 shrink-0 text-[var(--saffron-deep)]" />

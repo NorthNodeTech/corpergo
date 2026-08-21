@@ -92,7 +92,7 @@ export function PatientVisitSidebar({
       {isCurrentVisit && assessmentSaved ? (
         <section className="rounded-3xl bg-white p-5 ring-1 ring-black/[0.05]">
           <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-emerald-700">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[var(--saffron-light)] text-[var(--saffron-deep)]">
               <Sparkles className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">

@@ -19,12 +19,11 @@ export function IndustrialMachinePage({ machine }: { machine: IndustrialMachine 
     <main className="min-h-dvh bg-[#f7f6f3] text-[var(--ink)]">
       <header className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-5 sm:px-6">
         <Link
-          to="/"
-          hash="industrial-ergonomics"
+          to="/ergonomics"
           className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-[var(--ink)] ring-1 ring-black/[0.06] transition hover:bg-[var(--saffron)] hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to homepage
+          Back to Ergonomics
         </Link>
         <Link to="/" aria-label="CorpErgo home">
           <CorpErgoLogo size="sm" withFrame={false} className="h-10 w-auto" />

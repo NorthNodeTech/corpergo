@@ -10,6 +10,7 @@ import { fetchMyProfile } from "@/lib/auth";
 import {
   fetchMyAppointments,
   fetchMyPatient,
+  formatClinicLocation,
   formatDateLabel,
   formatTimeLabel,
   type Appointment,
@@ -206,7 +207,7 @@ function PatientDashboardPage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="text-xl font-extrabold text-[var(--ink)]">
-                  {followUp.clinics?.name || "Clinic"}
+                  {followUp.clinics ? formatClinicLocation(followUp.clinics).title : "Clinic"}
                 </div>
                 <div className="mt-1 text-sm text-[var(--ink-soft)]">
                   {followUp.physiotherapy_categories?.name || "Physiotherapy"}
@@ -284,7 +285,8 @@ function PatientDashboardPage() {
                 >
                   <div>
                     <div className="font-bold text-[var(--ink)] text-sm sm:text-base">
-                      {a.clinics?.name} · {a.physiotherapy_categories?.name}
+                      {a.clinics ? formatClinicLocation(a.clinics).title : "Clinic"} ·{" "}
+                      {a.physiotherapy_categories?.name}
                     </div>
                     <div className="text-xs text-[var(--ink-soft)] mt-0.5">
                       {formatDateLabel(a.scheduled_date || a.preferred_date)}

@@ -1,5 +1,5 @@
 import type { SimpleIcon } from "simple-icons";
-import { siInstagram, siYoutube } from "simple-icons";
+import { siInstagram, siYoutube, siWhatsapp } from "simple-icons";
 import gmailLogo from "@/assets/icons/gmail-logo.webp";
 import googleMapsLogo from "@/assets/icons/google-maps-logo.webp";
 import googlePhoneLogo from "@/assets/icons/google-phone-logo.webp";
@@ -61,6 +61,10 @@ export function InstagramIcon({ className, title = "Instagram" }: BrandIconProps
 
 export function YouTubeIcon({ className, title = "YouTube" }: BrandIconProps) {
   return <SimpleBrandIcon icon={siYoutube} className={className} title={title} />;
+}
+
+export function WhatsAppIcon({ className, title = "WhatsApp" }: BrandIconProps) {
+  return <SimpleBrandIcon icon={siWhatsapp} className={className} title={title} />;
 }
 
 /** Official LinkedIn "in" mark, LinkedIn Blue #0A66C2. */

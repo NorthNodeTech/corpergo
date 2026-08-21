@@ -86,7 +86,7 @@ function SectionHeader({
   return (
     <div className="mb-4 flex items-end justify-between gap-3">
       <div>
-        <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+        <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--burnt-amber)]">
           {eyebrow}
         </div>
         <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">{title}</h2>
@@ -119,7 +119,7 @@ function PendingBookingCard({ appt }: { appt: PhysioAppointment }) {
             </div>
           </div>
         </div>
-        <span className="shrink-0 rounded-full bg-sky-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sky-800 ring-1 ring-sky-100">
+        <span className="shrink-0 rounded-full bg-[var(--saffron-light)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--saffron-deep)] ring-1 ring-[var(--saffron)]/20">
           Login booking
         </span>
       </div>

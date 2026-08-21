@@ -11,6 +11,7 @@ import { LoadingState } from "@/shared/components/ui/loading-spinner";
 import {
   cancelAppointment,
   fetchMyAppointments,
+  formatClinicLocation,
   formatDateLabel,
   formatTimeLabel,
   type Appointment,
@@ -132,7 +133,7 @@ function MyAppointmentsPage() {
                       {a.appointment_code}
                     </div>
                     <h3 className="mt-1 text-xl font-extrabold text-[var(--ink)]">
-                      {a.clinics?.name || "Clinic"}
+                      {a.clinics ? formatClinicLocation(a.clinics).title : "Clinic"}
                     </h3>
                     <p className="text-sm text-[var(--ink-soft)]">
                       {a.physiotherapy_categories?.name}
@@ -150,10 +151,10 @@ function MyAppointmentsPage() {
                     <Clock className="h-4 w-4 text-[var(--bronze)]" />
                     {formatTimeLabel(a.scheduled_time || a.preferred_time)}
                   </span>
-                  {a.clinics?.address ? (
+                  {a.clinics ? (
                     <span className="inline-flex items-center gap-2">
                       <GoogleMapsIcon className="h-4 w-4" />
-                      {a.clinics.address}
+                      {formatClinicLocation(a.clinics).address}
                     </span>
                   ) : null}
                 </div>

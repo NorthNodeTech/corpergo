@@ -483,7 +483,7 @@ export function AppointmentRequestsPage() {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
                       {a.appointment_code}
                     </div>
                     <h3 className="mt-1 text-xl font-extrabold text-[var(--ink)]">{name}</h3>
@@ -564,7 +564,7 @@ export function AppointmentRequestsPage() {
             </p>
 
             <div className="mt-5 rounded-2xl bg-[var(--saffron-light)] px-4 py-4 ring-1 ring-[var(--saffron)]/20">
-              <p className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
                 Patient requested time
               </p>
               <p className="mt-2 text-lg font-extrabold text-[var(--ink)]">
@@ -906,7 +906,7 @@ function DirectRequestsList({
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+              <div className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
                 {request.request_code}
               </div>
               <h3 className="mt-1 text-xl font-extrabold text-[var(--ink)]">{request.full_name}</h3>
@@ -977,9 +977,9 @@ function DirectRequestsList({
 function DirectStatusBadge({ status }: { status: DirectBookingStatus }) {
   const styles: Record<DirectBookingStatus, string> = {
     new: "bg-amber-50 text-amber-800 ring-amber-100",
-    called: "bg-sky-50 text-sky-800 ring-sky-100",
+    called: "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/20",
     ready_for_session: "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/20",
-    converted: "bg-[var(--saffron)]/10 text-[var(--sage-deep)] ring-[var(--saffron)]/20",
+    converted: "bg-[var(--saffron)]/10 text-[var(--saffron-deep)] ring-[var(--saffron)]/20",
     closed: "bg-slate-100 text-slate-600 ring-slate-200",
   };
 

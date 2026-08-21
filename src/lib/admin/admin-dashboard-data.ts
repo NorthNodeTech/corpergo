@@ -90,7 +90,7 @@ export type ClinicComparisonSeries = {
   clinics: ClinicComparisonClinic[];
 };
 
-export const CLINIC_CHART_COLORS = ["#4285f4", "#9334e6", "#f28c28", "#0d9488", "#dc2626"];
+export const CLINIC_CHART_COLORS = ["#f28c28", "#8a3324", "#d97706", "#000000", "#c45c42"];
 
 export type ClinicStatus = "normal" | "busy" | "attention";
 

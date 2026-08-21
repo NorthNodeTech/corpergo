@@ -2,7 +2,7 @@ import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowRight, User, Stethoscope, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
 import { LoadingSpinner } from "@/shared/components/ui/loading-spinner";
 import { signInWithPassword, resolvePostLoginPath } from "@/lib/auth";
@@ -14,34 +14,13 @@ interface LoginModalProps {
   patientRedirectTo?: string | null;
 }
 
-const PORTALS = [
-  {
-    id: "patient",
-    label: "Patient",
-    icon: User,
-    desc: "Book & track appointments",
-    buttonLabel: "Patient",
-  },
-  {
-    id: "staff",
-    label: "Physiotherapist",
-    icon: Stethoscope,
-    desc: "Clinic staff login — physiotherapists and admins.",
-    buttonLabel: "Staff",
-  },
-] as const;
-
-type PortalId = (typeof PORTALS)[number]["id"];
-
 export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalProps) {
   const navigate = useNavigate();
-  const [portal, setPortal] = useState<PortalId>("patient");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const active = PORTALS.find((p) => p.id === portal)!;
 
   useEffect(() => {
     if (!isOpen) {
@@ -49,6 +28,7 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
       setPassword("");
       setError(null);
       setLoading(false);
+      setShowPassword(false);
     }
   }, [isOpen]);
 
@@ -56,29 +36,18 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
     e.preventDefault();
     setError(null);
 
-    const isPatient = portal === "patient";
-
-    if (isPatient) {
-      if (!email.trim() || !email.includes("@")) {
-        setError("Enter a valid email address.");
-        return;
-      }
-    } else if (!email.trim()) {
-      setError("Enter your clinic staff email.");
+    if (!email.trim() || !email.includes("@")) {
+      setError("Enter a valid email address.");
       return;
     }
 
-    if (!password) {
+    if (!password.trim()) {
       setError("Enter your password.");
       return;
     }
 
     setLoading(true);
-    const { data, error: signInError } = await signInWithPassword(
-      email.trim(),
-      password,
-      isPatient ? "patient" : "staff",
-    );
+    const { data, error: signInError } = await signInWithPassword(email.trim(), password);
 
     if (signInError || !data) {
       setLoading(false);
@@ -86,7 +55,7 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
       return;
     }
 
-    const { path, error: portalError } = await resolvePostLoginPath(portal);
+    const { path, error: portalError } = await resolvePostLoginPath();
     setLoading(false);
 
     if (portalError || !path) {
@@ -95,7 +64,9 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
     }
 
     const destination =
-      portal === "patient" && patientRedirectTo?.startsWith("/patient") ? patientRedirectTo : path;
+      path.startsWith("/patient") && patientRedirectTo?.startsWith("/patient")
+        ? patientRedirectTo
+        : path;
 
     onClose();
     void navigate({ to: destination });
@@ -134,37 +105,11 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
                 Welcome back
               </h2>
               <p className="type-body-sm mt-1 text-center text-[var(--ink-soft)]">
-                Sign in to continue to your dashboard.
+                Sign in with your email and password. We’ll open the right dashboard for your
+                account.
               </p>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-[var(--ivory)]/50 p-1 ring-1 ring-black/5">
-                {PORTALS.map((p) => {
-                  const isActive = p.id === portal;
-                  const Icon = p.icon;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPortal(p.id)}
-                      className={cn(
-                        "relative flex flex-col items-center gap-1 rounded-xl py-2 text-[11px] font-semibold transition-all cursor-pointer focus:outline-none",
-                        isActive
-                          ? "bg-[var(--sage)] text-white shadow-sm"
-                          : "text-[var(--ink-soft)] hover:bg-[var(--ivory)]",
-                      )}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {p.label}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <p className="mt-2 text-center text-[10px] leading-relaxed text-[var(--ink-soft)]">
-                {active.desc}
-              </p>
-
-              <form className="mt-4 space-y-2.5 sm:space-y-3" onSubmit={onSubmit}>
+              <form className="mt-5 space-y-2.5 sm:space-y-3" onSubmit={onSubmit}>
                 <div>
                   <label
                     htmlFor="login-email"
@@ -177,9 +122,7 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder={
-                      portal === "patient" ? "you@email.com" : "physio.chansandra@corpergo.in"
-                    }
+                    placeholder="you@email.com"
                     autoComplete="email"
                     required
                     className="mt-1.5 w-full rounded-2xl bg-white px-4 py-2.5 text-sm text-[var(--ink)] ring-1 ring-black/[0.08] placeholder:text-[var(--ink-soft)]/60 transition-all focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
@@ -224,7 +167,7 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
                     me
                   </label>
                   <a
-                    href="mailto:care@corpergo.in?subject=Password%20reset%20help"
+                    href="mailto:corpergo@gmail.com?subject=Password%20reset%20help"
                     className="font-semibold text-[var(--sage)] hover:underline"
                   >
                     Forgot password?
@@ -251,34 +194,28 @@ export function LoginModal({ isOpen, onClose, patientRedirectTo }: LoginModalPro
                       Signing in…
                     </>
                   ) : (
-                    `Sign in as ${active.buttonLabel}`
+                    <>
+                      Sign in
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    </>
                   )}
-                  {!loading ? (
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  ) : null}
                 </button>
               </form>
 
-              {portal === "patient" ? (
-                <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
-                  New patient?{" "}
-                  <a
-                    href={
-                      patientRedirectTo?.startsWith("/patient")
-                        ? `/signup?next=${encodeURIComponent(patientRedirectTo)}`
-                        : "/signup"
-                    }
-                    onClick={onClose}
-                    className="font-semibold text-[var(--sage-deep)] hover:underline"
-                  >
-                    Create an account
-                  </a>
-                </p>
-              ) : (
-                <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
-                  Staff accounts are created by CorpErgo admin.
-                </p>
-              )}
+              <p className="mt-4 pb-1 text-center text-xs text-[var(--ink-soft)]">
+                New patient?{" "}
+                <a
+                  href={
+                    patientRedirectTo?.startsWith("/patient")
+                      ? `/signup?next=${encodeURIComponent(patientRedirectTo)}`
+                      : "/signup"
+                  }
+                  onClick={onClose}
+                  className="font-semibold text-[var(--sage-deep)] hover:underline"
+                >
+                  Create an account
+                </a>
+              </p>
             </motion.div>
           </div>
         </div>

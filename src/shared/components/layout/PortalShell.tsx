@@ -206,7 +206,7 @@ function GlassFooterNav({
           <div
             className={cn(
               "relative z-[1] flex items-center justify-center",
-              active ? "text-[var(--saffron-deep)]" : "text-[var(--ink-soft)]",
+              active ? "text-[var(--burnt-amber)]" : "text-[var(--ink-soft)]",
             )}
           >
             <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.5 : 2} />
@@ -215,7 +215,7 @@ function GlassFooterNav({
         <span
           className={cn(
             "relative z-[1] max-w-full truncate text-[10px] tracking-wide",
-            active ? "font-bold text-[var(--saffron-deep)]" : "font-semibold text-[var(--ink-soft)]",
+            active ? "font-bold text-[var(--burnt-amber)]" : "font-semibold text-[var(--ink-soft)]",
           )}
         >
           {item.shortLabel || item.label}
@@ -238,7 +238,7 @@ function GlassFooterNav({
           <motion.div
             animate={{
               scale: active ? 1.05 : 1,
-              color: active ? "var(--saffron-deep)" : "var(--ink-soft)",
+              color: active ? "var(--burnt-amber)" : "var(--ink-soft)",
             }}
             transition={{ type: "spring", stiffness: 400, damping: 28 }}
             className="relative z-[1] flex items-center justify-center"
@@ -248,7 +248,7 @@ function GlassFooterNav({
         </div>
         <motion.span
           animate={{
-            color: active ? "var(--saffron-deep)" : "var(--ink-soft)",
+            color: active ? "var(--burnt-amber)" : "var(--ink-soft)",
           }}
           transition={{ duration: 0.2 }}
           className={`relative z-[1] max-w-full truncate text-[10px] tracking-wide ${active ? "font-bold" : "font-semibold"}`}
@@ -336,7 +336,7 @@ function GlassFooterNav({
           )}
           <span
             className={`text-[10px] font-semibold tracking-wide ${
-              centerActive ? "text-[var(--saffron-deep)]" : "text-[var(--ink-soft)]"
+              centerActive ? "text-[var(--burnt-amber)]" : "text-[var(--ink-soft)]"
             }`}
           >
             {centerAction.label}
@@ -526,7 +526,7 @@ export function PortalShell({
             className="flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-semibold text-[var(--ink-soft)] transition-colors hover:bg-black/5 hover:text-[var(--ink)] border border-transparent"
             activeProps={{
               className:
-                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-[var(--saffron-light)] text-[var(--ink)] shadow-sm border border-[var(--saffron)]/25",
+                "flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[15px] font-bold bg-[var(--saffron-light)] text-[var(--burnt-amber)] shadow-sm border border-[var(--burnt-amber)]/20",
             }}
             activeOptions={{ exact: to.endsWith("/dashboard") && !hash }}
           >
@@ -664,7 +664,7 @@ export function PortalShell({
           </header>
 
           <main
-            className={`min-w-0 w-full max-w-full flex-1 overflow-x-hidden px-4 py-5 sm:px-6 lg:px-8 lg:py-8 ${
+            className={`portal-shell-main min-w-0 w-full max-w-full flex-1 overflow-x-hidden px-3 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-8 ${
               hasFooter ? "pb-[7.25rem] lg:pb-8" : "pb-8"
             } dashboard-bg-container ${contentClassName || ""}`}
           >

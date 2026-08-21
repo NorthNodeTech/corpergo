@@ -1,5 +1,6 @@
 import { supabaseRest } from "@/lib/auth";
 import { PATIENT_SELECT, type PatientRecord } from "@/lib/patient/patient-intake";
+import { matchClinicLocation } from "@/lib/seo";
 
 export type { PatientRecord } from "@/lib/patient/patient-intake";
 
@@ -13,6 +14,38 @@ export type Clinic = {
   working_hours: Record<string, { open: string; close: string } | null>;
   slot_duration_minutes: number;
 };
+
+/** Resolve display name + address to match homepage clinic cards. */
+export function formatClinicLocation(clinic: {
+  name?: string | null;
+  slug?: string | null;
+  address?: string | null;
+  city?: string | null;
+}): { title: string; address: string } {
+  const known = matchClinicLocation(clinic);
+  if (known) {
+    return {
+      title: known.shortName,
+      address: known.address,
+    };
+  }
+
+  const rawName = (clinic.name || "").trim();
+  const title =
+    rawName
+      .replace(/^CorpErgo\s+/i, "")
+      .replace(/\bChansandra\b/gi, "Channasandra")
+      .replace(/\bMuthasandra\b/gi, "Muthsandra")
+      .replace(/\bBalegere\b/gi, "Balagere")
+      .replace(/\bMandur\b(?!u)/gi, "Manduru")
+      .trim() || "Clinic";
+
+  const street = (clinic.address || "").trim();
+  const city = (clinic.city || "Bengaluru").trim();
+  if (!street) return { title, address: city };
+  if (street.toLowerCase().includes(city.toLowerCase())) return { title, address: street };
+  return { title, address: `${street}, ${city}` };
+}
 
 export type Category = {
   id: string;

@@ -41,8 +41,15 @@
 
   --color-sage: var(--sage);
   --color-sage-deep: var(--sage-deep);
+  --color-sage-light: var(--sage-light);
   --color-teal: var(--teal);
+  --color-teal-deep: var(--teal-deep);
+  --color-teal-light: var(--teal-light);
   --color-bronze: var(--bronze);
+  --color-bronze-light: var(--bronze-light);
+  --color-burnt-amber: var(--burnt-amber);
+  --color-burnt-amber-deep: var(--burnt-amber-deep);
+  --color-burnt-amber-light: var(--burnt-amber-light);
   --color-pink-main: var(--pink-main);
   --color-pink-hover: var(--pink-hover);
   --color-pink-light: var(--pink-light);
@@ -58,13 +65,13 @@
   --hover-lift: -4px;
   --hover-scale: 1.02;
   --hover-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --gradient-sage: linear-gradient(135deg, #000000 0%, var(--saffron) 100%);
-  --gradient-pink: linear-gradient(135deg, #000000 0%, var(--saffron) 100%);
-  --gradient-warm: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+  --gradient-sage: linear-gradient(135deg, var(--burnt-amber) 0%, var(--saffron) 100%);
+  --gradient-pink: linear-gradient(135deg, var(--burnt-amber-deep) 0%, var(--saffron) 100%);
+  --gradient-warm: linear-gradient(135deg, #ffffff 0%, var(--burnt-amber-light) 100%);
   --page-background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--saffron) 4%, #ffffff) 0%,
-    #ffffff 40%,
+    color-mix(in srgb, var(--saffron) 5%, #ffffff) 0%,
+    color-mix(in srgb, var(--burnt-amber) 2%, #ffffff) 38%,
     #ffffff 100%
   );
 }
@@ -761,14 +768,6 @@
     transform: translate3d(3%, -7%, 0);
   }
 }
-@keyframes alive-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
 @keyframes alive-kenburns {
   0% {
     transform: scale(1) translate3d(0, 0, 0);
@@ -856,13 +855,6 @@
   animation: alive-drift-b 16s ease-in-out infinite;
 }
 
-.alive-marquee {
-  animation: alive-marquee 38s linear infinite;
-}
-.alive-marquee:hover {
-  animation-play-state: paused;
-}
-
 .alive-kenburns {
   animation: alive-kenburns 22s ease-in-out infinite alternate;
   will-change: transform;
@@ -891,7 +883,6 @@
   .alive-orb--c,
   .alive-orb--cta-a,
   .alive-orb--cta-b,
-  .alive-marquee,
   .alive-kenburns,
   .alive-scroll-line,
   .alive-nudge,
@@ -913,8 +904,26 @@
   pointer-events: none;
   position: fixed;
   inset: 0;
-  background: transparent;
-  opacity: 0;
+  background:
+    radial-gradient(ellipse 75% 50% at 8% -8%, color-mix(in srgb, var(--saffron) 14%, transparent), transparent 55%),
+    radial-gradient(ellipse 55% 40% at 100% 5%, color-mix(in srgb, var(--burnt-amber) 10%, transparent), transparent 52%);
+  opacity: 1;
+}
+
+.portal-shell {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--saffron) 5%, #ffffff) 0%,
+      color-mix(in srgb, var(--burnt-amber) 2.5%, #ffffff) 42%,
+      #ffffff 100%
+    );
+}
+
+/* Portal pairing: saffron fills + burnt amber labels/active text */
+.portal-shell .type-eyebrow,
+.portal-shell [data-portal-accent="label"] {
+  color: var(--burnt-amber) !important;
 }
 
 .portal-shell .portal-glass {
@@ -1062,7 +1071,7 @@
 
 @keyframes portal-scan-pulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in oklab, var(--sage) 45%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--saffron) 45%, transparent);
     opacity: 0.85;
   }
   70% {
@@ -1231,4 +1240,281 @@
 
 :where(section[id]) {
   scroll-margin-top: 5.25rem;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile-only UI densification — desktop (≥640px) unchanged                  */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 639px) {
+  :where(section[id]) {
+    scroll-margin-top: 4.25rem;
+  }
+
+  /* Tighter homepage section rhythm */
+  .home-page-main .landing-section,
+  .home-page-main .about-fit,
+  .home-page-main .founder-fit {
+    padding-top: 1.75rem;
+    padding-bottom: 1.75rem;
+  }
+
+  .home-page-main .section-header {
+    margin-bottom: 0.875rem;
+  }
+
+  .home-page-main .section-header .type-eyebrow + :is(h2, .type-h2) {
+    margin-top: 0.35rem;
+  }
+
+  .home-page-main .section-header :is(h2, .type-h2) + :is(p, .type-lead) {
+    margin-top: 0.4rem;
+  }
+
+  .home-page-main .type-lead {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .home-page-main .type-h2 {
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  /* Hero: keep content compact and aligned */
+  .home-page-main .hero-fit__title {
+    font-size: clamp(1.65rem, 7.2vw, 2.05rem);
+  }
+
+  .home-page-main .hero-fit__body {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    max-width: 22rem;
+  }
+
+  .home-page-main .hero-fit__actions {
+    margin-top: 0.75rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-page-main .hero-fit__actions a,
+  .home-page-main .hero-fit__actions button {
+    width: 100%;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+  }
+
+  /* About */
+  .home-page-main .about-fit__grid {
+    gap: 1.25rem;
+  }
+
+  .home-page-main .about-fit__media {
+    aspect-ratio: 4 / 3;
+    max-height: 14rem;
+  }
+
+  .home-page-main .about-fit__body {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .home-page-main .about-fit__years {
+    width: 8.5rem;
+    padding: 0.65rem;
+    bottom: 0.65rem;
+    right: 0.65rem;
+  }
+
+  /* Treatments carousel cards */
+  .home-page-main #treatments .landing-card-hover {
+    padding: 1rem;
+    border-radius: 1.25rem;
+    width: calc(100vw - 4.5rem);
+    max-width: 17.5rem;
+  }
+
+  .home-page-main #treatments .landing-card-hover ul {
+    margin-top: 0.65rem;
+  }
+
+  /* Online treatment strip */
+  .home-page-main #online-treatment,
+  .home-page-main [data-online-treatment] {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  /* Why choose cards */
+  .home-page-main #why .landing-card-hover {
+    padding: 1rem 1.1rem;
+    border-radius: 1.25rem;
+  }
+
+  .home-page-main #why .landing-card-hover .type-stat {
+    margin-top: 0.5rem;
+    font-size: 1.5rem;
+  }
+
+  .home-page-main #why .grid {
+    gap: 0.65rem;
+  }
+
+  /* Founder */
+  .home-page-main .founder-fit__grid {
+    gap: 1.25rem;
+  }
+
+  .home-page-main .founder-fit__media img {
+    max-height: 16rem;
+    object-fit: cover;
+  }
+
+  .home-page-main .founder-fit__meta {
+    margin-top: 0.75rem;
+    gap: 0.75rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Video stories */
+  .home-page-main #stories .section-header,
+  .home-page-main [data-section="stories"] .section-header {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Testimonials */
+  .home-page-main #testimonials .section-header {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Clinics carousel — shorter on phone */
+  .home-page-main #clinics .clinic-carousel-stage {
+    min-height: 22.5rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .home-page-main #clinics .clinic-carousel-card-pad {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.85rem;
+  }
+
+  .home-page-main #clinics .clinic-carousel-actions {
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  /* FAQ denser */
+  .home-page-main #faq .section-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .home-page-main #faq .faq-grid {
+    gap: 0.5rem;
+  }
+
+  /* CTA block */
+  .home-page-main #book .cta-panel {
+    padding: 1.35rem 1.25rem;
+    border-radius: 1.5rem;
+    border-width: 2px;
+  }
+
+  .home-page-main #book .cta-panel .type-display {
+    font-size: 1.45rem;
+    line-height: 1.2;
+  }
+
+  .home-page-main #book .cta-panel .type-lead {
+    margin-top: 0.65rem;
+    font-size: 0.9rem;
+  }
+
+  .home-page-main #book .cta-actions {
+    margin-top: 1rem;
+    gap: 0.5rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-page-main #book .cta-actions a,
+  .home-page-main #book .cta-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Footer */
+  .home-page-main footer .footer-shell {
+    padding-top: 1.75rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .home-page-main footer .footer-grid {
+    gap: 1.25rem;
+  }
+
+  /* Booking / marketing pages outside home */
+  .mobile-compact-page {
+    padding-top: 0.85rem;
+    padding-bottom: 1rem;
+  }
+
+  .mobile-compact-page .mobile-compact-grid {
+    gap: 1.25rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .mobile-compact-page .mobile-compact-intro .type-eyebrow {
+    margin-top: 1rem;
+  }
+
+  .mobile-compact-page .mobile-compact-intro .type-h1 {
+    margin-top: 0.5rem;
+    font-size: 1.45rem;
+  }
+
+  .mobile-compact-page .mobile-compact-intro .type-lead {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .mobile-compact-page .mobile-compact-card {
+    padding: 1rem;
+  }
+
+  .mobile-compact-page form {
+    gap: 0.75rem;
+  }
+
+  /* Patient booking wizard */
+  .patient-book-page .patient-book-steps {
+    margin-bottom: 0.75rem;
+    gap: 0.35rem;
+  }
+
+  .patient-book-page .patient-book-steps > div {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.65rem;
+  }
+
+  .patient-book-page .patient-book-panel {
+    padding: 1rem;
+    border-radius: 1.25rem;
+  }
+
+  .patient-book-page .patient-book-panel h2 {
+    font-size: 1.15rem;
+  }
+
+  /* Portal pages: less vertical air */
+  .portal-shell-main,
+  main.portal-main {
+    padding-left: 0.85rem;
+    padding-right: 0.85rem;
+  }
 }

@@ -8,11 +8,11 @@
 
 insert into public.clinics (name, slug, address, city, state)
 values
-  ('Chansandra', 'chansandra', 'Chansandra, Bengaluru', 'Bengaluru', 'Karnataka'),
-  ('Balagere', 'balagere', 'Balagere, Bengaluru', 'Bengaluru', 'Karnataka'),
-  ('Muthsandra', 'muthsandra', 'Muthsandra, Bengaluru', 'Bengaluru', 'Karnataka'),
-  ('Kannamangala', 'kannamangala', 'Kannamangala, Bengaluru', 'Bengaluru', 'Karnataka'),
-  ('Manduru', 'manduru', 'Manduru, Bengaluru', 'Bengaluru', 'Karnataka')
+  ('Channasandra', 'chansandra', 'Kadugodi, Whitefield, Bengaluru', 'Bengaluru', 'Karnataka'),
+  ('Balagere', 'balagere', 'Varthur, Bengaluru', 'Bengaluru', 'Karnataka'),
+  ('Muthsandra', 'muthsandra', 'Madhura Nagar, Varthur, Bengaluru', 'Bengaluru', 'Karnataka'),
+  ('Kannamangala', 'kannamangala', 'Whitefield–Hoskote Road, Bengaluru', 'Bengaluru', 'Karnataka'),
+  ('Manduru', 'manduru', 'Budigere Old Madras Road, Bengaluru', 'Bengaluru', 'Karnataka')
 on conflict (slug) do nothing;
 
 insert into public.physiotherapy_categories (name, slug, description, sort_order)
@@ -24,7 +24,8 @@ values
   ('Pediatric', 'pediatric', 'Children''s physiotherapy', 5),
   ('Women''s Health', 'womens-health', 'Prenatal, postnatal, pelvic health', 6),
   ('Geriatric', 'geriatric', 'Elderly mobility and fall prevention', 7),
-  ('Post Surgery', 'post-surgery', 'Post-operative rehabilitation', 8)
+  ('Post Surgery', 'post-surgery', 'Post-operative rehabilitation', 8),
+  ('Other', 'other', 'Something else or not sure yet', 9)
 on conflict (slug) do nothing;
 
 -- ---------------------------------------------------------------------------

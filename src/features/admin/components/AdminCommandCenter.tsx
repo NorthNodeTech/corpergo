@@ -43,12 +43,12 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 
 const STATUS_COLOR: Record<ClinicStatus, string> = {
   normal: "#f28c28",
-  busy: "#d97706",
+  busy: "#8a3324",
   attention: "#dc2626",
 };
 
 const CHART_SAFFRON = "#f28c28";
-const CHART_SAFFRON_DEEP = "#d97706";
+const CHART_SAFFRON_DEEP = "#8a3324";
 
 /** Strip Dr. prefix from staff/clinic labels shown in admin lists. */
 function displayStaffLabel(name: string) {
@@ -197,10 +197,10 @@ function statusBadgeClass(status: string) {
     case "completed":
       return "bg-[var(--saffron-light)] text-[var(--saffron-deep)]";
     case "pending":
-      return "bg-amber-50 text-amber-900";
+      return "bg-[var(--saffron-light)] text-[var(--saffron-deep)]";
     case "checked_in":
     case "accepted":
-      return "bg-sky-50 text-sky-900";
+      return "bg-[var(--saffron-light)] text-[var(--saffron-deep)]";
     case "cancelled":
     case "rejected":
       return "bg-rose-50 text-rose-800";
@@ -381,7 +381,7 @@ export function AdminCommandCenter() {
               className={cn(
                 "shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider",
                 status === "normal"
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  ? "bg-[var(--saffron-light)] text-[var(--saffron-deep)] border border-[var(--saffron)]/25"
                   : status === "busy"
                     ? "bg-amber-50 text-amber-700 border border-amber-200"
                     : "bg-rose-50 text-rose-700 border border-rose-200",
@@ -395,8 +395,8 @@ export function AdminCommandCenter() {
             {[
               { label: "Today", value: c.todays_appointments, bg: "bg-blue-50/70 text-blue-900", border: "border-blue-100" },
               { label: "Pend", value: c.pending, bg: "bg-amber-50/70 text-amber-900", border: "border-amber-100" },
-              { label: "Done", value: c.completed, bg: "bg-emerald-50/70 text-emerald-900", border: "border-emerald-100" },
-              { label: "Team", value: c.active_physiotherapists, bg: "bg-purple-50/70 text-purple-900", border: "border-purple-100" },
+              { label: "Done", value: c.completed, bg: "bg-[var(--saffron-light)] text-[var(--saffron-deep)]", border: "border-[var(--saffron)]/20" },
+              { label: "Team", value: c.active_physiotherapists, bg: "bg-neutral-100 text-neutral-800", border: "border-neutral-200" },
             ].map((m) => (
               <div
                 key={m.label}
@@ -468,10 +468,17 @@ export function AdminCommandCenter() {
 
   const insights = data?.insights || [];
   const activity = data?.activity || [];
-  const physios = data?.physios || [];
+  const clinicPerformance = useMemo(() => {
+    const list = [...(data?.clinics || [])];
+    list.sort((a, b) => {
+      if (b.completed !== a.completed) return b.completed - a.completed;
+      return utilizationPct(b) - utilizationPct(a);
+    });
+    return list;
+  }, [data?.clinics]);
   const insightsMore = useShowMore(insights);
   const activityMore = useShowMore(activity);
-  const physiosMore = useShowMore(physios);
+  const clinicPerformanceMore = useShowMore(clinicPerformance);
   const clinicBookingsMore = useShowMore(clinicBookings);
   const clinicUpcomingMore = useShowMore(clinicUpcoming);
   const clinicAssessmentsMore = useShowMore(clinicAssessments);
@@ -504,7 +511,7 @@ export function AdminCommandCenter() {
       >
         <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+            <div className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
               {greetingForHour(now.getHours())},
             </div>
             <h1 className="type-h1 mt-1 font-black tracking-tight text-[var(--ink)]">
@@ -536,14 +543,14 @@ export function AdminCommandCenter() {
                 <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
               ) : null}
             </button>
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 border border-emerald-200">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Online
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--saffron-light)] px-3 py-2 text-xs font-bold text-[var(--saffron-deep)] border border-[var(--saffron)]/25">
+              <span className="h-2 w-2 rounded-full bg-[var(--saffron)] animate-pulse" /> Online
             </span>
           </div>
         </div>
 
         <div className="mt-6">
-          <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+          <div className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
             Today&apos;s operations
           </div>
           <div className="mt-3 grid grid-cols-2 items-stretch gap-3 sm:grid-cols-4">
@@ -574,7 +581,7 @@ export function AdminCommandCenter() {
                   ins.tone === "warn"
                     ? "bg-[var(--saffron-light)] text-[var(--saffron-deep)]"
                     : ins.tone === "good"
-                      ? "bg-[var(--saffron-light)] text-[var(--ink)]"
+                      ? "bg-[var(--saffron-light)] text-[var(--saffron-deep)]"
                       : "bg-white text-[var(--ink)] ring-1 ring-black/[0.05]",
                 )}
               >
@@ -599,7 +606,7 @@ export function AdminCommandCenter() {
       {/* Network clinics — five compact cards in one row */}
       <section id="admin-network" className="scroll-mt-24">
         <div className="mb-4">
-          <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+          <div className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
             Network overview
           </div>
           <h2 className="mt-1 text-2xl font-black text-[var(--ink)]">Five clinics. One pulse.</h2>
@@ -623,7 +630,7 @@ export function AdminCommandCenter() {
         <div className="rounded-[28px] border border-[var(--border)] bg-white p-5 shadow-[var(--shadow-soft)] sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--saffron-deep)]">
+              <div className="text-xs font-bold uppercase tracking-wider text-[var(--burnt-amber)]">
                 Live activity
               </div>
               <h3 className="mt-1 text-xl font-black text-[var(--ink)]">What happened today</h3>
@@ -700,7 +707,7 @@ export function AdminCommandCenter() {
         <div className="rounded-[28px] bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--burnt-amber)]">
                 Appointments
               </div>
               <h3 className="mt-1 text-lg font-extrabold text-[var(--ink)]">Last 7 days — all clinics</h3>
@@ -780,58 +787,65 @@ export function AdminCommandCenter() {
 
       <AdminPaymentsOverview />
 
-      {/* Doctor performance */}
+      {/* Clinic performance */}
       <section className="min-w-0">
         <div className="mb-3 flex items-end justify-between">
           <div>
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
-              Team
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--burnt-amber)]">
+              Clinics
             </div>
-            <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Doctor performance</h2>
+            <h2 className="mt-1 text-xl font-extrabold text-[var(--ink)]">Clinic performance</h2>
           </div>
         </div>
         <div className="overflow-hidden rounded-[28px] bg-white shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05]">
           <div className="divide-y divide-black/[0.05]">
-            {physiosMore.visible.map((p, i) => (
-              <div key={p.physiotherapist_id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
-                <div className="w-6 text-center text-xs font-extrabold text-[var(--ink-soft)]">{i + 1}</div>
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--saffron)] text-xs font-bold text-white">
-                  {initials(p.full_name)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="truncate font-extrabold text-[var(--ink)]">{p.full_name}</div>
-                    {i === 0 ? (
-                      <span className="rounded-full bg-[var(--saffron-light)] px-2 py-0.5 text-[10px] font-bold text-[var(--saffron-deep)]">
-                        Top performer
-                      </span>
-                    ) : null}
+            {clinicPerformanceMore.visible.map((c, i) => {
+              const name = formatClinicName(c.clinic_name);
+              const rate = utilizationPct(c);
+              return (
+                <div key={c.clinic_id} className="flex items-center gap-3 px-4 py-3.5 sm:px-5">
+                  <div className="w-6 text-center text-xs font-extrabold text-[var(--ink-soft)]">
+                    {i + 1}
                   </div>
-                  <div className="truncate text-xs text-[var(--ink-soft)]">{formatClinicName(p.clinic_name)}</div>
-                </div>
-                <div className="hidden text-right sm:block">
-                  <div className="text-sm font-extrabold text-[var(--ink)]">{p.completed}</div>
-                  <div className="text-[10px] font-semibold text-[var(--ink-soft)]">Completed</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-extrabold text-[var(--saffron-deep)]">
-                    {p.completion_pct ?? 0}%
+                  <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--saffron)] text-xs font-bold text-white">
+                    {initials(name)}
                   </div>
-                  <div className="text-[10px] font-semibold text-[var(--ink-soft)]">Rate</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="truncate font-extrabold text-[var(--ink)]">{name}</div>
+                      {i === 0 && clinicPerformance.length > 0 ? (
+                        <span className="rounded-full bg-[var(--saffron-light)] px-2 py-0.5 text-[10px] font-bold text-[var(--saffron-deep)]">
+                          Top clinic
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="truncate text-xs text-[var(--ink-soft)]">
+                      {c.active_physiotherapists} physio
+                      {c.active_physiotherapists === 1 ? "" : "s"} · {c.todays_appointments} today
+                    </div>
+                  </div>
+                  <div className="hidden text-right sm:block">
+                    <div className="text-sm font-extrabold text-[var(--ink)]">{c.completed}</div>
+                    <div className="text-[10px] font-semibold text-[var(--ink-soft)]">Completed</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-extrabold text-[var(--saffron-deep)]">{rate}%</div>
+                    <div className="text-[10px] font-semibold text-[var(--ink-soft)]">Rate</div>
+                  </div>
                 </div>
-              </div>
-            ))}
-            {!loading && !(data?.physios || []).length ? (
+              );
+            })}
+            {!loading && !clinicPerformance.length ? (
               <div className="px-5 py-8 text-center text-sm text-[var(--ink-soft)]">
-                No physiotherapist performance data yet.
+                No clinic performance data yet.
               </div>
             ) : null}
           </div>
-          {!loading && physios.length ? (
+          {!loading && clinicPerformance.length ? (
             <ShowMoreButton
-              hiddenCount={physiosMore.hiddenCount}
-              expanded={physiosMore.expanded}
-              onClick={physiosMore.toggle}
+              hiddenCount={clinicPerformanceMore.hiddenCount}
+              expanded={clinicPerformanceMore.expanded}
+              onClick={clinicPerformanceMore.toggle}
               className="mx-4 mb-4 sm:mx-5"
             />
           ) : null}
@@ -853,7 +867,7 @@ export function AdminCommandCenter() {
             <div className="border-b border-black/[0.05] p-4 sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--saffron-deep)]">
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--burnt-amber)]">
                     Clinic workspace
                   </div>
                   <h2 className="type-h3 mt-1 font-extrabold text-[var(--ink)]">
@@ -1256,7 +1270,7 @@ export function AdminCommandCenter() {
                                     row.admin_edit_unlocked
                                       ? "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/20"
                                       : lock.editable
-                                        ? "bg-sky-50 text-sky-800 ring-sky-100"
+                                        ? "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/20"
                                         : "bg-slate-100 text-slate-600 ring-slate-200",
                                   )}
                                 >

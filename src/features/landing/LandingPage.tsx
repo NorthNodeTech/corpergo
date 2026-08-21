@@ -1,12 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { motion, useMotionValue, animate, useInView } from "framer-motion";
+import { motion, animate } from "framer-motion";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   Activity,
   Brain,
   Bone,
-  Briefcase,
   Building2,
   Factory,
   Video,
@@ -38,7 +37,6 @@ import {
   CalendarPlus,
   LogIn,
   ShieldCheck,
-  Users,
 } from "lucide-react";
 import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
 import {
@@ -48,6 +46,7 @@ import {
   LinkedInIcon,
   PhoneAppIcon,
   YouTubeIcon,
+  WhatsAppIcon,
 } from "@/shared/components/icons/BrandIcons";
 import heroImg from "@/assets/corpergo-hero.webp";
 import aboutImg from "@/assets/abt.webp";
@@ -74,6 +73,9 @@ import {
   SUPPORT_EMAIL,
   SUPPORT_PHONE,
   SUPPORT_PHONE_DISPLAY,
+  SUPPORT_PHONE_ALT_DISPLAY,
+  WHATSAPP_CONSULT_URL,
+  CLINIC_LOCATIONS,
 } from "@/lib/seo";
 
 const LoginModal = lazy(() =>
@@ -89,20 +91,45 @@ const LANDING_NAV_LINK =
 
 function Counter({ to, suffix = "" }: { to: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const mv = useMotionValue(0);
-  const inView = useInView(ref, { once: true, amount: 0.6 });
 
   useEffect(() => {
-    if (!inView) return;
-    const controls = animate(mv, to, {
-      duration: 1.8,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (v) => {
-        if (ref.current) ref.current.textContent = Math.floor(v).toLocaleString() + suffix;
+    const el = ref.current;
+    if (!el) return;
+
+    let controls: { stop: () => void } | null = null;
+    let started = false;
+
+    const start = () => {
+      if (started) return;
+      started = true;
+      controls = animate(0, to, {
+        duration: 1.8,
+        ease: [0.22, 1, 0.36, 1],
+        onUpdate: (v) => {
+          if (ref.current) {
+            ref.current.textContent = Math.floor(v).toLocaleString() + suffix;
+          }
+        },
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        // Defer past the current commit so React 19 does not warn about
+        // updating a fiber that is still mounting.
+        requestAnimationFrame(start);
+        observer.disconnect();
       },
-    });
-    return () => controls.stop();
-  }, [inView, mv, to, suffix]);
+      { threshold: 0.6 },
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      controls?.stop();
+    };
+  }, [to, suffix]);
 
   return <span ref={ref}>0{suffix}</span>;
 }
@@ -165,37 +192,7 @@ function AmbientOrbs() {
   );
 }
 
-function MotionMarquee() {
-  const items = [
-    "Evidence-Based Care",
-    "Founded in 2017",
-    "5 Greater Whitefield Clinics",
-    "Orthopedic Rehabilitation",
-    "Neurological Rehab",
-    "Pain Management",
-    "Sports Physiotherapy",
-    "Corporate Ergonomics",
-    "Industrial Ergonomics",
-    "Online Treatment",
-    "Pediatric Rehabilitation",
-  ];
-  const loop = [...items, ...items];
-  return (
-    <div className="relative overflow-hidden border-y border-black/10 bg-black/5 py-4 backdrop-blur-sm">
-      <div className="alive-marquee flex w-max gap-10 whitespace-nowrap">
-        {loop.map((label, i) => (
-          <span
-            key={`${label}-${i}`}
-            className="inline-flex items-center gap-3 text-sm font-bold tracking-wide text-black"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--sage)]" />
-            {label}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
+
 
 /* ------------------------------ NAV ------------------------------ */
 
@@ -214,23 +211,26 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
       }
       setOverHero(hero.getBoundingClientRect().bottom > 72);
     };
-    onScroll();
+    // Defer the initial sync so it never races the first mount commit.
+    const frame = requestAnimationFrame(onScroll);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
   }, []);
 
   const items = [
-    ["About", "#about"],
-    ["Treatments", "#treatments"],
-    ["Testimonials", "#testimonials"],
-    ["Videos", "#videos"],
-    ["Clinics", "#clinics"],
-    ["FAQ", "#faq"],
-    ["Contact", "#contact"],
+    { label: "About", href: "#about" },
+    { label: "Treatments", href: "#treatments" },
+    { label: "Ergonomics", to: "/ergonomics" as const },
+    { label: "Testimonials", href: "#testimonials" },
+    { label: "Videos", href: "#videos" },
+    { label: "Clinics", href: "#clinics" },
+    { label: "FAQ", href: "#faq" },
+    { label: "Contact", href: "#contact" },
   ];
 
   const onHero = overHero && !scrolled;
@@ -268,28 +268,29 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
               background={onHero ? "dark" : "light"}
               className="h-10 w-10 shrink-0 transition-all duration-300 group-hover:scale-[1.03] sm:h-11 sm:w-11"
             />
-            <div className="min-w-0">
-              <div
-                className={cn(
-                  "corpergo-brand-title landing-nav__brand-title truncate text-sm sm:text-[15px]",
-                  onHero ? "text-white" : "text-[var(--ink)]",
-                )}
-              >
-                <span className="text-[var(--saffron)]">Corp</span>
-                <span className={onHero ? "text-white" : "text-[var(--ink)]"}>Ergo</span>
-              </div>
-              <div className="corpergo-brand-tagline landing-nav__brand-tagline">
-                Physiotherapy &amp; Sports Rehabilitation
-              </div>
+            <div
+              className={cn(
+                "corpergo-brand-title landing-nav__brand-title min-w-0 truncate text-sm sm:text-[15px]",
+                onHero ? "text-white" : "text-[var(--ink)]",
+              )}
+            >
+              <span className="text-[var(--saffron)]">Corp</span>
+              <span className={onHero ? "text-white" : "text-[var(--ink)]"}>Ergo</span>
             </div>
           </Link>
 
           <nav className="hidden lg:flex items-center justify-center gap-1.5 min-w-0 xl:gap-2">
-            {items.map(([label, href]) => (
-              <a key={label} href={href} className={LANDING_NAV_LINK}>
-                {label}
-              </a>
-            ))}
+            {items.map((item) =>
+              "to" in item ? (
+                <Link key={item.label} to={item.to} className={LANDING_NAV_LINK}>
+                  {item.label}
+                </Link>
+              ) : (
+                <a key={item.label} href={item.href} className={LANDING_NAV_LINK}>
+                  {item.label}
+                </a>
+              ),
+            )}
           </nav>
 
           <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-2.5">
@@ -332,16 +333,27 @@ function Nav({ onLoginClick, onBookClick }: { onLoginClick: () => void; onBookCl
             animate={{ opacity: 1, y: 0 }}
             className="lg:hidden mt-2 rounded-2xl border border-black/[0.08] bg-white/95 p-1.5 shadow-[0_8px_32px_rgba(15,23,42,0.08)] backdrop-blur-md"
           >
-            {items.map(([label, href]) => (
-              <a
-                key={label}
-                href={href}
-                onClick={() => setOpen(false)}
-                className="block rounded-xl px-3.5 py-3 text-sm font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--saffron)] hover:text-white"
-              >
-                {label}
-              </a>
-            ))}
+            {items.map((item) =>
+              "to" in item ? (
+                <Link
+                  key={item.label}
+                  to={item.to}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-xl px-3.5 py-3 text-sm font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--saffron)] hover:text-white"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className="block rounded-xl px-3.5 py-3 text-sm font-semibold text-[var(--ink)] transition-colors hover:bg-[var(--saffron)] hover:text-white"
+                >
+                  {item.label}
+                </a>
+              ),
+            )}
             <div className="my-1 border-t border-black/[0.05]" />
             <button
               onClick={() => {
@@ -406,43 +418,12 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
               variants={fadeItem}
               className="hero-fit__title text-white text-balance drop-shadow-[0_2px_24px_rgba(0,0,0,0.35)]"
             >
-              Relieve pain.
-              <br />
-              <span className="text-[var(--saffron)]">Restore</span>{" "}
-              <span className="relative inline-block">
-                movement.
-                <svg
-                  className="absolute -bottom-1 left-0 w-full overflow-visible"
-                  height="8"
-                  viewBox="0 0 300 10"
-                  fill="none"
-                  aria-hidden
-                >
-                  <motion.path
-                    d="M2 7 Q 75 2, 150 6 T 298 5"
-                    stroke="var(--saffron)"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    fill="none"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ delay: 0.85, duration: 1.1, ease: easeOut }}
-                  />
-                </svg>
-              </span>
+              Physiotherapy &amp;{" "}
+              <span className="text-[var(--saffron)]">Rehabilitation</span>
             </motion.h1>
 
-            <motion.p
-              variants={fadeItem}
-              className="mt-3 text-sm font-semibold tracking-wide text-[var(--saffron-light)] drop-shadow-sm sm:text-[15px]"
-            >
-              Restoring Movement · Relieving Pain · Transforming Lives
-            </motion.p>
-
             <motion.p variants={fadeItem} className="hero-fit__body text-white/88 drop-shadow-sm">
-              Founded in 2017 by Dr. Pinky Dutta (MPT, PhD). Evidence-based physiotherapy, sports
-              rehabilitation, and ergonomics care across five clinics in Greater Whitefield,
-              Bengaluru.
+              Personalised physiotherapy and sports rehab to help you move better, every day.
             </motion.p>
 
             <motion.div
@@ -455,6 +436,16 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
               >
                 <PhoneAppIcon className="h-4 w-4 shrink-0" />
                 {SUPPORT_PHONE_DISPLAY}
+              </a>
+              <a
+                href={WHATSAPP_CONSULT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="WhatsApp CorpErgo for a consultation"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white/90 transition-colors hover:text-[var(--saffron-light)]"
+              >
+                <WhatsAppIcon className="h-4 w-4 shrink-0" />
+                {SUPPORT_PHONE_ALT_DISPLAY}
               </a>
               <SocialIconRow onDark />
             </motion.div>
@@ -517,10 +508,25 @@ function Hero({ onBookClick }: { onBookClick: () => void }) {
 /* ------------------------------ ABOUT ------------------------------ */
 
 function About() {
+  const journey = [
+    {
+      label: "How it started",
+      text: "In 2017, Dr. Pinky Dutta (MPT, PhD) opened a single clinic with one clear aim — help people move without pain.",
+    },
+    {
+      label: "How we grew",
+      text: "That vision grew into five clinics across Bengaluru, so quality physiotherapy stays close and accessible.",
+    },
+    {
+      label: "How we care",
+      text: "We treat the root cause with personalised plans — rehab, sports physio, and long-term wellness, not quick fixes.",
+    },
+  ] as const;
+
   return (
     <section id="about" className="about-fit relative landing-section-tone--plain">
       <div className="about-fit__shell mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="about-fit__grid grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
+        <div className="about-fit__grid grid lg:grid-cols-2 gap-5 lg:gap-10 items-center">
           <motion.div
             variants={fadeUp}
             initial="hidden"
@@ -548,7 +554,7 @@ function About() {
             >
               <div className="about-fit__years-n font-extrabold text-[var(--ink)]">2017</div>
               <div className="about-fit__years-l text-[var(--ink-soft)]">
-                Founded in Greater Whitefield, Bengaluru
+                Founded in Bengaluru
               </div>
             </motion.div>
           </motion.div>
@@ -567,41 +573,25 @@ function About() {
               Restoring movement. Relieving pain. Transforming lives.
             </h2>
             <p className="about-fit__body text-[var(--ink-soft)]">
-              Founded in 2017 by Dr. Pinky Dutta (MPT, PhD), CorpErgo Physiotherapy &amp; Sports
-              Rehabilitation Center has grown into one of the most trusted physiotherapy and
-              rehabilitation providers in Greater Whitefield, Bengaluru.
-            </p>
-            <p className="mt-3 text-[0.9375rem] leading-relaxed text-[var(--ink-soft)]">
-              What began as a single center with a vision for evidence-based care now spans five
-              branches — Channasandra, Muthsandra, Balagere, Kannamangala, and Manduru — making
-              quality physiotherapy accessible to thousands of patients and families.
-            </p>
-            <p className="mt-3 text-[0.9375rem] leading-relaxed text-[var(--ink-soft)]">
-              We believe every individual deserves to live, move, and perform without pain or
-              physical limitations. Our multidisciplinary approach combines clinical expertise,
-              personalized treatment plans, modern rehabilitation, and patient-centered care.
+              From one centre to care across Bengaluru — CorpErgo helps people recover, move better,
+              and stay well.
             </p>
 
-            <div className="about-fit__cards grid sm:grid-cols-2">
-              {[
-                {
-                  n: "01",
-                  t: "Our Mission",
-                  d: "Accessible, evidence-based physiotherapy, rehabilitation, and ergonomics that empower pain-free living.",
-                },
-                {
-                  n: "02",
-                  t: "Our Approach",
-                  d: "Treat the root cause, restore function, prevent recurrence, and improve quality of life.",
-                },
-              ].map((x) => (
+            <div className="mt-5 space-y-3">
+              {journey.map((step, i) => (
                 <div
-                  key={x.n}
-                  className="about-fit__card bg-white ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)]"
+                  key={step.label}
+                  className="rounded-2xl bg-white px-4 py-3.5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.04]"
                 >
-                  <div className="about-fit__card-n font-bold text-[var(--bronze)]">{x.n}</div>
-                  <div className="about-fit__card-t font-bold text-[var(--ink)]">{x.t}</div>
-                  <div className="about-fit__card-d text-[var(--ink-soft)]">{x.d}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-6 w-6 place-items-center rounded-full bg-[var(--saffron)] text-[11px] font-bold text-white">
+                      {i + 1}
+                    </span>
+                    <div className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--saffron-deep)]">
+                      {step.label}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)]">{step.text}</p>
                 </div>
               ))}
             </div>
@@ -622,46 +612,6 @@ function About() {
             </div>
           </motion.div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------ MISSION ------------------------------ */
-
-function Mission() {
-  return (
-    <section className="landing-section relative landing-section-tone--muted">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.35 }}
-          className="relative overflow-hidden rounded-[32px] bg-[var(--ink)] px-6 py-10 text-white sm:px-12 sm:py-14 lg:px-16"
-        >
-          <div
-            className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-[var(--saffron)]/20 blur-3xl"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-white/10 blur-3xl"
-            aria-hidden
-          />
-          <div className="relative z-10 max-w-3xl">
-            <div className="type-eyebrow text-[var(--saffron)]">Our Mission</div>
-            <blockquote className="mt-4 text-balance text-xl font-semibold leading-snug tracking-tight sm:text-2xl lg:text-[1.75rem] lg:leading-snug">
-              To provide accessible, evidence-based physiotherapy, rehabilitation, and ergonomics
-              solutions that empower individuals to achieve pain-free living, optimal movement, and
-              improved quality of life.
-            </blockquote>
-            <p className="mt-6 max-w-2xl text-sm leading-relaxed text-white/70 sm:text-[15px]">
-              CorpErgo continues to be a trusted partner in health and recovery for the Greater
-              Whitefield community — with compassion, clinical excellence, and a commitment to
-              transforming lives through movement.
-            </p>
-          </div>
-        </motion.div>
       </div>
     </section>
   );
@@ -831,7 +781,7 @@ function Treatments() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.05 }}
               transition={{ delay: Math.min(i, 2) * 0.04, duration: 0.45 }}
-              className="group relative flex w-[calc(100vw-5.25rem)] max-w-[21rem] shrink-0 grow-0 snap-start flex-col overflow-hidden rounded-3xl bg-white p-6 transition-all sm:w-[21rem] landing-card-hover site-card"
+              className="group relative flex w-[calc(100vw-4.5rem)] max-w-[17.5rem] shrink-0 grow-0 snap-start flex-col overflow-hidden rounded-3xl bg-white p-4 transition-all sm:w-[21rem] sm:max-w-[21rem] sm:p-6 landing-card-hover site-card"
             >
               <img
                 src={image}
@@ -923,61 +873,6 @@ function Treatments() {
 
 /* ------------------------------ INDUSTRIAL ERGONOMICS ------------------------------ */
 
-function IndustrialErgonomics() {
-  return (
-    <section
-      id="industrial-ergonomics"
-      className="landing-section relative landing-section-tone--muted"
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="max-w-3xl section-header"
-        >
-          <div className="type-eyebrow text-[var(--bronze)]">Service</div>
-          <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
-            Industrial Ergonomics sessions and consultation.
-          </h2>
-          <p className="type-lead text-[var(--ink-soft)]">
-            CorpErgo helps employees and clinicians use equipment safely — correct machine
-            operation, operator posture, ergonomic working methods, and workplace body-position
-            assessment.
-          </p>
-        </motion.div>
-
-        <div className="mt-8 flex gap-3 overflow-x-auto overscroll-x-contain pb-3 snap-x snap-mandatory sm:grid sm:max-w-4xl sm:grid-cols-3 sm:gap-5 sm:overflow-visible sm:pb-0 sm:snap-none mx-auto">
-          {INDUSTRIAL_MACHINES.map((machine) => (
-            <Link
-              key={machine.id}
-              to="/industrial-ergonomics/$machineId"
-              params={{ machineId: machine.id }}
-              className="group w-[72%] min-w-0 shrink-0 snap-start overflow-hidden rounded-3xl bg-white p-2.5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.04] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-elev)] sm:w-auto sm:p-3"
-            >
-              <div className="relative aspect-square overflow-hidden rounded-3xl bg-[#ece8e1]">
-                <img
-                  src={machine.cardImage}
-                  alt={machine.shortName}
-                  className="absolute inset-0 h-full w-full object-cover object-center"
-                  loading="lazy"
-                  width={900}
-                  height={900}
-                  decoding="async"
-                />
-              </div>
-              <h3 className="px-1 py-3 text-center text-sm font-bold leading-snug text-[var(--ink)]">
-                {machine.shortName}
-              </h3>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 /* ------------------------------ ONLINE TREATMENT ------------------------------ */
 
 function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
@@ -1002,7 +897,8 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
   return (
     <section
       id="online-treatment"
-      className="relative py-8 sm:py-10 landing-section-tone--muted"
+      className="relative py-5 sm:py-10 landing-section-tone--muted"
+      data-online-treatment
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <motion.div
@@ -1013,7 +909,7 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
           className="overflow-hidden rounded-[28px] bg-white shadow-[var(--shadow-elev)] ring-1 ring-black/[0.04]"
         >
           <div className="grid lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-            <div className="relative h-48 overflow-hidden sm:h-56 lg:h-auto lg:min-h-[22rem]">
+            <div className="relative h-40 overflow-hidden sm:h-56 lg:h-auto lg:min-h-[22rem]">
               <img
                 src={reelRecoveryMotion}
                 alt="Online video consultation with a CorpErgo physiotherapist"
@@ -1033,9 +929,9 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
               </div>
             </div>
 
-            <div className="flex flex-col justify-center px-5 py-5 sm:px-7 sm:py-6 lg:px-8">
+            <div className="flex flex-col justify-center px-4 py-4 sm:px-7 sm:py-6 lg:px-8">
               <div className="type-eyebrow text-[var(--bronze)]">Service</div>
-              <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-[var(--ink)] text-balance sm:text-[1.75rem]">
+              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[var(--ink)] text-balance sm:text-[1.75rem]">
                 Online video consultation.
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-[var(--ink-soft)] sm:text-[15px]">
@@ -1045,7 +941,7 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
                 session.
               </p>
 
-              <ul className="mt-4 grid grid-cols-2 gap-2">
+              <ul className="mt-3 grid grid-cols-1 gap-1.5 sm:mt-4 sm:grid-cols-2 sm:gap-2">
                 {[
                   "Unable to visit the clinic",
                   "Live far from our clinics",
@@ -1062,15 +958,27 @@ function OnlineTreatment({ onBookClick }: { onBookClick?: () => void }) {
                 ))}
               </ul>
 
-              <a
-                href={`tel:${SUPPORT_PHONE}`}
-                className="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--saffron-deep)]"
-              >
-                <PhoneAppIcon className="h-4 w-4 shrink-0" />
-                {SUPPORT_PHONE_DISPLAY}
-              </a>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                <a
+                  href={`tel:${SUPPORT_PHONE}`}
+                  className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-bold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--saffron-deep)]"
+                >
+                  <PhoneAppIcon className="h-4 w-4 shrink-0" />
+                  {SUPPORT_PHONE_DISPLAY}
+                </a>
+                <a
+                  href={WHATSAPP_CONSULT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="WhatsApp CorpErgo for a consultation"
+                  className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--ink)] px-5 py-2.5 text-sm font-bold text-white shadow-[var(--shadow-soft)] transition hover:bg-[var(--saffron)]"
+                >
+                  <WhatsAppIcon className="h-4 w-4 shrink-0" />
+                  {SUPPORT_PHONE_ALT_DISPLAY}
+                </a>
+              </div>
               <p className="mt-1.5 text-[11px] font-medium text-[var(--ink-soft)]">
-                Tap this number to call and book an online video session.
+                Call or WhatsApp to book an online video session.
               </p>
             </div>
           </div>
@@ -1138,7 +1046,7 @@ function WhyChoose() {
   return (
     <section id="why" className="landing-section relative landing-section-tone--muted">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="max-w-2xl mb-6 sm:mb-8 section-header">
+        <div className="max-w-2xl mb-4 sm:mb-8 section-header">
           <div className="type-eyebrow text-[var(--bronze)]">Why choose CorpErgo</div>
           <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
             Clinical excellence, close to home.
@@ -1159,7 +1067,7 @@ function WhyChoose() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: Math.min(i, 3) * 0.05, duration: 0.45 }}
-                className="relative rounded-3xl bg-white p-7 transition-all overflow-hidden sm:p-8 landing-card-hover site-card"
+                className="relative rounded-3xl bg-white p-4 transition-all overflow-hidden sm:p-8 landing-card-hover site-card"
               >
                 <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-[var(--sage)]/5 transition-transform duration-700" />
                 <div className="relative">
@@ -1175,69 +1083,6 @@ function WhyChoose() {
               </motion.div>
             );
           })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ------------------------------ WHO WE SERVE ------------------------------ */
-
-const AUDIENCES = [
-  { icon: Briefcase, label: "Working professionals" },
-  { icon: UserRound, label: "Senior citizens" },
-  { icon: Users, label: "Homemakers" },
-  { icon: Dumbbell, label: "Athletes and sports enthusiasts" },
-  { icon: Baby, label: "Children with developmental needs" },
-  { icon: Stethoscope, label: "Post-surgical patients" },
-  { icon: Activity, label: "Acute or chronic pain" },
-] as const;
-
-function WhoWeServe() {
-  return (
-    <section id="patients" className="landing-section relative landing-section-tone--plain">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-14">
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="section-header max-w-xl"
-          >
-            <div className="type-eyebrow text-[var(--bronze)]">Who we serve</div>
-            <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
-              Care for every age, every stage, every lifestyle.
-            </h2>
-            <p className="type-lead text-[var(--ink-soft)]">
-              Whether you are recovering from an injury, managing a long-term condition, seeking
-              postural correction, or looking to move better — CorpErgo offers comprehensive
-              rehabilitation designed to help you move better, feel better, and live better.
-            </p>
-          </motion.div>
-
-          <div className="flex flex-wrap gap-3">
-            {AUDIENCES.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, y: 14 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: Math.min(i, 4) * 0.04, duration: 0.4 }}
-                  className="flex min-w-[13.5rem] flex-1 items-center gap-3 rounded-2xl bg-[#f6f3ee] px-4 py-3.5 ring-1 ring-black/[0.04]"
-                >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[var(--saffron-light)] text-[var(--saffron-deep)]">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="text-sm font-bold leading-snug text-[var(--ink)]">
-                    {item.label}
-                  </span>
-                </motion.div>
-              );
-            })}
-          </div>
         </div>
       </div>
     </section>
@@ -1316,7 +1161,7 @@ function VideoStories() {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-6 sm:gap-4">
+        <div className="mb-4 flex flex-col sm:mb-6 sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
           <div className="section-header max-w-xl">
             <div className="type-eyebrow text-[var(--bronze)]">Watch & Learn</div>
             <h2 className="type-h2 text-balance font-extrabold tracking-tight text-[var(--ink)]">
@@ -1332,7 +1177,7 @@ function VideoStories() {
           </div>
         </div>
 
-        <div className="scrollbar-hide -mr-4 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-pl-0 scroll-pr-4 pb-4 pr-4 sm:-mr-6 sm:scroll-pr-6 sm:pr-6">
+        <div className="scrollbar-hide -mr-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-pl-0 scroll-pr-4 pb-2 pr-4 sm:-mr-6 sm:gap-5 sm:scroll-pr-6 sm:pb-4 sm:pr-6">
           {YOUTUBE_SHORTS.map((short, i) => (
             <motion.button
               key={short.id}
@@ -1487,7 +1332,7 @@ function Testimonials() {
   return (
     <section id="testimonials" className="landing-section relative landing-section-tone--warm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="max-w-2xl mb-6 sm:mb-8 section-header">
+        <div className="max-w-2xl mb-4 sm:mb-8 section-header">
           <div className="type-eyebrow text-[var(--bronze)]">Patient stories</div>
           <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
             Trusted by patients across Bengaluru.
@@ -1495,14 +1340,14 @@ function Testimonials() {
           <p className="type-lead text-[var(--ink-soft)]">
             Real recovery journeys from people who chose evidence-based care at CorpErgo.
           </p>
-          <div className="mt-5 inline-flex items-center gap-3 rounded-full bg-[var(--saffron-light)] px-4 py-2 ring-1 ring-[var(--saffron)]/20">
+          <div className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-full bg-[var(--saffron-light)] px-3 py-1.5 ring-1 ring-[var(--saffron)]/20 sm:mt-5 sm:gap-3 sm:px-4 sm:py-2">
             <StarRating value={5} />
             <span className="text-sm font-bold text-[var(--ink)]">4.9 average rating</span>
             <span className="text-xs font-semibold text-[var(--ink-soft)]">· 500+ reviews</span>
           </div>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 md:gap-5 lg:grid-cols-3">
           {TESTIMONIALS.map((item, i) => (
             <motion.article
               key={item.name}
@@ -1510,17 +1355,17 @@ function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: Math.min(i, 3) * 0.06, duration: 0.5 }}
-              className="relative flex h-full flex-col rounded-3xl bg-white p-7 landing-card-hover site-card"
+              className="relative flex h-full flex-col rounded-3xl bg-white p-4 landing-card-hover site-card sm:p-7"
             >
               <Quote
-                className="absolute right-6 top-6 h-8 w-8 text-[var(--saffron)]/15"
+                className="absolute right-4 top-4 h-6 w-6 text-[var(--saffron)]/15 sm:right-6 sm:top-6 sm:h-8 sm:w-8"
                 aria-hidden
               />
               <StarRating value={item.rating} />
-              <blockquote className="type-body-sm mt-4 flex-1 text-[var(--ink)]">
+              <blockquote className="type-body-sm mt-3 flex-1 text-[var(--ink)] sm:mt-4">
                 &ldquo;{item.quote}&rdquo;
               </blockquote>
-              <div className="mt-6 flex items-center gap-3 border-t border-black/[0.05] pt-5">
+              <div className="mt-4 flex items-center gap-3 border-t border-black/[0.05] pt-3 sm:mt-6 sm:pt-5">
                 <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--ink)] text-xs font-bold text-white">
                   {item.name
                     .split(" ")
@@ -1545,43 +1390,13 @@ function Testimonials() {
 
 const CLINIC_PHOTOS = [heroImg, aboutImg, reelClinicMoments, reelHandsOnCare, reelRecoveryMotion];
 
-const CLINICS = [
-  {
-    name: "Channasandra",
-    addr: "Kadugodi, Whitefield, Bengaluru",
-    hours: "Mon-Sat · 8am-8pm",
-    mapUrl: "https://maps.app.goo.gl/w9o4N65QwY1NGkgc8",
-    photo: CLINIC_PHOTOS[0],
-  },
-  {
-    name: "Balagere",
-    addr: "Varthur, Bengaluru",
-    hours: "Mon-Sat · 8am-8pm",
-    mapUrl: "https://maps.app.goo.gl/gP8neSidun1DtXHt7",
-    photo: CLINIC_PHOTOS[1],
-  },
-  {
-    name: "Muthsandra",
-    addr: "Madhura Nagar, Varthur, Bengaluru",
-    hours: "Mon-Sat · 8am-8pm",
-    mapUrl: "https://maps.app.goo.gl/N8ja8jsPgtCZkdky5",
-    photo: CLINIC_PHOTOS[2],
-  },
-  {
-    name: "Kannamangala",
-    addr: "Whitefield–Hoskote Road, Bengaluru",
-    hours: "Mon-Sat · 8am-8pm",
-    mapUrl: "https://maps.app.goo.gl/AoB5Cftbm3hMzW1HA",
-    photo: CLINIC_PHOTOS[3],
-  },
-  {
-    name: "Manduru",
-    addr: "Budigere Old Madras Road, Bengaluru",
-    hours: "Mon-Sat · 8am-8pm",
-    mapUrl: "https://maps.app.goo.gl/HsFRRdwtYAqLZmoC8",
-    photo: CLINIC_PHOTOS[4],
-  },
-];
+const CLINICS = CLINIC_LOCATIONS.map((clinic, i) => ({
+  name: clinic.shortName,
+  addr: clinic.address,
+  hours: clinic.hours,
+  mapUrl: clinic.mapUrl,
+  photo: CLINIC_PHOTOS[i] ?? CLINIC_PHOTOS[0],
+}));
 
 function Clinics({ onBookClick }: { onBookClick: () => void }) {
   const n = CLINICS.length;
@@ -1602,12 +1417,12 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
       className="landing-section relative landing-section-tone--muted overflow-x-clip"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-6 max-w-3xl sm:mb-8 section-header">
+        <div className="mb-4 max-w-3xl sm:mb-8 section-header">
           <div className="type-eyebrow text-[var(--bronze)]">Locations</div>
           <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
             Five clinics. One standard of care.
           </h2>
-          <p className="type-lead mt-3 max-w-2xl text-[var(--ink-soft)]">
+          <p className="type-lead mt-2 max-w-2xl text-[var(--ink-soft)] sm:mt-3">
             Same evidence-based physiotherapy across Greater Whitefield — Channasandra (Kadugodi,
             Whitefield), Balagere (Varthur), Muthsandra (Madhura Nagar, Varthur), Kannamangala
             (Whitefield–Hoskote Road), and Manduru (Budigere Old Madras Road). Walk in Mon-Sat,
@@ -1615,17 +1430,17 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
           </p>
         </div>
 
-        <div className="relative flex items-stretch gap-2 sm:gap-4">
+        <div className="relative flex items-stretch gap-1.5 sm:gap-4">
           <button
             type="button"
             onClick={() => go(-1)}
             aria-label="Previous clinic"
-            className="z-20 mt-[9.5rem] grid h-11 w-11 shrink-0 place-items-center self-start rounded-full bg-white text-[var(--ink)] shadow-[var(--shadow-soft)] ring-1 ring-black/[0.06] transition hover:bg-[var(--sage)] hover:text-white sm:mt-[10.5rem] sm:h-12 sm:w-12"
+            className="z-20 mt-[6.75rem] grid h-10 w-10 shrink-0 place-items-center self-start rounded-full bg-white text-[var(--ink)] shadow-[var(--shadow-soft)] ring-1 ring-black/[0.06] transition hover:bg-[var(--sage)] hover:text-white sm:mt-[10.5rem] sm:h-12 sm:w-12"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
 
-          <div className="relative mx-auto min-h-[32rem] w-full flex-1 py-6 sm:min-h-[34rem] sm:py-8 [--carousel-offset:16.75rem] sm:[--carousel-offset:21.25rem] lg:[--carousel-offset:23.5rem]">
+          <div className="clinic-carousel-stage relative mx-auto min-h-[22.5rem] w-full flex-1 py-3 sm:min-h-[34rem] sm:py-8 [--carousel-offset:14.5rem] sm:[--carousel-offset:21.25rem] lg:[--carousel-offset:23.5rem]">
             {CLINICS.map((c, i) => {
               const d = offsetOf(i);
               const visible = Math.abs(d) <= 1;
@@ -1633,12 +1448,12 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
               return (
                 <motion.div
                   key={c.name}
-                  className="absolute left-1/2 top-1/2 w-[min(calc(100vw-6.5rem),20.5rem)] sm:w-[24rem] lg:w-[26rem]"
+                  className="absolute left-1/2 top-1/2 w-[min(calc(100vw-5.5rem),18.5rem)] sm:w-[24rem] lg:w-[26rem]"
                   initial={false}
                   animate={{
                     x: `calc(-50% + ${d} * var(--carousel-offset))`,
                     y: isFront ? "-50%" : "calc(-50% + 14px)",
-                    scale: isFront ? 1.08 : 0.86,
+                    scale: isFront ? 1.05 : 0.86,
                     opacity: visible ? (isFront ? 1 : 0.58) : 0,
                     zIndex: isFront ? 10 : 5 - Math.abs(d),
                     filter: isFront ? "brightness(1)" : "brightness(0.88)",
@@ -1676,17 +1491,17 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
                           Clinic 0{i + 1}
                         </span>
                       </div>
-                      <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+                      <div className="clinic-carousel-card-pad px-4 pt-3.5 sm:px-6 sm:pt-6">
                         <h3 className="type-h3 font-bold text-[var(--ink)]">{c.name}</h3>
-                        <div className="mt-1.5 type-body-sm leading-relaxed text-[var(--ink-soft)]">
+                        <div className="mt-1 type-body-sm leading-relaxed text-[var(--ink-soft)] sm:mt-1.5">
                           {c.addr}
                         </div>
-                        <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-[var(--ink-soft)]">
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-[var(--ink-soft)] sm:mt-3">
                           <Clock className="h-3.5 w-3.5 shrink-0" /> {c.hours}
                         </div>
                       </div>
                     </a>
-                    <div className="flex gap-2 p-5 pt-5 sm:px-6 sm:pb-6">
+                    <div className="clinic-carousel-actions flex gap-2 p-4 pt-3.5 sm:gap-2 sm:p-5 sm:pt-5 sm:px-6 sm:pb-6">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -1717,13 +1532,13 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
             type="button"
             onClick={() => go(1)}
             aria-label="Next clinic"
-            className="z-20 mt-[9.5rem] grid h-11 w-11 shrink-0 place-items-center self-start rounded-full bg-white text-[var(--ink)] shadow-[var(--shadow-soft)] ring-1 ring-black/[0.06] transition hover:bg-[var(--sage)] hover:text-white sm:mt-[10.5rem] sm:h-12 sm:w-12"
+            className="z-20 mt-[6.75rem] grid h-10 w-10 shrink-0 place-items-center self-start rounded-full bg-white text-[var(--ink)] shadow-[var(--shadow-soft)] ring-1 ring-black/[0.06] transition hover:bg-[var(--sage)] hover:text-white sm:mt-[10.5rem] sm:h-12 sm:w-12"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-2 sm:mt-8">
+        <div className="mt-4 flex items-center justify-center gap-2 sm:mt-8">
           {CLINICS.map((c, i) => (
             <button
               key={c.name}
@@ -1747,10 +1562,19 @@ function Clinics({ onBookClick }: { onBookClick: () => void }) {
 /* ------------------------------ FOUNDER ------------------------------ */
 
 function Founder() {
+  const highlights = [
+    "16+ years in clinical physiotherapy, teaching & academic leadership",
+    "MPT (Orthopedics & Sports) · PhD thesis submitted, Garden City University",
+    "Head of Department, Physiotherapy — Garden City University",
+    "Certified Ergonomist (IIT Guwahati) · industrial & corporate ergonomics",
+    "Multiple Indian & UK patents in rehab devices and assistive tech",
+    "Author — Understanding Work Related Musculoskeletal Disorders",
+  ] as const;
+
   return (
     <section id="founder" className="founder-fit relative landing-section-tone--plain">
       <div className="founder-fit__shell mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="founder-fit__grid grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-8 lg:gap-10 items-center">
+        <div className="founder-fit__grid grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-5 lg:gap-10 items-center">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1775,7 +1599,7 @@ function Founder() {
                 Founder · Est. 2017
               </div>
               <div className="founder-fit__badge-copy font-bold text-[var(--ink)] leading-snug">
-                Clinical leadership across Greater Whitefield
+                16+ years · clinician, academic &amp; ergonomist
               </div>
             </div>
           </motion.div>
@@ -1791,22 +1615,28 @@ function Founder() {
               Leadership
             </div>
             <h2 className="founder-fit__title font-extrabold tracking-tight text-[var(--ink)] text-balance">
-              Care that starts with clinical conviction.
+              Clinical excellence led from the front.
             </h2>
 
-            <div className="founder-fit__quote relative pl-1">
-              <Quote
-                className="founder-fit__quote-mark absolute -left-1 -top-1 text-[var(--sage)]/15"
-                aria-hidden
-              />
-              <blockquote className="founder-fit__quote-text relative font-medium text-[var(--ink)] text-balance pl-8">
-                &ldquo;Pain is only the beginning of the story. At CorpErgo, we restore movement,
-                rebuild confidence, and walk with every patient until they feel strong in their own
-                body again.&rdquo;
-              </blockquote>
-            </div>
+            <p className="mt-3 max-w-xl text-[0.9375rem] leading-relaxed text-[var(--ink-soft)]">
+              Dr. Pinky Dutta brings academic leadership, hands-on rehabilitation, and industrial
+              ergonomics expertise together — guiding CorpErgo&apos;s care standard across Greater
+              Whitefield.
+            </p>
 
-            <div className="founder-fit__meta flex flex-col sm:flex-row sm:items-end">
+            <ul className="mt-5 space-y-2.5">
+              {highlights.map((point) => (
+                <li
+                  key={point}
+                  className="flex items-start gap-2.5 text-[0.9375rem] leading-snug text-[var(--ink-soft)]"
+                >
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--saffron)]" aria-hidden />
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="founder-fit__meta mt-6 flex flex-col gap-4 sm:flex-row sm:items-end">
               <div>
                 <div className="founder-fit__name flex items-center gap-2 font-extrabold tracking-tight text-[var(--ink)]">
                   <a
@@ -1829,8 +1659,8 @@ function Founder() {
               </div>
               <div className="founder-fit__divider hidden sm:block bg-[var(--ink)]/10" />
               <p className="founder-fit__clinics text-[var(--ink-soft)] max-w-xs">
-                Founded CorpErgo in 2017. Today the center serves Greater Whitefield through five
-                clinics — Channasandra, Muthsandra, Balagere, Kannamangala, and Manduru.
+                Consultant physiotherapist at CorpErgo since 2015. Five clinics across Bengaluru —
+                Channasandra, Muthsandra, Balagere, Kannamangala, and Manduru.
               </p>
             </div>
           </motion.div>
@@ -1896,87 +1726,85 @@ const FAQ_ITEMS = [
 ] as const;
 
 function FAQ({ onBookClick }: { onBookClick: () => void }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <section id="faq" className="landing-section relative landing-section-tone--plain">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-14">
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="section-header max-w-md lg:sticky lg:top-28"
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="section-header mx-auto max-w-2xl text-center"
+        >
+          <div className="type-eyebrow text-[var(--bronze)]">FAQ</div>
+          <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
+            Common questions, answered clearly.
+          </h2>
+          <p className="type-lead text-[var(--ink-soft)]">
+            Everything you need to know before your first visit — booking, sessions, clinics, and
+            what to expect from CorpErgo care.
+          </p>
+          <button
+            type="button"
+            onClick={onBookClick}
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--saffron-deep)] cursor-pointer focus:outline-none sm:mt-6"
           >
-            <div className="type-eyebrow text-[var(--bronze)]">FAQ</div>
-            <h2 className="type-h2 font-extrabold tracking-tight text-[var(--ink)] text-balance">
-              Common questions, answered clearly.
-            </h2>
-            <p className="type-lead text-[var(--ink-soft)]">
-              Everything you need to know before your first visit — booking, sessions, clinics, and
-              what to expect from CorpErgo care.
-            </p>
-            <button
-              type="button"
-              onClick={onBookClick}
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--saffron)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--saffron-deep)] cursor-pointer focus:outline-none"
-            >
-              Book an assessment
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </motion.div>
+            Book an assessment
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </motion.div>
 
-          <div className="space-y-3">
-            {FAQ_ITEMS.map((item, i) => {
-              const isOpen = openIndex === i;
-              return (
-                <motion.div
-                  key={item.question}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.2 }}
-                  transition={{ delay: Math.min(i, 3) * 0.05, duration: 0.4 }}
-                  className="site-card overflow-hidden rounded-2xl bg-white transition-colors"
+        <div className="faq-grid mt-4 grid grid-cols-1 gap-2 sm:mt-8 sm:grid-cols-2 sm:gap-2.5 lg:gap-3">
+          {FAQ_ITEMS.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <motion.div
+                key={item.question}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ delay: Math.min(i, 3) * 0.05, duration: 0.4 }}
+                className="site-card overflow-hidden rounded-xl bg-white transition-colors"
+              >
+                <button
+                  type="button"
+                  id={`faq-trigger-${i}`}
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-panel-${i}`}
+                  onClick={() => setOpenIndex(isOpen ? null : i)}
+                  className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-[var(--saffron-light)]/40 sm:px-4 sm:py-3 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--saffron)]/40 focus-visible:ring-inset"
                 >
-                  <button
-                    type="button"
-                    id={`faq-trigger-${i}`}
-                    aria-expanded={isOpen}
-                    aria-controls={`faq-panel-${i}`}
-                    onClick={() => setOpenIndex(isOpen ? null : i)}
-                    className="flex w-full items-start justify-between gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--saffron-light)]/40 sm:px-6 sm:py-5 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--saffron)]/40 focus-visible:ring-inset"
-                  >
-                    <span className="type-h4 font-bold text-[var(--ink)] leading-snug">
-                      {item.question}
-                    </span>
-                    <ChevronDown
-                      className={cn(
-                        "mt-0.5 h-5 w-5 shrink-0 text-[var(--saffron-deep)] transition-transform duration-300",
-                        isOpen && "rotate-180",
-                      )}
-                      aria-hidden
-                    />
-                  </button>
-                  <div
-                    id={`faq-panel-${i}`}
-                    role="region"
-                    aria-labelledby={`faq-trigger-${i}`}
+                  <span className="text-sm font-semibold leading-snug text-[var(--ink)] sm:text-[0.9375rem]">
+                    {item.question}
+                  </span>
+                  <ChevronDown
                     className={cn(
-                      "grid transition-[grid-template-rows] duration-300 ease-out",
-                      isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                      "h-4 w-4 shrink-0 text-[var(--saffron-deep)] transition-transform duration-300",
+                      isOpen && "rotate-180",
                     )}
-                  >
-                    <div className="overflow-hidden">
-                      <p className="type-body-sm border-t border-black/[0.06] px-5 pb-5 pt-0 text-[var(--ink-soft)] sm:px-6 sm:pb-6">
-                        <span className="block pt-3">{item.answer}</span>
-                      </p>
-                    </div>
+                    aria-hidden
+                  />
+                </button>
+                <div
+                  id={`faq-panel-${i}`}
+                  role="region"
+                  aria-labelledby={`faq-trigger-${i}`}
+                  className={cn(
+                    "grid transition-[grid-template-rows] duration-300 ease-out",
+                    isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                  )}
+                >
+                  <div className="overflow-hidden">
+                    <p className="border-t border-black/[0.06] px-3.5 pb-3 pt-0 text-xs leading-relaxed text-[var(--ink-soft)] sm:px-4 sm:pb-3.5 sm:text-sm">
+                      <span className="block pt-2.5">{item.answer}</span>
+                    </p>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -1994,7 +1822,7 @@ function CTA({ onBookClick }: { onBookClick: () => void }) {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, amount: 0.35 }}
           transition={{ duration: 0.75, ease: easeOut }}
-          className="relative overflow-hidden rounded-[36px] border-[3px] border-black/25 p-10 sm:p-16 lg:p-20 grain bg-[var(--structure-maroon)]"
+          className="cta-panel relative overflow-hidden rounded-[28px] border-2 border-black/25 p-5 sm:rounded-[36px] sm:border-[3px] sm:p-16 lg:p-20 grain bg-[var(--structure-maroon)]"
         >
           <div className="alive-orb alive-orb--cta-a absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
           <div className="alive-orb alive-orb--cta-b absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-[var(--saffron)]/20 blur-3xl" />
@@ -2021,28 +1849,28 @@ function CTA({ onBookClick }: { onBookClick: () => void }) {
               </motion.div>
               <motion.h2
                 variants={fadeItem}
-                className="type-display mt-3 font-extrabold tracking-tight text-white drop-shadow-md text-balance"
+                className="type-display mt-2 font-extrabold tracking-tight text-white drop-shadow-md text-balance sm:mt-3"
               >
                 Ready to start your recovery journey?
               </motion.h2>
               <motion.p
                 variants={fadeItem}
-                className="type-lead mt-4 text-white/90 font-medium max-w-xl"
+                className="type-lead mt-3 text-white/90 font-medium max-w-xl sm:mt-4"
               >
                 Book a first assessment with a certified CorpErgo physiotherapist — at the Greater
                 Whitefield clinic closest to you.
               </motion.p>
-              <motion.div variants={fadeItem} className="mt-8 flex flex-wrap gap-3">
+              <motion.div variants={fadeItem} className="cta-actions mt-5 flex flex-col gap-2 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-3">
                 <button
                   onClick={onBookClick}
-                  className="group alive-cta inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-sm font-bold text-[var(--structure-maroon)] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl cursor-pointer focus:outline-none"
+                  className="group alive-cta inline-flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-[var(--structure-maroon)] hover:bg-[var(--ivory)] transition-all hover:-translate-y-0.5 shadow-xl cursor-pointer focus:outline-none sm:w-auto sm:py-3.5"
                 >
                   Book Appointment
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </button>
                 <a
                   href={`tel:${SUPPORT_PHONE}`}
-                  className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur px-6 py-3.5 text-sm font-bold text-white ring-1 ring-white/30 hover:bg-white/20 transition-all"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-white/10 backdrop-blur px-6 py-3 text-sm font-bold text-white ring-1 ring-white/30 hover:bg-white/20 transition-all sm:w-auto sm:py-3.5"
                 >
                   <PhoneAppIcon className="h-4 w-4" /> Call us
                 </a>
@@ -2064,8 +1892,8 @@ function Footer({ onBookClick }: { onBookClick: () => void }) {
       id="contact"
       className="border-t border-black/[0.06] bg-[#f7f6f3] text-[var(--ink-soft)]"
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12 sm:py-14">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+      <div className="footer-shell mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-14">
+        <div className="footer-grid grid gap-7 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3">
               <CorpErgoLogo size="md" withFrame={false} className="h-14 w-auto sm:h-[3.75rem]" />
@@ -2268,11 +2096,11 @@ function BookingChoiceModal({
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="mt-4 grid gap-2.5 sm:mt-6 sm:grid-cols-2 sm:gap-3">
             <button
               type="button"
               onClick={onDirectBook}
-              className="group flex min-h-44 flex-col rounded-3xl bg-[var(--ivory)] p-5 text-left shadow-[var(--shadow-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--saffron-light)] hover:shadow-[0_12px_32px_rgba(255,152,0,0.18)]"
+              className="group flex min-h-36 flex-col rounded-3xl bg-[var(--ivory)] p-4 text-left shadow-[var(--shadow-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--saffron-light)] hover:shadow-[0_12px_32px_rgba(255,152,0,0.18)] sm:min-h-44 sm:p-5"
             >
               <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--pink-main)] text-white transition-transform duration-200 group-hover:scale-105">
                 <PhoneAppIcon className="h-5 w-5" />
@@ -2292,7 +2120,7 @@ function BookingChoiceModal({
             <button
               type="button"
               onClick={onLoginFirst}
-              className="group flex min-h-44 flex-col rounded-3xl bg-white p-5 text-left shadow-[var(--shadow-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--sage)]/12 hover:shadow-[0_12px_32px_rgba(255,152,0,0.14)]"
+              className="group flex min-h-36 flex-col rounded-3xl bg-white p-4 text-left shadow-[var(--shadow-soft)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[var(--sage)]/12 hover:shadow-[0_12px_32px_rgba(255,152,0,0.14)] sm:min-h-44 sm:p-5"
             >
               <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[var(--sage)] text-white transition-transform duration-200 group-hover:scale-105">
                 <LogIn className="h-5 w-5" />
@@ -2330,13 +2158,13 @@ export function LandingPage() {
   const [patientRedirectTo, setPatientRedirectTo] = useState<string | null>(null);
 
   useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      new URLSearchParams(window.location.search).get("login") === "true"
-    ) {
+    if (typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("login") !== "true") return;
+    const frame = requestAnimationFrame(() => {
       setIsLoginOpen(true);
       window.history.replaceState({}, document.title, window.location.pathname);
-    }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const handleLoginClick = () => {
@@ -2365,15 +2193,11 @@ export function LandingPage() {
       <Nav onLoginClick={handleLoginClick} onBookClick={handleBookClick} />
       <Hero onBookClick={handleBookClick} />
       <FloatingBackgroundLayout>
-        <MotionMarquee />
         <About />
-        <Mission />
         <Treatments />
-        <IndustrialErgonomics />
         <OnlineTreatment onBookClick={handleBookClick} />
         <Founder />
         <WhyChoose />
-        <WhoWeServe />
         <VideoStories />
         <Testimonials />
         <Clinics onBookClick={handleBookClick} />
@@ -2382,12 +2206,14 @@ export function LandingPage() {
       </FloatingBackgroundLayout>
       <Footer onBookClick={handleBookClick} />
 
-      <BookingChoiceModal
-        isOpen={isBookingChoiceOpen}
-        onClose={() => setIsBookingChoiceOpen(false)}
-        onDirectBook={handleDirectBook}
-        onLoginFirst={handleLoginFirst}
-      />
+      {isBookingChoiceOpen ? (
+        <BookingChoiceModal
+          isOpen={isBookingChoiceOpen}
+          onClose={() => setIsBookingChoiceOpen(false)}
+          onDirectBook={handleDirectBook}
+          onLoginFirst={handleLoginFirst}
+        />
+      ) : null}
       <Suspense fallback={null}>
         {isLoginOpen ? (
           <LoginModal

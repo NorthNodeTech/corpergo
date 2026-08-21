@@ -3,14 +3,13 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
 import { CorpErgoLogo } from "@/shared/components/brand/CorpErgoLogo";
-import { GoogleMapsIcon, PhoneAppIcon } from "@/shared/components/icons/BrandIcons";
+import { PhoneAppIcon } from "@/shared/components/icons/BrandIcons";
 import {
   createDirectBookingRequest,
   fetchPublicClinics,
   type DirectBookingGender,
 } from "@/lib/booking/direct-booking-data";
-import type { Clinic } from "@/lib/patient/clinic-data";
-import { cn } from "@/lib/core/utils";
+import { formatClinicLocation, type Clinic } from "@/lib/patient/clinic-data";
 import { LoadingSpinner, LoadingSpinnerLabel } from "@/shared/components/ui/loading-spinner";
 import { directBookingStructuredData, publicRouteHead } from "@/lib/seo";
 
@@ -89,8 +88,8 @@ function DirectBookingPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-[var(--ivory)] text-[var(--ink)]">
-      <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 py-5 sm:px-6 sm:py-8">
+    <main className="mobile-compact-page min-h-dvh bg-[var(--ivory)] text-[var(--ink)]">
+      <div className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col px-4 py-4 sm:px-6 sm:py-8">
         <div className="flex items-center justify-between gap-3">
           <Link
             to="/"
@@ -106,30 +105,30 @@ function DirectBookingPage() {
           </Link>
         </div>
 
-        <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[0.9fr_1.1fr] lg:py-12">
-          <section>
+        <div className="mobile-compact-grid grid flex-1 items-center gap-5 py-5 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8 lg:py-12">
+          <section className="mobile-compact-intro">
             <CorpErgoLogo size="lg" />
-            <p className="type-eyebrow mt-7 font-black text-[var(--bronze)]">Direct booking</p>
-            <h1 className="type-h1 mt-3 max-w-xl font-extrabold tracking-tight text-balance">
+            <p className="type-eyebrow mt-5 font-black text-[var(--bronze)] sm:mt-7">Direct booking</p>
+            <h1 className="type-h1 mt-2 max-w-xl font-extrabold tracking-tight text-balance sm:mt-3">
               Request a visit in under a minute.
             </h1>
-            <p className="type-lead mt-4 max-w-lg text-[var(--ink-soft)]">
+            <p className="type-lead mt-3 max-w-lg text-[var(--ink-soft)] sm:mt-4">
               No login needed. Share only the details the clinic needs to call you and confirm the
               appointment.
             </p>
-            <div className="mt-6 grid gap-3 text-sm text-[var(--ink-soft)] sm:grid-cols-2 lg:grid-cols-1">
-              <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-black/5">
+            <div className="mt-4 grid gap-2 text-sm text-[var(--ink-soft)] sm:mt-6 sm:gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="flex items-center gap-3 rounded-2xl bg-white px-3.5 py-2.5 ring-1 ring-black/5 sm:px-4 sm:py-3">
                 <PhoneAppIcon className="h-4 w-4" />
                 Staff confirms by phone
               </div>
-              <div className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-black/5">
+              <div className="flex items-center gap-3 rounded-2xl bg-white px-3.5 py-2.5 ring-1 ring-black/5 sm:px-4 sm:py-3">
                 <ShieldCheck className="h-4 w-4 text-[var(--sage)]" />
                 Account can be created at the clinic
               </div>
             </div>
           </section>
 
-          <section className="rounded-3xl bg-white p-5 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-7">
+          <section className="mobile-compact-card rounded-3xl bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-black/[0.05] sm:p-7">
             {submittedClinic ? (
               <div className="py-6 text-center">
                 <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sage)]/10 text-[var(--sage-deep)]">
@@ -137,7 +136,7 @@ function DirectBookingPage() {
                 </div>
                 <h2 className="type-h2 mt-5 font-extrabold tracking-tight">Request sent</h2>
                 <p className="type-body-sm mx-auto mt-2 max-w-sm text-[var(--ink-soft)]">
-                  {submittedClinic.name} has received your request. A clinician will call{" "}
+                  {formatClinicLocation(submittedClinic).title} has received your request. A clinician will call{" "}
                   {phone.trim()} to confirm whether the appointment is booked.
                 </p>
                 <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
@@ -226,38 +225,41 @@ function DirectBookingPage() {
                     </Field>
                   </div>
 
-                  <Field label="Clinic">
-                    <div className="relative">
-                      <GoogleMapsIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" />
-                      <select
-                        value={clinicId}
-                        onChange={(e) => setClinicId(e.target.value)}
-                        disabled={loadingClinics}
-                        required
-                        className={cn(inputClass, "pl-10")}
-                      >
-                        {loadingClinics ? (
-                          <option>Loading clinics…</option>
-                        ) : (
-                          clinics.map((clinic) => (
-                            <option key={clinic.id} value={clinic.id}>
-                              {clinic.name}
-                            </option>
-                          ))
-                        )}
-                      </select>
-                    </div>
+                  <Field label="Clinic / location">
                     {loadingClinics ? (
                       <LoadingSpinnerLabel
                         label="Loading clinics…"
                         size="sm"
-                        className="mt-2 justify-start"
+                        className="mt-1 justify-start"
                       />
-                    ) : null}
-                    {selectedClinic ? (
-                      <p className="mt-2 text-xs text-[var(--ink-soft)]">
-                        {selectedClinic.address}
-                      </p>
+                    ) : (
+                      <>
+                        <select
+                          value={clinicId}
+                          onChange={(e) => setClinicId(e.target.value)}
+                          required
+                          className={inputClass}
+                          aria-label="Clinic location"
+                        >
+                          <option value="">Select a clinic</option>
+                          {clinics.map((clinic) => {
+                            const location = formatClinicLocation(clinic);
+                            return (
+                              <option key={clinic.id} value={clinic.id}>
+                                {location.title} — {location.address}
+                              </option>
+                            );
+                          })}
+                        </select>
+                        {selectedClinic ? (
+                          <p className="mt-2 text-xs leading-relaxed text-[var(--ink-soft)]">
+                            {formatClinicLocation(selectedClinic).address}
+                          </p>
+                        ) : null}
+                      </>
+                    )}
+                    {!clinicId ? (
+                      <p className="mt-2 text-xs text-red-600">Please choose a clinic location.</p>
                     ) : null}
                   </Field>
 

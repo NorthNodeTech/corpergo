@@ -2,13 +2,13 @@ import { cn } from "@/lib/core/utils";
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/30",
-  accepted: "bg-[var(--saffron-light)] text-[var(--saffron-deep)] ring-[var(--saffron)]/30",
+  accepted: "bg-[var(--burnt-amber-light)] text-[var(--burnt-amber)] ring-[var(--burnt-amber)]/25",
   checked_in: "bg-neutral-100 text-black ring-neutral-300",
   progress: "bg-neutral-100 text-black ring-neutral-300",
-  completed: "bg-black text-white ring-black",
+  completed: "bg-[var(--burnt-amber)] text-white ring-[var(--burnt-amber-deep)]",
   cancelled: "bg-neutral-100 text-neutral-600 ring-neutral-200",
-  rejected: "bg-neutral-100 text-neutral-600 ring-neutral-200",
-  rescheduled: "bg-[var(--saffron-light)] text-black ring-[var(--saffron)]/25",
+  rejected: "bg-rose-50 text-rose-700 ring-rose-200",
+  rescheduled: "bg-[var(--saffron-light)] text-[var(--burnt-amber)] ring-[var(--saffron)]/25",
 };
 
 const STATUS_LABELS: Record<string, string> = {

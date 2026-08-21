@@ -13,7 +13,12 @@ export const SITE_DESCRIPTION =
   "Founded in 2017 by Dr. Pinky Dutta (MPT, PhD). Evidence-based physiotherapy, sports rehabilitation, pain management and corporate ergonomics across five Greater Whitefield clinics in Bengaluru.";
 export const SUPPORT_PHONE = "+919148536394";
 export const SUPPORT_PHONE_DISPLAY = "+91 91485 36394";
-export const SUPPORT_EMAIL = "care@corpergo.in";
+export const SUPPORT_PHONE_ALT = "+919606240426";
+export const SUPPORT_PHONE_ALT_DISPLAY = "+91 96062 40426";
+export const WHATSAPP_CONSULT_MESSAGE =
+  "Hi CorpErgo, I'd like to ask about a physiotherapy consultation.";
+export const WHATSAPP_CONSULT_URL = `https://wa.me/${SUPPORT_PHONE_ALT.replace(/\D/g, "")}?text=${encodeURIComponent(WHATSAPP_CONSULT_MESSAGE)}`;
+export const SUPPORT_EMAIL = "corpergo@gmail.com";
 export const INSTAGRAM_PROFILE = "https://www.instagram.com/corpergophysiorehab.in/";
 export const YOUTUBE_PROFILE = "https://www.youtube.com/@corpergo";
 export const FOUNDER_LINKEDIN = "https://in.linkedin.com/in/pinky-dutta-36731153";
@@ -24,59 +29,86 @@ export const DEFAULT_OG_IMAGE_ALT =
 export type ClinicLocation = {
   name: string;
   shortName: string;
+  /** Common misspellings / DB variants used for matching. */
+  aliases: string[];
   address: string;
   locality: string;
   region: string;
   postalCode?: string;
   mapUrl: string;
+  hours: string;
 };
 
 export const CLINIC_LOCATIONS: ClinicLocation[] = [
   {
     name: "CorpErgo Channasandra",
     shortName: "Channasandra",
-    address:
-      "50, Narayana Reddy Complex, Channasandra, near Thirumala Bakery, Kadugodi, Whitefield",
+    aliases: ["chansandra", "channasandra"],
+    address: "Kadugodi, Whitefield, Bengaluru",
     locality: "Bengaluru",
     region: "Karnataka",
     postalCode: "560067",
     mapUrl: "https://maps.app.goo.gl/w9o4N65QwY1NGkgc8",
+    hours: "Mon-Sat · 8am-8pm",
   },
   {
     name: "CorpErgo Balagere",
     shortName: "Balagere",
-    address: "Sapthagiri Complex, opposite Hi Life Pearl Shell Apartment, Balagere, Varthur",
+    aliases: ["balegere", "balagere"],
+    address: "Varthur, Bengaluru",
     locality: "Bengaluru",
     region: "Karnataka",
     postalCode: "560087",
     mapUrl: "https://maps.app.goo.gl/gP8neSidun1DtXHt7",
+    hours: "Mon-Sat · 8am-8pm",
   },
   {
     name: "CorpErgo Muthsandra",
     shortName: "Muthsandra",
-    address: "Muthsandra, Madhura Nagar, Varthur",
+    aliases: ["muthasandra", "muthsandra"],
+    address: "Madhura Nagar, Varthur, Bengaluru",
     locality: "Bengaluru",
     region: "Karnataka",
     mapUrl: "https://maps.app.goo.gl/N8ja8jsPgtCZkdky5",
+    hours: "Mon-Sat · 8am-8pm",
   },
   {
     name: "CorpErgo Kannamangala",
     shortName: "Kannamangala",
-    address: "Kannamangala, Whitefield–Hoskote Road",
+    aliases: ["kannamangala"],
+    address: "Whitefield–Hoskote Road, Bengaluru",
     locality: "Bengaluru",
     region: "Karnataka",
     mapUrl: "https://maps.app.goo.gl/AoB5Cftbm3hMzW1HA",
+    hours: "Mon-Sat · 8am-8pm",
   },
   {
     name: "CorpErgo Manduru",
     shortName: "Manduru",
-    address: "Manduru, Budigere Old Madras Road",
+    aliases: ["mandur", "manduru"],
+    address: "Budigere Old Madras Road, Bengaluru",
     locality: "Bengaluru",
     region: "Karnataka",
     mapUrl: "https://maps.app.goo.gl/HsFRRdwtYAqLZmoC8",
+    hours: "Mon-Sat · 8am-8pm",
   },
 ];
 
+/** Match a DB clinic row to the canonical homepage location. */
+export function matchClinicLocation(input: {
+  name?: string | null;
+  slug?: string | null;
+  address?: string | null;
+}): ClinicLocation | undefined {
+  const haystack = `${input.name ?? ""} ${input.slug ?? ""} ${input.address ?? ""}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  return CLINIC_LOCATIONS.find((loc) => {
+    const keys = [loc.shortName, ...loc.aliases].map((k) => k.toLowerCase().replace(/[^a-z0-9]/g, ""));
+    return keys.some((key) => key.length > 0 && haystack.includes(key));
+  });
+}
 export const SERVICES = [
   {
     name: "Orthopedic Rehabilitation",
@@ -265,7 +297,7 @@ export function rootMeta(): MetaDescriptor[] {
     { name: "robots", content: "index, follow, max-image-preview:large" },
     { name: "author", content: SITE_NAME },
     { name: "application-name", content: SITE_NAME },
-    { name: "theme-color", content: "#ff9933" },
+    { name: "theme-color", content: "#1a1a1a" },
     { name: "mobile-web-app-capable", content: "yes" },
     { name: "apple-mobile-web-app-title", content: SITE_NAME },
     { name: "apple-mobile-web-app-capable", content: "yes" },
@@ -281,10 +313,11 @@ export function rootMeta(): MetaDescriptor[] {
 export function rootLinks(appCss: string): LinkDescriptor[] {
   return [
     { rel: "stylesheet", href: appCss },
-    { rel: "icon", href: "/favicon.ico", sizes: "any" },
-    { rel: "icon", href: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
-    { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
-    { rel: "manifest", href: "/site.webmanifest" },
+    { rel: "icon", href: "/favicon.ico?v=2", sizes: "any" },
+    { rel: "icon", href: "/favicon-32x32.png?v=2", type: "image/png", sizes: "32x32" },
+    { rel: "icon", href: "/favicon-16x16.png?v=2", type: "image/png", sizes: "16x16" },
+    { rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=2", sizes: "180x180" },
+    { rel: "manifest", href: "/site.webmanifest?v=2" },
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
     { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
     { rel: "preconnect", href: "https://cdn.jsdelivr.net", crossOrigin: "anonymous" },

@@ -22,6 +22,7 @@ import {
   fetchClinics,
   fetchMyPatient,
   fetchSlotsForClinicDate,
+  formatClinicLocation,
   formatDateLabel,
   formatTimeLabel,
   uniqueSlotTimes,
@@ -49,12 +50,15 @@ const STEPS = ["Clinic", "Category", "About you", "Problem", "Date & time", "Con
 const CATEGORY_ICONS: Record<string, string> = {
   orthopaedic: "🦴",
   neurological: "🧠",
-  "sports-rehabilitation": "🏃",
   musculoskeletal: "💪",
-  "womens-health": "🌸",
+  "sports-rehab": "✨",
+  "sports-rehabilitation": "✨",
   pediatric: "🧒",
+  "womens-health": "🌸",
   geriatric: "🌿",
-  "post-surgical": "🏥",
+  "post-surgery": "✨",
+  "post-surgical": "✨",
+  other: "➕",
 };
 
 function BookAppointmentPage() {
@@ -133,6 +137,10 @@ function BookAppointmentPage() {
   const selectedClinic = useMemo(
     () => clinics.find((c) => c.id === clinicId) || null,
     [clinics, clinicId],
+  );
+  const selectedClinicLocation = useMemo(
+    () => (selectedClinic ? formatClinicLocation(selectedClinic) : null),
+    [selectedClinic],
   );
   const selectedCategory = useMemo(
     () => categories.find((c) => c.id === categoryId) || null,
@@ -226,9 +234,9 @@ function BookAppointmentPage() {
           <h1 className="mt-6 text-3xl font-extrabold text-[var(--ink)]">Request submitted</h1>
           <p className="mt-3 text-[var(--ink-soft)] leading-relaxed">
             Your booking request has been sent to{" "}
-            <strong>{selectedClinic?.name || "the clinic"}</strong>. Once the{" "}
-            {selectedClinic?.name || "clinic"} portal reviews and accepts your request, your booking
-            will be <strong>confirmed</strong> and your QR boarding pass will be ready.
+            <strong>{selectedClinicLocation?.title || "the clinic"}</strong>. Once the{" "}
+            {selectedClinicLocation?.title || "clinic"} portal reviews and accepts your request, your
+            booking will be <strong>confirmed</strong> and your QR boarding pass will be ready.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
@@ -250,7 +258,7 @@ function BookAppointmentPage() {
   }
 
   return (
-    <div>
+    <div className="patient-book-page">
       <PortalPageHeader
         eyebrow="Booking"
         title="Book an appointment"
@@ -263,7 +271,7 @@ function BookAppointmentPage() {
         </div>
       ) : null}
 
-      <div className="mb-8 flex flex-wrap gap-2">
+      <div className="patient-book-steps mb-5 flex flex-wrap gap-2 sm:mb-8">
         {STEPS.map((label, i) => (
           <div
             key={label}
@@ -284,7 +292,7 @@ function BookAppointmentPage() {
         ))}
       </div>
 
-      <div className="rounded-[2rem] bg-white p-5 sm:p-8 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)]">
+      <div className="patient-book-panel rounded-[2rem] bg-white p-4 sm:p-8 ring-1 ring-black/[0.05] shadow-[var(--shadow-soft)]">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
@@ -301,41 +309,30 @@ function BookAppointmentPage() {
                 <p className="mt-1 text-sm text-[var(--ink-soft)]">
                   All five CorpErgo branches in Bengaluru.
                 </p>
-                <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {clinics.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setClinicId(c.id)}
-                      className={cn(
-                        "rounded-3xl p-5 text-left transition-all ring-1",
-                        clinicId === c.id
-                          ? "bg-[var(--sage)] text-white ring-[var(--sage)] shadow-lg scale-[1.02]"
-                          : "bg-[var(--ivory)] text-[var(--ink)] ring-black/5 hover:ring-[var(--sage)]/40",
-                      )}
-                    >
-                      <div className="text-lg font-extrabold">{c.name}</div>
-                      <div
-                        className={cn(
-                          "mt-2 text-sm leading-relaxed",
-                          clinicId === c.id ? "text-white/85" : "text-[var(--ink-soft)]",
-                        )}
-                      >
-                        {c.address}
-                      </div>
-                      {c.phone ? (
-                        <div
-                          className={cn(
-                            "mt-3 text-xs font-semibold",
-                            clinicId === c.id ? "text-white/80" : "text-[var(--bronze)]",
-                          )}
-                        >
-                          {c.phone}
-                        </div>
-                      ) : null}
-                    </button>
-                  ))}
-                </div>
+                <label className="mt-6 block text-sm font-semibold text-[var(--ink)]">
+                  Clinic / location
+                  <select
+                    value={clinicId || ""}
+                    onChange={(e) => setClinicId(e.target.value || null)}
+                    className="mt-1.5 w-full rounded-2xl bg-[var(--ivory)] px-4 py-3 text-[var(--ink)] ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[var(--sage)]"
+                    aria-label="Clinic location"
+                  >
+                    <option value="">Select a clinic</option>
+                    {clinics.map((c) => {
+                      const location = formatClinicLocation(c);
+                      return (
+                        <option key={c.id} value={c.id}>
+                          {location.title} — {location.address}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </label>
+                {selectedClinicLocation ? (
+                  <p className="mt-3 text-sm leading-relaxed text-[var(--ink-soft)]">
+                    {selectedClinicLocation.address}
+                  </p>
+                ) : null}
               </div>
             )}
 
@@ -452,7 +449,8 @@ function BookAppointmentPage() {
                 </h2>
                 <p className="mt-1 text-sm text-[var(--ink-soft)]">
                   Pick a day, then select an available slot at{" "}
-                  {selectedClinic?.name || "your clinic"}. Sundays and past dates are unavailable.
+                  {selectedClinicLocation?.title || "your clinic"}. Sundays and past dates are
+                  unavailable.
                 </p>
                 <div className="mt-6 grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start">
                   <div className="flex justify-center rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:justify-start">
@@ -573,7 +571,7 @@ function BookAppointmentPage() {
                 </p>
                 <dl className="mt-6 space-y-4 rounded-3xl bg-[var(--ivory)] p-5">
                   {[
-                    ["Clinic", selectedClinic?.name],
+                    ["Clinic", selectedClinicLocation?.title],
                     ["Category", selectedCategory?.name],
                     ["Age", ageYears ? `${ageYears} years` : "—"],
                     ["Gender", gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : "—"],

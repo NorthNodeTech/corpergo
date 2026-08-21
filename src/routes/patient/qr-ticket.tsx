@@ -9,6 +9,7 @@ import { LoadingState } from "@/shared/components/ui/loading-spinner";
 import { ShowMoreButton, useShowMore } from "@/shared/components/layout/ShowMoreList";
 import {
   fetchAcceptedTickets,
+  formatClinicLocation,
   formatDateLabel,
   formatTimeLabel,
   type Appointment,
@@ -99,7 +100,9 @@ function QrTicketPage() {
                           <div className="text-white/70 text-xs uppercase tracking-wider font-bold">
                             Clinic
                           </div>
-                          <div className="font-bold text-base">{a.clinics?.name}</div>
+                          <div className="font-bold text-base">
+                            {a.clinics ? formatClinicLocation(a.clinics).title : "Clinic"}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-start gap-2">
@@ -133,7 +136,9 @@ function QrTicketPage() {
                   </div>
 
                   <div className="border-t border-dashed border-white/25 px-6 py-3 text-xs text-white/75">
-                    Present this code at {a.clinics?.name || "the clinic"} reception for check-in.
+                    Present this code at{" "}
+                    {a.clinics ? formatClinicLocation(a.clinics).title : "the clinic"} reception for
+                    check-in.
                   </div>
                 </article>
               );

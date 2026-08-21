@@ -5,9 +5,8 @@
 const PROJECT_URL = "https://gnmahvpujdthvthsypaj.supabase.co";
 const LEGACY_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdubWFodnB1amR0aHZ0aHN5cGFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0Nzg4NDgsImV4cCI6MjEwMDA1NDg0OH0.p-Qn3d021oiVbZ8jgSbsUZ0N2uWRMjOfz_3EUJWuRns";
-const PUBLISHABLE_KEY = "sb_publishable_3XanUv6jNYrONBTg3fGq5w_6yRSQUu5";
 
-function pickKey(raw: string | undefined, fallback: string) {
+function pickValue(raw: string | undefined, fallback: string) {
   const value = (raw ?? "").trim();
   if (!value || value.includes("your-anon") || value.includes("your-") || value.length < 20) {
     return fallback;
@@ -15,17 +14,25 @@ function pickKey(raw: string | undefined, fallback: string) {
   return value;
 }
 
-export function getSupabaseConfig() {
-  const supabaseUrl = pickKey(import.meta.env.VITE_SUPABASE_URL, PROJECT_URL);
+function isJwtAnonKey(value: string) {
+  return value.startsWith("eyJ");
+}
 
-  // Prefer legacy JWT anon key (required for REST headers apikey & Authorization)
-  const supabaseAnonKey = pickKey(
-    import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-    LEGACY_ANON_KEY || PUBLISHABLE_KEY,
-  );
+export function getSupabaseConfig() {
+  const supabaseUrl = pickValue(import.meta.env.VITE_SUPABASE_URL, PROJECT_URL).replace(/\/$/, "");
+
+  // Auth + PostgREST require the legacy JWT anon key in apikey/Authorization headers.
+  // Never send sb_publishable_… as Bearer for password grant.
+  const fromEnvAnon = pickValue(import.meta.env.VITE_SUPABASE_ANON_KEY, "");
+  const fromEnvPublishable = pickValue(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, "");
+  const supabaseAnonKey = isJwtAnonKey(fromEnvAnon)
+    ? fromEnvAnon
+    : isJwtAnonKey(fromEnvPublishable)
+      ? fromEnvPublishable
+      : LEGACY_ANON_KEY;
 
   return {
-    supabaseUrl: supabaseUrl.replace(/\/$/, ""),
+    supabaseUrl,
     supabaseAnonKey,
   };
 }
